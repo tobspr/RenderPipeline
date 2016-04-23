@@ -162,15 +162,15 @@ class BufferViewer(DraggableWindow):
 
         self._render_stages()
 
-    def _on_texture_hovered(self, hover_frame, evt=None): # pylint: disable=W0613
+    def _on_texture_hovered(self, hover_frame, evt=None): # pylint: disable=unused-argument
         """ Internal method when a texture is hovered """
         hover_frame["frameColor"] = (0, 0, 0, 0.1)
 
-    def _on_texture_blurred(self, hover_frame, evt=None): # pylint: disable=W0613
+    def _on_texture_blurred(self, hover_frame, evt=None): # pylint: disable=unused-argument
         """ Internal method when a texture is blurred """
         hover_frame["frameColor"] = (0, 0, 0, 0)
 
-    def _on_texture_clicked(self, tex_handle, evt=None): # pylint: disable=W0613
+    def _on_texture_clicked(self, tex_handle, evt=None): # pylint: disable=unused-argument
         """ Internal method when a texture is blurred """
         self._tex_preview.present(tex_handle)
 

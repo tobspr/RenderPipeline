@@ -31,6 +31,20 @@ from rpcore.rpobject import RPObject
 
 __all__ = ["make_setting_from_data"]
 
+def make_setting_from_factory(data, factory):
+    """ Constructs a new setting from a given dataset, alongst with a factory
+    to resolve the setting type to """
+    if data["type"] not in factory:
+        raise Exception("Unkown setting type: {}".format(data["type"]))
+    try:
+        instance = factory[data["type"]](data)
+    except Exception:
+        print("Exception occured while parsing", data)
+        raise
+    if data:
+        raise Exception("Unparsed data left in plugin setting: {}".format(data))
+    return instance
+
 def make_setting_from_data(data):
     """ Constructs a new setting from a given dataset. This method will automatically
     instantiate a new class matching the type of the given dataset. It will fill
@@ -42,18 +56,7 @@ def make_setting_from_data(data):
         "enum": EnumType,
         "path": PathType
     }
-    if data["type"] not in factory:
-        raise Exception("Unkown setting type: {}".format(data["type"]))
-
-    try:
-        instance = factory[data["type"]](data)
-    except Exception:
-        print("Exception occured while parsing", data)
-        raise
-
-    if data:
-        raise Exception("Unparsed data left in plugin setting: {}".format(data))
-    return instance
+    return make_setting_from_factory(data, factory)
 
 class BaseType(RPObject):
 

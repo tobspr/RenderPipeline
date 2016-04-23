@@ -46,7 +46,7 @@ class Application(ShowBase):
         print("Rendering sun shadow map ..")
         sun_shadow_cam = Camera("SunShadowCamera")
         sun_shadow_lens = OrthographicLens()
-        sun_shadow_lens.set_film_size(diameter * 2, diameter * 2) 
+        sun_shadow_lens.set_film_size(diameter * 2, diameter * 2)
         sun_shadow_lens.set_near_far(0, 2 * diameter)
         sun_shadow_cam.set_lens(sun_shadow_lens)
         sun_shadow_cam_np = render.attach_new_node(sun_shadow_cam)

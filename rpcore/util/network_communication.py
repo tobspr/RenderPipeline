@@ -74,7 +74,7 @@ class NetworkCommunication(RPObject):
         try:
             sock.bind(("127.0.0.1", port))
             while True:
-                data, addr = sock.recvfrom(1024) # pylint: disable=W0612
+                data, addr = sock.recvfrom(1024) # pylint: disable=unused-variable
                 callback(data.decode("utf-8"))
         finally:
             sock.close()

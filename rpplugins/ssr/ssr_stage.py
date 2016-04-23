@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 from panda3d.core import SamplerState
 
-from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
 
@@ -44,8 +43,6 @@ class SSRStage(RenderStage):
         return {"SSRSpecular": self.target_resolve.color_tex}
 
     def create(self):
-        x_size, y_size = Globals.resolution.x, Globals.resolution.y
-
         self.target = self.create_target("ComputeSSR")
         self.target.size = -2
         self.target.add_color_attachment(bits=(16, 16, 0, 0))
@@ -79,8 +76,13 @@ class SSRStage(RenderStage):
         AmbientStage.required_pipes.append("SSRSpecular")
 
     def reload_shaders(self):
-        self.target.shader = self.load_plugin_shader("ssr_trace.frag.glsl")
-        self.target_velocity.shader = self.load_plugin_shader("reflection_velocity.frag.glsl")
-        self.target_reproject_lighting.shader = self.load_plugin_shader("reproject_lighting.frag.glsl")
-        self.target_upscale.shader = self.load_plugin_shader("upscale_bilateral_brdf.frag.glsl")
-        self.target_resolve.shader = self.load_plugin_shader("resolve_ssr.frag.glsl")
+        self.target.shader = self.load_plugin_shader(
+            "ssr_trace.frag.glsl")
+        self.target_velocity.shader = self.load_plugin_shader(
+            "reflection_velocity.frag.glsl")
+        self.target_reproject_lighting.shader = self.load_plugin_shader(
+            "reproject_lighting.frag.glsl")
+        self.target_upscale.shader = self.load_plugin_shader(
+            "upscale_bilateral_brdf.frag.glsl")
+        self.target_resolve.shader = self.load_plugin_shader(
+            "resolve_ssr.frag.glsl")

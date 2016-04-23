@@ -24,9 +24,7 @@ THE SOFTWARE.
 
 """
 
-# Disable ling too long warnings for this file, since we are building shader
-# code which is way more readable when not splitted into multiple lines.
-# pylint: disable=C0301
+# pylint: disable=line-too-long
 
 from direct.stdpy.file import isfile, open
 
@@ -34,7 +32,7 @@ from rpcore.image import Image
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
-class DisplayShaderBuilder(object):
+class DisplayShaderBuilder(object): # pylint: disable=too-few-public-methods
 
     """ Utility class to generate shaders on the fly to display texture previews
     and also buffers """
@@ -98,7 +96,7 @@ class DisplayShaderBuilder(object):
         return built
 
     @classmethod
-    def _generate_sampling_code(cls, texture, view_width, view_height): # pylint: disable=W0613
+    def _generate_sampling_code(cls, texture, view_width, view_height): # pylint: disable=unused-argument,too-many-branches
         """ Generates the GLSL code to sample a texture and also returns the
         GLSL sampler type """
 

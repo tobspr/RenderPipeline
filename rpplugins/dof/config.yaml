@@ -3,7 +3,7 @@ settings: !!omap
 
     - focal_point:
         type: float
-        range: [0.0, 1000.0]
+        range: [0.0, 10000.0]
         default: 10.0
         shader_runtime: true
         label: Focal point
@@ -12,7 +12,7 @@ settings: !!omap
 
     - focal_size:
         type: float
-        range: [0.0, 100.0]
+        range: [0.0, 5000.0]
         default: 2.5
         label: Focal size
         shader_runtime: true

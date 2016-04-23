@@ -26,7 +26,7 @@ if __name__ == "__main__":
     import math
 
     sys.path.insert(0, "../../")
-    from rplibs.six.moves import urllib
+    from rplibs.six.moves import urllib # pylint: disable=import-error
 
     CONFIG["end_day"] = CONFIG["day"]
 

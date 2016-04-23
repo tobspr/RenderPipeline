@@ -36,7 +36,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
 from rplibs.yaml import load_yaml_file_flat
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
@@ -159,9 +159,10 @@ class RenderPipeline(RPObject):
         self._init_showbase(base)
 
         if not self._showbase.win.gsg.supports_compute_shaders:
-            self.fatal("Sorry, your GPU does not support compute shaders! Make sure\n"
-                       "you have the latest drivers. If you already have, your gpu might\n"
-                       "be too old, or you might be using the open source drivers on linux.")
+            self.fatal(
+                "Sorry, your GPU does not support compute shaders! Make sure\n"
+                "you have the latest drivers. If you already have, your gpu might\n"
+                "be too old, or you might be using the open source drivers on linux.")
 
         self._init_globals()
         self.loading_screen.create()
@@ -231,12 +232,14 @@ class RenderPipeline(RPObject):
                 if stage == "gbuffer":
                     nodepath.set_shader(shader, 25)
                 else:
-                    self.tag_mgr.apply_state(stage, nodepath, shader, str(effect.effect_id), 25 + 10 * i + sort)
+                    self.tag_mgr.apply_state(
+                        stage, nodepath, shader, str(effect.effect_id), 25 + 10 * i + sort)
                 nodepath.show_through(self.tag_mgr.get_mask(stage))
 
         if effect.get_option("render_gbuffer") and effect.get_option("render_forward"):
-            self.error("You cannot render an object forward and deferred at the same time! Either "
-                       "use render_gbuffer or use render_forward, but not both.")
+            self.error("You cannot render an object forward and deferred at the "
+                       "same time! Either use render_gbuffer or use render_forward, "
+                       "but not both.")
 
     def add_environment_probe(self):
         """ Constructs a new environment probe and returns the handle, so that
@@ -244,7 +247,7 @@ class RenderPipeline(RPObject):
         this returns a dummy object which can be modified but has no impact. """
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
             self.warn("env_probes plugin is not loaded - cannot add environment probe")
-            class DummyEnvironmentProbe(object):
+            class DummyEnvironmentProbe(object): # pylint: disable=too-few-public-methods
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
             return DummyEnvironmentProbe()
@@ -369,10 +372,10 @@ class RenderPipeline(RPObject):
         else:
             # Use an empty onscreen debugger in case the debugger is not
             # enabled, which defines all member functions as empty lambdas
-            class EmptyDebugger(object):
+            class EmptyDebugger(object): # pylint: disable=too-few-public-methods
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
-            self.debugger = EmptyDebugger()
+            self.debugger = EmptyDebugger() # pylint: disable=redefined-variable-type
             del EmptyDebugger
 
     def _init_globals(self):

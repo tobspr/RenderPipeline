@@ -172,7 +172,7 @@ class Effect(RPObject):
         shader_path = self._construct_shader_from_data(shader_id, default_template, data)
         self._shader_paths[shader_id] = shader_path
 
-    def _construct_shader_from_data(self, shader_id, default_template, data):
+    def _construct_shader_from_data(self, shader_id, default_template, data): # pylint: disable=too-many-branches
         """ Constructs a shader from a given dataset """
         injects = {}
         template_src = default_template
@@ -227,8 +227,7 @@ class Effect(RPObject):
                 self.warn("Unrecognized key:", key)
 
         shader = ShaderTemplate(
-            template_src,
-            self._effect_name + "@" + shader_id + "@" + self._effect_hash)
+            template_src, self._effect_name + "@" + shader_id + "@" + self._effect_hash)
 
         for key, val in iteritems(injects):
             shader.register_template_value(key, val)

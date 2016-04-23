@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import math
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 from rplibs.six import iteritems, itervalues
 
 from direct.stdpy.file import listdir, isfile, join
@@ -91,7 +91,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
     """ Precomputed atmospheric scattering by Eric Bruneton """
 
     def load(self):
-        # Init parameters, those should match with the ones specified in common.glsl
+        """ Inits parameters, those should match with the ones specified in common.glsl """
         self.use_32_bit = False
         self.trans_w, self.trans_h = 256 * 4, 64 * 4
         self.sky_w, self.sky_h = 64 * 4, 16 * 4
@@ -108,13 +108,13 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         img_2d, img_3d = Image.create_2d, Image.create_3d
 
         self.textures = {
-            "transmittance": img_2d("scatt-transmittance", self.trans_w, self.trans_h, tex_format),
-            "irradiance": img_2d("scatt-irradiance", self.sky_w, self.sky_h, tex_format),
-            "inscatter": img_3d("scatt-inscatter", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
-            "delta_e": img_2d("scatt-dx-e", self.sky_w, self.sky_h, tex_format),
-            "delta_sr": img_3d("scatt-dx-sr", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
-            "delta_sm": img_3d("scatt-dx-sm", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
-            "delta_j": img_3d("scatt-dx-j", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "transmittance": img_2d("scat-trans", self.trans_w, self.trans_h, tex_format),
+            "irradiance": img_2d("scat-irrad", self.sky_w, self.sky_h, tex_format),
+            "inscatter": img_3d("scat-inscat", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format), # pylint: disable=line-too-long
+            "delta_e": img_2d("scat-dx-e", self.sky_w, self.sky_h, tex_format),
+            "delta_sr": img_3d("scat-dx-sr", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "delta_sm": img_3d("scat-dx-sm", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
+            "delta_j": img_3d("scat-dx-j", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
         }
 
         for img in itervalues(self.textures):

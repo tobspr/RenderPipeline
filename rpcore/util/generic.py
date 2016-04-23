@@ -72,7 +72,7 @@ def profile(func):
     do_pstat.__doc__ = func.__doc__
     return do_pstat
 
-class profile_cpu(object): # pylint: disable=C0103
+class profile_cpu(object): # pylint: disable=invalid-name,too-few-public-methods
     """
     Context manager for profiling CPU duration. This is useful for timing
     loading of files or other CPU-heavy operations. Example usage:

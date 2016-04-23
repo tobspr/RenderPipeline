@@ -70,7 +70,7 @@ class PSSMCameraRig(object):
         transform = self._parent.get_transform(self._cam_node).get_mat()
         return transform * self._lens.get_projection_mat()
 
-    def get_camera(self, index): # pylint: disable=W0613
+    def get_camera(self, index): # pylint: disable=unused-argument
         return self._cam_node
 
     def set_sun_distance(self, dist):
@@ -90,7 +90,7 @@ class PSSMCameraRig(object):
     def set_use_stable_csm(self, use_stable):
         self._snap_grid = use_stable
 
-    def _stub(self, *args, **kwargs): # pylint: disable=W0613
+    def _stub(self, *args, **kwargs): # pylint: disable=unused-argument
         return None
 
     set_pssm_distance = _stub

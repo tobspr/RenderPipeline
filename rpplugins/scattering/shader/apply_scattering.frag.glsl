@@ -63,7 +63,8 @@ void main() {
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
             cloud_color = pow(cloud_color, vec3(2.2));
-            inscattered_light *= 0.0 + 1.0 * (1.0 + 2.3 * cloud_color);
+            cloud_color = mix(cloud_color, vec3(1), pow(1 - saturate(view_vector.z), 15.0));
+            inscattered_light *= 1.0 + 2.3 * cloud_color;
         #endif
 
         inscattered_light *= 3.0;

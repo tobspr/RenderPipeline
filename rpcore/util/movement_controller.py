@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 # Disable the "exactly one space required after comma" message, for the input
 # bindings it looks nicer to insert some spaces (see the setup method)
-# pylint: disable=C0326
+# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 

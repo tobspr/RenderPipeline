@@ -65,7 +65,7 @@ class Plugin(BasePlugin):
             self.scattering_model = ScatteringMethodEricBruneton(self)
         elif method == "hosek_wilkie":
             from .scattering_methods import ScatteringMethodHosekWilkie
-            self.scattering_model = ScatteringMethodHosekWilkie(self)
+            self.scattering_model = ScatteringMethodHosekWilkie(self) # pylint: disable=redefined-variable-type
         else:
             self.error("Unrecognized scattering method!")
 
@@ -83,10 +83,8 @@ class Plugin(BasePlugin):
         return sun_vector
 
     def on_pre_render_update(self):
-        if self._pipeline.task_scheduler.is_scheduled("scattering_update_envmap"):
-            self.envmap_stage.active = True
-        else:
-            self.envmap_stage.active = False
+        self.envmap_stage.active = self._pipeline.task_scheduler.is_scheduled(
+            "scattering_update_envmap")
 
     def on_shader_reload(self):
         self.scattering_model.compute()

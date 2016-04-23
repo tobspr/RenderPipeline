@@ -46,23 +46,23 @@ class Plugin(BasePlugin):
     version = "1.4"
 
     def on_stage_setup(self):
-        self._stage = self.create_stage(ColorCorrectionStage)
-        self._tonemapping_stage = self.create_stage(TonemappingStage)
+        self.stage = self.create_stage(ColorCorrectionStage)
+        self.tonemapping_stage = self.create_stage(TonemappingStage)
 
         if self.get_setting("use_sharpen"):
-            self._sharpen_stage = self.create_stage(SharpenStage)
-            self._sharpen_stage.sharpen_twice = self.get_setting("sharpen_twice")
+            self.sharpen_stage = self.create_stage(SharpenStage)
+            self.sharpen_stage.sharpen_twice = self.get_setting("sharpen_twice")
 
         if not self.get_setting("manual_camera_parameters"):
-            self._exposure_stage = self.create_stage(AutoExposureStage)
+            self.exposure_stage = self.create_stage(AutoExposureStage)
         else:
-            self._exposure_stage = self.create_stage(ManualExposureStage)
+            self.exposure_stage = self.create_stage(ManualExposureStage) # pylint: disable=redefined-variable-type
 
     def on_pipeline_created(self):
-        self._load_lut()
-        self._load_grain()
+        self.load_lut()
+        self.load_grain()
 
-    def _load_lut(self):
+    def load_lut(self):
         """ Loads the color correction lookup table (LUT) """
         lut_path = self.get_resource(self.get_setting("color_lut"))
         lut = RPLoader.load_sliced_3d_texture(lut_path, 64)
@@ -72,9 +72,10 @@ class Plugin(BasePlugin):
         lut.set_minfilter(SamplerState.FT_linear)
         lut.set_magfilter(SamplerState.FT_linear)
         lut.set_anisotropic_degree(0)
-        self._tonemapping_stage.set_shader_input("ColorLUT", lut)
+        self.tonemapping_stage.set_shader_input("ColorLUT", lut)
 
-    def _load_grain(self):
+    def load_grain(self):
+        """ Loads the precomputed film grain """
         grain_tex = RPLoader.load_texture(
             "/$$rp/data/film_grain/grain.txo")
         grain_tex.set_minfilter(SamplerState.FT_linear)
@@ -82,9 +83,9 @@ class Plugin(BasePlugin):
         grain_tex.set_wrap_u(SamplerState.WM_repeat)
         grain_tex.set_wrap_v(SamplerState.WM_repeat)
         grain_tex.set_anisotropic_degree(0)
-        self._stage.set_shader_input("PrecomputedGrain", grain_tex)
+        self.stage.set_shader_input("PrecomputedGrain", grain_tex)
 
     def update_color_lut(self):
         self.debug("Updating color lut ..")
-        self._load_lut()
+        self.load_lut()
 

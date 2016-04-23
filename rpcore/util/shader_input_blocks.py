@@ -124,7 +124,7 @@ class GroupedInputBlock(RPObject):
         """ Returns the value of an existing input """
         return self.ptas[name][0]
 
-    def generate_shader_code(self):
+    def generate_shader_code(self): # pylint: disable=too-many-branches
         """ Generates the GLSL shader code to use the UBO """
 
         content = "#pragma once\n\n"

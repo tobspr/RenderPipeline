@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from panda3d.core import TexturePool, SceneGraphAnalyzer
@@ -132,8 +132,10 @@ class Debugger(RPObject):
                 image="/$$rp/data/gui/python_warning.png",
                 parent=self.fullscreen_node)
             Sequence(
-                self.python_warning.color_scale_interval(0.7, Vec4(0.3, 1, 1, 0.7), blendType="easeOut"),
-                self.python_warning.color_scale_interval(0.7, Vec4(1, 1, 1, 1.0), blendType="easeOut"),
+                self.python_warning.color_scale_interval(
+                    0.7, Vec4(0.3, 1, 1, 0.7), blendType="easeOut"),
+                self.python_warning.color_scale_interval(
+                    0.7, Vec4(1, 1, 1, 1.0), blendType="easeOut"),
             ).loop()
 
         # Keybinding hints
@@ -178,7 +180,7 @@ class Debugger(RPObject):
         Globals.base.accept("c", self.pipe_viewer.toggle)
         Globals.base.accept("z", self.rm_selector.toggle)
         Globals.base.accept("f5", self.toggle_gui_visible)
-        Globals.base.accept("f6", self.toggle_fps_visible)
+        Globals.base.accept("f6", self.toggle_keybindings_visible)
         Globals.base.accept("r", self.pipeline.reload_shaders)
 
     def toggle_gui_visible(self):
@@ -191,12 +193,12 @@ class Debugger(RPObject):
             self.fullscreen_node.show()
             self.overlay_node.show()
 
-    def toggle_fps_visible(self):
+    def toggle_keybindings_visible(self):
         """ Shows / Hides the FPS graph """
-        if not self.fps_node.is_hidden():
-            self.fps_node.hide()
+        if not self.keybinding_instructions.is_hidden():
+            self.keybinding_instructions.hide()
         else:
-            self.fps_node.show()
+            self.keybinding_instructions.show()
 
     def update_stats(self, task=None):
         """ Updates the stats overlay """
@@ -255,7 +257,8 @@ class Debugger(RPObject):
         if self.pipeline.plugin_mgr.is_plugin_enabled("scattering"):
             sun_vector = self.pipeline.plugin_mgr.instances["scattering"].sun_vector
 
-        text = "{} ({:1.3f})  |  {:0.2f} {:0.2f} {:0.2f}  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        text = "{} ({:1.3f})  |  {:0.2f} {:0.2f} {:0.2f}  |  {:3d} daytime settings"
+        text += "    |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
         text += "    |  Total tasks:  {:2d}   |   scheduled: {:2d}"
         self.debug_lines[4].text = text.format(
             self.pipeline.daytime_mgr.formatted_time,
@@ -272,13 +275,15 @@ class Debugger(RPObject):
         if "pssm" in self.pipeline.plugin_mgr.enabled_plugins:
             focus = self.pipeline.plugin_mgr.instances["pssm"].scene_shadow_stage.last_focus
             if focus is not None:
-                text += "{:3.1f} {:3.1f} {:3.1f} r {:3.1f}".format(focus[0].x, focus[0].y, focus[0].z, focus[1])
+                text += "{:3.1f} {:3.1f} {:3.1f} r {:3.1f}".format(
+                    focus[0].x, focus[0].y, focus[0].z, focus[1])
             else:
                 text += "none"
         else:
             text += "inactive"
 
-        text += "  |  H {:3.1f} P {:3.1f} R {:3.1f}  |   {:4d} x {:4d} pixels @ {:3.1f} %   |  {:3d} x {:3d} tiles"
+        text += "   |  H {:3.1f} P {:3.1f} R {:3.1f}  |   {:4d} x {:4d} pixels @ {:3.1f} %"
+        text += "   |  {:3d} x {:3d} tiles"
         self.debug_lines[5].text = text.format(
             Globals.base.camera.get_h(Globals.base.render),
             Globals.base.camera.get_p(Globals.base.render),

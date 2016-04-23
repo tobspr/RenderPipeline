@@ -30,7 +30,7 @@ from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.render_target import RenderTarget
 
-class StuffToMakePylintHappyAgain(object):
+class StuffToMakePylintHappyAgain(object): # pylint: disable=too-few-public-methods
 
     """ This is a small helper class to prevent pylint errors about the Image
     class not defining the enums """

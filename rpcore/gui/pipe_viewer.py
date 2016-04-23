@@ -81,7 +81,7 @@ class PipeViewer(DraggableWindow):
         self._pipe_descriptions.set_x(scroll_value * 2759.0)
         return task.cont
 
-    def _populate_content(self):
+    def _populate_content(self): # pylint: disable=too-many-branches,too-many-statements
         """ Reads the pipes and stages from the stage manager and renders those
         into the window """
         self._created = True

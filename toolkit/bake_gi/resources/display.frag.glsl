@@ -30,7 +30,7 @@ vec3 get_probe_at(ivec3 coord, vec3 nrm) {
     baked += texelFetch(GIDataTexture, ivec2(3, 0) + base_coord, 0).xyz * max(0, dot(nrm, vec3(0, -1, 0)));
     baked += texelFetch(GIDataTexture, ivec2(4, 0) + base_coord, 0).xyz * max(0, dot(nrm, vec3(0, 0, 1)));
     baked += texelFetch(GIDataTexture, ivec2(5, 0) + base_coord, 0).xyz * max(0, dot(nrm, vec3(0, 0, -1)));
-    
+
     return baked;
 }
 

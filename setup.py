@@ -26,12 +26,7 @@ THE SOFTWARE.
 
 # Setup script to install everything required to run the pipeline.
 
-# Disable the warning about the global statement, its fine since this is a simple
-# setup script
-# pylint: disable=W0603
-
-# Disable the warning about relative imports
-# pylint: disable=W0403
+# pylint: skip-file
 
 from __future__ import print_function
 import os
@@ -50,7 +45,7 @@ CURRENT_STEP = 0
 os.chdir(SETUP_DIR)
 sys.path.insert(0, ".")
 
-from rplibs.six.moves import input
+from rplibs.six.moves import input # pylint: disable=import-error
 
 # Load and init colorama, used to color the output
 if sys.version_info.major == 2:
@@ -68,10 +63,14 @@ else:
 def parse_cmd_args():
     """ Parses the command line arguments """
     parser = argparse.ArgumentParser(description="Render Pipeline setup")
-    parser.add_argument("--clean", help="Clean rebuild of the native modules", action="store_true")
-    parser.add_argument("--verbose", help="Output additional debug information", action="store_true")
-    parser.add_argument("--skip-update", help="Skip updating the module builder to avoid overriding changes", action="store_true")
-    parser.add_argument("--skip-native", help="Skip native module compilation", action="store_true")
+    parser.add_argument(
+        "--clean", help="Clean rebuild of the native modules", action="store_true")
+    parser.add_argument(
+        "--verbose", help="Output additional debug information", action="store_true")
+    parser.add_argument(
+        "--skip-update", help="Skip updating the module builder to avoid overriding changes", action="store_true")
+    parser.add_argument(
+        "--skip-native", help="Skip native module compilation", action="store_true")
     return parser.parse_args()
 
 CMD_ARGS = parse_cmd_args()
@@ -256,14 +255,13 @@ def setup():
     print_step("Precomputing clouds ..")
     exec_python_file("rpplugins/clouds/resources/precompute.py")
 
-    ask_download_samples()
+    write_flag("data/install.flag", True)
 
     # -- Further setup code follows here --
 
-    write_flag("data/install.flag", True)
-
     print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))
 
+    ask_download_samples()
 
 if __name__ == "__main__":
     setup()
