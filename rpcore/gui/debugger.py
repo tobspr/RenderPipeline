@@ -180,7 +180,7 @@ class Debugger(RPObject):
         Globals.base.accept("c", self.pipe_viewer.toggle)
         Globals.base.accept("z", self.rm_selector.toggle)
         Globals.base.accept("f5", self.toggle_gui_visible)
-        Globals.base.accept("f6", self.toggle_fps_visible)
+        Globals.base.accept("f6", self.toggle_keybindings_visible)
         Globals.base.accept("r", self.pipeline.reload_shaders)
 
     def toggle_gui_visible(self):
@@ -193,12 +193,12 @@ class Debugger(RPObject):
             self.fullscreen_node.show()
             self.overlay_node.show()
 
-    def toggle_fps_visible(self):
+    def toggle_keybindings_visible(self):
         """ Shows / Hides the FPS graph """
-        if not self.fps_node.is_hidden():
-            self.fps_node.hide()
+        if not self.keybinding_instructions.is_hidden():
+            self.keybinding_instructions.hide()
         else:
-            self.fps_node.show()
+            self.keybinding_instructions.show()
 
     def update_stats(self, task=None):
         """ Updates the stats overlay """

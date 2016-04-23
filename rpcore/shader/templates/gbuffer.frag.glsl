@@ -124,7 +124,8 @@ void main() {
             // Perform normal mapping if enabled
             vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
             vec3 detail_normal = unpack_texture_normal(sampled_normal);
-            material_nrm = apply_normal_map(vOutput.normal, detail_normal, mInput.normalfactor);
+            material_nrm = apply_normal_map(
+                vOutput.normal, detail_normal, mInput.normalfactor);
             }
         #endif
     #endif

@@ -114,21 +114,21 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
 
-    float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 4);
+    float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 32);
     mat2 rotation_mat = make_rotation_mat(rotation);
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float slope_bias = 0.05;
-    const float normal_bias = 0.0005;
-    const float const_bias = 0.005;
+    const float slope_bias = 0.005;
+    const float normal_bias = 0.0001;
+    const float const_bias = 0.0023;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
     const int num_samples = 8;
-    const float filter_size = 2.0 / SHADOW_ATLAS_SIZE;
+    const float filter_size = 4.0 / SHADOW_ATLAS_SIZE;
 
     float accum = 0.0;
 

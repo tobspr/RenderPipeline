@@ -84,7 +84,7 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
                        + (low_frequency_noises.a * 0.125);
 
     // float base_cloud = Remap(low_frequency_noises.r, -(1.0 - low_freq_FBM), 1.0, 0.0, 1.0);
-    float base_cloud = max(0, square(low_frequency_noises.x * low_frequency_noises.y)) ;
+    float base_cloud = max(0, square(low_frequency_noises.x * low_frequency_noises.y) - 0.07) ;
     // base_cloud = pow(base_cloud, 10.0) * 10.0;
 
     // base_cloud *= max(0, low_frequency_noises.w * 1.4 - 0.2);

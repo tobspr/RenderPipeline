@@ -142,3 +142,7 @@ class Sprite(RPObject):
     def show(self):
         """ Shows the image if it was previously hidden """
         self.node.show()
+
+    def is_hidden(self):
+        """ Returns whether the image is hidden """
+        return self.node.is_hidden()

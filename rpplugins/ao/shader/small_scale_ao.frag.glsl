@@ -112,6 +112,6 @@ void main() {
     // Normalize samples
     accum /= max(0.1, range_accum);
     accum = 1 - accum;
-    prev_result *= accum;
+    prev_result *= pow(accum, 3.0);
     result = prev_result;
 }
