@@ -46,6 +46,9 @@ class Plugin(BasePlugin):
             self.stage.required_pipes += ["PSSMSceneSunShadowMapPCF"]
             self.stage.required_inputs += ["PSSMSceneSunShadowMVP"]
 
+        if self.is_plugin_enabled("env_probes"):
+            self.stage.required_pipes += ["PerCellProbes"]
+            self.stage.required_inputs += ["EnvProbes"]
 
     def on_pipeline_created(self):
         pass

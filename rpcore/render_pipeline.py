@@ -278,11 +278,11 @@ class RenderPipeline(RPObject):
             rp_light = PointLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.energy = 100.0 * light_node.color.w
+            rp_light.energy = 20.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.8
+            rp_light.inner_radius = 0.3
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
@@ -292,7 +292,7 @@ class RenderPipeline(RPObject):
             rp_light = SpotLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.radius = light_node.max_distance
-            rp_light.energy = 100.0 * light_node.color.w
+            rp_light.energy = 20.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
@@ -403,7 +403,7 @@ class RenderPipeline(RPObject):
         near and far plane, as well as FoV. The reason for this is, that pandas
         default field of view is very small, and thus we increase it. """
         self._showbase.camLens.set_near_far(0.1, 70000)
-        self._showbase.camLens.set_fov(60)
+        self._showbase.camLens.set_fov(15)
 
     def _compute_render_resolution(self):
         """ Computes the internally used render resolution. This might differ

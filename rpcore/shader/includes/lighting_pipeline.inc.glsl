@@ -119,16 +119,16 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float slope_bias = 0.005;
+    const float slope_bias = 0.001;
     const float normal_bias = 0.0001;
-    const float const_bias = 0.0023;
+    const float const_bias = 0.003;
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 
     vec3 projected = project(mvp, biased_pos);
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
     const int num_samples = 8;
-    const float filter_size = 4.0 / SHADOW_ATLAS_SIZE;
+    const float filter_size = 3.0 / SHADOW_ATLAS_SIZE;
 
     float accum = 0.0;
 
