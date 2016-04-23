@@ -51,7 +51,6 @@ class ForwardStage(RenderStage):
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_depth_attachment(bits=32)
         self.target.prepare_render(self.forward_cam_np)
-
         self.target.set_clear_color(0, 0, 0, 0)
 
         self._pipeline.tag_mgr.register_camera("forward", self.forward_cam)

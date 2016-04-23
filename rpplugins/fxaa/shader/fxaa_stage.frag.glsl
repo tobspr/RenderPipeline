@@ -61,7 +61,7 @@ void main() {
     const float edge_threshold = GET_SETTING(fxaa, edge_threshold);
     const float edge_min_threshold = 0.1 * GET_SETTING(fxaa, min_threshold);
     const float edge_sharpness = 8.0; // power of two, unused in the pc  version
-    const vec4 size_twice = vec4(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
+    vec4 size_twice = vec4(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     vec4 result = FxaaPixelShader(
         texcoord, // pos

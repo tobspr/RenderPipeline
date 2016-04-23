@@ -26,7 +26,6 @@
 
 #version 430
 
-#define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 
@@ -73,11 +72,11 @@ void main() {
         vec3 color_scale = get_sun_color_scale(sun_vector) * TimeOfDay.scattering.sun_color;
         inscattered_light = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz
                             * TimeOfDay.scattering.sun_intensity * color_scale;
-    }
 
-    #if !HAVE_PLUGIN(color_correction)
-        inscattered_light *= 0.1;
-    #endif
+        #if !HAVE_PLUGIN(color_correction)
+            inscattered_light *= 0.1;
+        #endif
+    }
 
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );
 }

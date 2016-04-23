@@ -29,7 +29,6 @@
 // Renders the clouds
 // WORK IN PROGRESS - This shader is unfinished and not cleaned up yet.
 
-#define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 

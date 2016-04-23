@@ -125,9 +125,7 @@ class StageManager(RPObject):
                     if "depth" in pipe_name.lower():
                         tex_format = "R32"
 
-                    pipe_tex = Image.create_2d(
-                        "Prev-" + pipe_name, Globals.resolution.x,
-                        Globals.resolution.y, tex_format)
+                    pipe_tex = Image.create_2d("Prev-" + pipe_name, 0, 0, tex_format)
                     pipe_tex.clear_image()
                     self.previous_pipes[pipe_name] = pipe_tex
                 stage.set_shader_input("Previous_" + pipe_name, self.previous_pipes[pipe_name])
@@ -210,6 +208,7 @@ class StageManager(RPObject):
                 # the current texture
                 self._prev_stage.add_transfer(self.pipes[prev_pipe], prev_tex)
             self._prev_stage.create()
+            self._prev_stage.set_dimensions()
             self.stages.append(self._prev_stage)
 
     def _apply_future_bindings(self):
@@ -233,6 +232,7 @@ class StageManager(RPObject):
 
         for stage in self.stages:
             stage.create()
+            stage.set_dimensions()
 
             # Rely on the methods to print an appropriate error message
             if not self._bind_pipes_to_stage(stage):
@@ -257,6 +257,12 @@ class StageManager(RPObject):
         for stage in self.stages:
             if stage.active:
                 stage.update()
+
+    def handle_window_resize(self):
+        """ Method to get called when the window got resized. Propagates the
+        resize event to all registered stages """
+        for stage in self.stages:
+            stage.handle_window_resize()
 
     def write_autoconfig(self):
         """ Writes the shader auto config, based on the defines specified by the

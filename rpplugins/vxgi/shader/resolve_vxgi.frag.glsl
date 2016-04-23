@@ -26,7 +26,6 @@
 
 #version 430
 
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 
 

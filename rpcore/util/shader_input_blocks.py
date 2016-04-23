@@ -26,7 +26,7 @@ THE SOFTWARE.
 from rplibs.six import iteritems
 
 from panda3d.core import PTAFloat, PTALVecBase3f, PTALMatrix4f, PTALVecBase2f
-from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry
+from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry, PTALVecBase2i
 
 from rpcore.rpobject import RPObject
 
@@ -66,6 +66,7 @@ class GroupedInputBlock(RPObject):
         PTAInt: "int",
         PTAFloat: "float",
         PTALVecBase2f: "vec2",
+        PTALVecBase2i: "ivec2",
         PTALVecBase3f: "vec3",
         PTALVecBase4f: "vec4",
         PTALMatrix3f: "mat3",

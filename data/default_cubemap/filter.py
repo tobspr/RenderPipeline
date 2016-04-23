@@ -81,11 +81,11 @@ class Application(ShowBase):
                 node.set_shader_input("currentFace", i)
                 attr = node.get_attrib(ShaderAttrib)
                 self.graphicsEngine.dispatch_compute(
-                    ( (size + 15) // 16, (size+15) // 16, 1), attr, self.win.get_gsg())
+                    ( (size + 15) // 16, (size+15) // 16, 1), attr, self.win.gsg)
 
             print(" Extracting data ..")
 
-            self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.get_gsg())
+            self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.gsg)
 
             print(" Writing data ..")
             dest_cubemap.write(join(filter_dir, "{}-#.png".format(mipmap)), 0, 0, True, False)

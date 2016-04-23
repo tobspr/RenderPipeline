@@ -31,29 +31,22 @@ from rpcore.gui.sprite import Sprite
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 
-class EmptyLoadingScreen(object):
-
-    """ This loading screen is used when no loading screen is specified in the
-    pipeline """
-
-    def create(self):
-        """ Creates the loading screen """
-
-    def remove(self):
-        """ Removes the loading screen """
-
 class LoadingScreen(RPObject):
 
-    """ This is the default loading screen used by the pipeline"""
+    """ This is the default loading screen used by the pipeline. It provides
+    the ability to display a simple image during loading. The image should be
+    in the format 16:9 and not too small, to avoid being blurred out. """
 
-    def __init__(self, pipeline):
-        """ Inits the loading screen """
+    def __init__(self, pipeline, image_source="/$$rp/data/gui/loading_screen_bg.txo"):
+        """ Inits the loading screen with a given image source. By default,
+        this is the pipeline loading screen, but it can be overridden. """
         RPObject.__init__(self)
         self.pipeline = pipeline
+        self.image_source = image_source
 
     def create(self):
         """ Creates the gui components """
-        screen_w, screen_h = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
+        screen_w, screen_h = Globals.native_resolution.x, Globals.native_resolution.y
         self.fullscreen_node = Globals.base.pixel2dp.attach_new_node("LoadingScreen")
         self.fullscreen_node.set_bin("fixed", 10)
         self.fullscreen_node.set_depth_test(False)
@@ -63,8 +56,8 @@ class LoadingScreen(RPObject):
         scale = max(scale_w, scale_h)
 
         self.fullscreen_bg = Sprite(
-            image="/$$rp/data/gui/loading_screen_bg.txo",
-            x=(screen_w-1920.0*scale)//2, y=(screen_h-1080.0*scale)//2, w=int(1920 * scale),
+            image=self.image_source, x=(screen_w-1920.0*scale)//2,
+            y=(screen_h-1080.0*scale)//2, w=int(1920 * scale),
             h=int(1080 * scale), parent=self.fullscreen_node, near_filter=False)
 
         for _ in range(2):

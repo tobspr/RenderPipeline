@@ -68,13 +68,12 @@ class SMAAStage(RenderStage):
         self.edge_target = self.create_target("EdgeDetection")
         self.edge_target.add_color_attachment()
         self.edge_target.prepare_buffer()
-        self.edge_target.set_clear_color(0)
+        self.edge_target.set_clear_color(0, 0, 0, 0)
 
         # Weight blending
         self.blend_target = self.create_target("BlendWeights")
         self.blend_target.add_color_attachment(alpha=True)
         self.blend_target.prepare_buffer()
-        self.blend_target.set_clear_color(0)
 
         self.blend_target.set_shader_input("EdgeTex", self.edge_target.color_tex)
         self.blend_target.set_shader_input("AreaTex", self.area_tex)

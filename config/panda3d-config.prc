@@ -70,9 +70,6 @@ multisamples 0
 # Don't rescale textures which are no power-of-2
 textures-power-2 none
 
-# This is required, the pipeline does not support resizing (yet, definitely planend)
-win-fixed-size #t
-
 # Set default texture filters
 texture-anisotropic-degree 16
 texture-magfilter linear
@@ -155,7 +152,7 @@ framebuffer-depth #f
 
 # Small performance gain by specifying fixed vertex attribute locations.
 # Might cause issues with some (incorrectly converted/loaded) meshes though
-gl-fixed-vertex-attrib-locations #t
+gl-fixed-vertex-attrib-locations #f
 
 # Disable the fragment shader performance warning
 gl-validate-shaders #f

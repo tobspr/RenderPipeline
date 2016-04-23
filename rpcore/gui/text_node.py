@@ -50,7 +50,6 @@ class TextNode(RPObject):
             parent = Globals.base.aspect2d
 
         self._nodepath = parent.attach_new_node(self._node)
-        self._nodepath.set_scale(pixel_size * 2.0 / float(Globals.base.win.get_y_size()))
         self._nodepath.set_pos(pos.x, 0, pos.y)
 
         font = RPLoader.load_font(font)
@@ -59,6 +58,7 @@ class TextNode(RPObject):
         font.set_texture_margin(int(pixel_size / 4.0 * 2.0))
         font.set_bg(Vec4(0, 0, 0, 0))
         self._node.set_font(font)
+        self.set_pixel_size(pixel_size)
 
     @property
     def text(self):
@@ -69,3 +69,6 @@ class TextNode(RPObject):
     def text(self, text):
         """ Sets the current text """
         self._node.set_text(text)
+
+    def set_pixel_size(self, size):
+        self._nodepath.set_scale(size * 2.0 / float(Globals.native_resolution.y))

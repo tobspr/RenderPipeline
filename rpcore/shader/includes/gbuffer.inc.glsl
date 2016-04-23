@@ -124,10 +124,8 @@ uniform mat4 p3d_ProjectionMatrix;
         return is_skybox(m.position, camera_pos);
     }
 
-    #ifdef USE_MAIN_SCENE_DATA
-        bool is_skybox(Material m) { return is_skybox(m, MainSceneData.camera_pos); }
-        bool is_skybox(vec3 pos) { return is_skybox(pos, MainSceneData.camera_pos); }
-    #endif
+    bool is_skybox(Material m) { return is_skybox(m, MainSceneData.camera_pos); }
+    bool is_skybox(vec3 pos) { return is_skybox(pos, MainSceneData.camera_pos); }
 
     // Returns the depth at a given texcoord
     float get_gbuffer_depth(GBufferData data, vec2 coord) {

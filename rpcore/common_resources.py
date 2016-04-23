@@ -78,6 +78,9 @@ class CommonResources(RPObject):
         self._input_ubo.register_pta("frame_time", "float")
         self._input_ubo.register_pta("current_film_offset", "vec2")
         self._input_ubo.register_pta("frame_index", "int")
+        self._input_ubo.register_pta("screen_size", "ivec2")
+        self._input_ubo.register_pta("native_screen_size", "ivec2")
+        self._input_ubo.register_pta("lc_tile_count", "ivec2")
         self._input_ubo.register_pta("ws_frustum_directions", "mat4")
         self._input_ubo.register_pta("vs_frustum_directions", "mat4")
         self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
@@ -161,7 +164,8 @@ class CommonResources(RPObject):
         view_mat = Globals.render.get_transform(self._showbase.cam).get_mat()
 
         # Compute the view matrix, but with a z-up coordinate system
-        update("view_mat_z_up", view_mat * Mat4.convert_mat(CS_zup_right, CS_yup_right))
+        zup_conversion = Mat4.convert_mat(CS_zup_right, CS_yup_right)
+        update("view_mat_z_up", view_mat * zup_conversion)
 
         # Compute the view matrix without the camera rotation
         view_mat_billboard = Mat4(view_mat)
@@ -215,10 +219,14 @@ class CommonResources(RPObject):
 
         for i, point in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
             result = inv_proj_mat.xform(Vec4(point[0], point[1], 1.0, 1.0))
-            vs_dir = result.xyz.normalized()
+            vs_dir = (zup_conversion.xform(result)).xyz.normalized()
             vs_frustum_directions.set_row(i, Vec4(vs_dir, 1))
             ws_dir = view_mat_inv.xform(Vec4(result.xyz, 0))
             ws_frustum_directions.set_row(i, ws_dir)
 
         update("vs_frustum_directions", vs_frustum_directions)
         update("ws_frustum_directions", ws_frustum_directions)
+
+        update("screen_size", Globals.resolution)
+        update("native_screen_size", Globals.native_resolution)
+        update("lc_tile_count", self._pipeline.light_mgr.num_tiles)

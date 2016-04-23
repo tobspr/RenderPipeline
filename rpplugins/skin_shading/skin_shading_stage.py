@@ -26,14 +26,13 @@ THE SOFTWARE.
 
 from panda3d.core import LVecBase2i
 
+from rplibs.six.moves import range
 from rpcore.render_stage import RenderStage
-from rplibs.six import itervalues
 
 class SkinShadingStage(RenderStage):
 
     """ This is the main stage used by the SkinShadingStage plugin """
 
-    required_inputs = []
     required_pipes = ["ShadedScene", "GBuffer"]
 
     @property
@@ -41,30 +40,26 @@ class SkinShadingStage(RenderStage):
         return {"ShadedScene": self.final_tex}
 
     def create(self):
-        curr_tex = None
-
+        current_tex = None
+        self.blur_targets = []
         for i in range(3):
-
             target_h = self.create_target("BlurH-" + str(i))
             target_h.add_color_attachment(bits=16)
             target_h.prepare_buffer()
             target_h.set_shader_input("direction", LVecBase2i(1, 0))
-            if curr_tex is not None:
-                target_h.set_shader_input("ShadedScene", curr_tex, override=True)
-
-            curr_tex = target_h.color_tex
-
+            if current_tex is not None:
+                target_h.set_shader_input("ShadedScene", current_tex, override=True)
+            current_tex = target_h.color_tex
             target_v = self.create_target("BlurV-" + str(i))
             target_v.add_color_attachment(bits=16)
             target_v.prepare_buffer()
-            target_v.set_shader_input("ShadedScene", curr_tex, override=True)
+            target_v.set_shader_input("ShadedScene", current_tex, override=True)
             target_v.set_shader_input("direction", LVecBase2i(0, 1))
-
-            curr_tex = target_v.color_tex
-
-        self.final_tex = curr_tex
+            current_tex = target_v.color_tex
+            self.blur_targets += [target_h, target_v]
+        self.final_tex = current_tex
 
     def reload_shaders(self):
         blur_shader = self.load_plugin_shader("sssss_blur.frag.glsl")
-        for target in itervalues(self._targets):
+        for target in self.blur_targets:
             target.shader = blur_shader

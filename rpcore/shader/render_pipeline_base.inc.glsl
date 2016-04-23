@@ -49,16 +49,17 @@
 #pragma optionNV (strict on)
 #endif
 
-// Only include the input blocks if required
-#ifdef USE_MAIN_SCENE_DATA
 #pragma include "/$$rptemp/$$main_scene_data.inc.glsl"
-#endif
 
 #ifdef USE_TIME_OF_DAY
 #pragma include "/$$rptemp/$$daytime_config.inc.glsl"
 #endif
 
 // Screen size macro
+#define WINDOW_WIDTH MainSceneData.screen_size.x
+#define WINDOW_HEIGHT MainSceneData.screen_size.y
+#define NATIVE_WINDOW_WIDTH MainSceneData.native_screen_size.x
+#define NATIVE_WINDOW_HEIGHT MainSceneData.native_screen_size.y
 #define SCREEN_SIZE vec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define SCREEN_SIZE_INT ivec2(WINDOW_WIDTH, WINDOW_HEIGHT)
 #define ASPECT_RATIO float(float(WINDOW_HEIGHT) / float(WINDOW_WIDTH))

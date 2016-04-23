@@ -116,8 +116,8 @@ class PipeViewer(DraggableWindow):
                                 frameColor=(r, g, b, 1),
                                 pos=(10, 1, -95 - pipe_idx * pipe_height))
                 w = 160
-                h = Globals.base.win.get_y_size() /\
-                    float(Globals.base.win.get_x_size()) * w
+                h = Globals.native_resolution.y /\
+                    float(Globals.native_resolution.x) * w
                 DirectFrame(parent=node,
                             frameSize=(-pipe_pixel_size, w + pipe_pixel_size,
                                        h / 2 + pipe_pixel_size,

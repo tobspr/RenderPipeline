@@ -75,6 +75,6 @@ class PixelInspector(RPObject):
             mouse = Globals.base.win.get_pointer(0)
             if mouse.get_in_window():
                 pos = mouse.get_x(), 1, -mouse.get_y()
-                rel_mouse_pos = Vec2(mouse.get_x(), Globals.base.win.get_y_size() - mouse.get_y())
+                rel_mouse_pos = Vec2(mouse.get_x(), Globals.native_resolution.y - mouse.get_y())
                 self._node.set_pos(pos)
                 self._zoomer.set_shader_input("mousePos", rel_mouse_pos)

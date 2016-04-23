@@ -53,9 +53,7 @@ class BloomStage(RenderStage):
             self.target_firefly.add_color_attachment(bits=16)
             self.target_firefly.prepare_buffer()
 
-        self.scene_target_img = Image.create_2d(
-            "BloomDownsample", Globals.resolution.x, Globals.resolution.y, "R11G11B10")
-
+        self.scene_target_img = Image.create_2d("BloomDownsample", 0, 0, "RGBA16")
         self.scene_target_img.set_minfilter(SamplerState.FT_linear_mipmap_linear)
         self.scene_target_img.set_magfilter(SamplerState.FT_linear)
         self.scene_target_img.set_wrap_u(SamplerState.WM_clamp)
@@ -102,6 +100,10 @@ class BloomStage(RenderStage):
         self.target_apply.add_color_attachment(bits=16)
         self.target_apply.prepare_buffer()
         self.target_apply.set_shader_input("BloomTex", self.scene_target_img)
+
+    def set_dimensions(self):
+        self.scene_target_img.set_x_size(Globals.resolution.x)
+        self.scene_target_img.set_y_size(Globals.resolution.y)
 
     def reload_shaders(self):
         self.target_extract.shader = self.load_plugin_shader("extract_bright_spots.frag.glsl")

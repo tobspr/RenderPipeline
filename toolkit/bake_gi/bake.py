@@ -223,7 +223,7 @@ class Application(ShowBase):
 
 
         print("Writing out data ..")
-        self.graphicsEngine.extract_texture_data(final_data, self.win.get_gsg())
+        self.graphicsEngine.extract_texture_data(final_data, self.win.gsg)
         final_data.write("raw-bake.png")
 
         print("Writing out configuration")

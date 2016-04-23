@@ -41,7 +41,7 @@ const int num_raydirs = 5;
 // bias we should be fine, except for very small spheres, but those will be
 // out of the culling range then anyays
 const float cull_bias = 1 + 0.01;
-const vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
+vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
 
 CONST_ARRAY vec2 ray_dirs[num_raydirs] = vec2[](
     vec2( 0  ,  0),
@@ -75,23 +75,21 @@ void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int c
     cell_slice = (packed_data >> 20) & 0x3FF;
 }
 
-vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size,
-        vec3 frustum_bl, vec3 frustum_br, vec3 frustum_tl, vec3 frustum_tr) {
+vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size) {
     vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / precompute_size;
     return normalize(mix(
-        mix(frustum_bl, frustum_br, cell_pos.x),
-        mix(frustum_tl, frustum_tr, cell_pos.x),
+        mix(MainSceneData.vs_frustum_directions[0].xyz, MainSceneData.vs_frustum_directions[1].xyz, cell_pos.x),
+        mix(MainSceneData.vs_frustum_directions[2].xyz, MainSceneData.vs_frustum_directions[3].xyz, cell_pos.x),
         cell_pos.y
     ));
 }
 
-CONST_ARRAY vec3[num_raydirs] get_raydirs(int cell_x, int cell_y, vec2 precompute_size, mat4 frustum_corners) {
+CONST_ARRAY vec3[num_raydirs] get_raydirs(int cell_x, int cell_y, vec2 precompute_size) {
     vec3 local_ray_dirs[num_raydirs];
 
     // Generate ray directions
     for (int i = 0; i < num_raydirs; ++i) {
-        local_ray_dirs[i] = transform_raydir(ray_dirs[i], cell_x, cell_y, precompute_size,
-            frustum_corners[0].xyz, frustum_corners[1].xyz, frustum_corners[2].xyz, frustum_corners[3].xyz);
+        local_ray_dirs[i] = transform_raydir(ray_dirs[i], cell_x, cell_y, precompute_size);
     }
 
     return local_ray_dirs;

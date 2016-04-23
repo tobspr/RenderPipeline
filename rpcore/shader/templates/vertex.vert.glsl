@@ -28,7 +28,6 @@
 
 %DEFINES%
 
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
 #pragma include "includes/material.struct.glsl"

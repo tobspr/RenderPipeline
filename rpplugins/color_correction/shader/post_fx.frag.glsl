@@ -26,7 +26,6 @@
 
 #version 420
 
-#define USE_MAIN_SCENE_DATA
 #define USE_TIME_OF_DAY
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"

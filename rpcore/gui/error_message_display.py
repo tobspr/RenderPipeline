@@ -79,7 +79,7 @@ class ErrorMessageDisplay(RPObject):
     def add_text(self, text, color):
         """ Internal method to add a new text to the output """
         Text(
-            x=Globals.base.win.get_x_size() - 30, y=self._num_errors * 23,
+            x=Globals.native_resolution.x - 30, y=self._num_errors * 23,
             align="right", text=text, size=12, parent=self._error_node, color=color)
 
         self._num_errors += 1

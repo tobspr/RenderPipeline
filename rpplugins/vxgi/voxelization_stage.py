@@ -89,7 +89,7 @@ class VoxelizationStage(RenderStage):
 
         # Create the camera for voxelization
         self.voxel_cam = Camera("VoxelizeCam")
-        self.voxel_cam.set_camera_mask(self._pipeline.tag_mgr.get_voxelize_mask())
+        self.voxel_cam.set_camera_mask(self._pipeline.tag_mgr.get_mask("voxelize"))
         self.voxel_cam_lens = OrthographicLens()
         self.voxel_cam_lens.set_film_size(
             -2.0 * self.voxel_world_size, 2.0 * self.voxel_world_size)

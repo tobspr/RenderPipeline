@@ -26,9 +26,8 @@
 
 #version 430
 
-#define USE_MAIN_SCENE_DATA 1
-#define USE_TIME_OF_DAY 1
-#define USE_GBUFFER_EXTENSIONS 1
+#define USE_TIME_OF_DAY
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 

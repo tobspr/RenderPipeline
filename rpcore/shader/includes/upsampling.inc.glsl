@@ -52,6 +52,11 @@ float mitchell_netravali_weights(float x)
   : 0.0;
 }
 
+
+vec4 sample_color(sampler2D tex, vec2 uv) {
+  return saturate(textureLod(tex, uv, 0));
+}
+
 // Based on:
 // http://glslsandbox.com/e#14615.1
 vec4 bicubic_filter(sampler2D tex, vec2 uv)
@@ -65,25 +70,25 @@ vec4 bicubic_filter(sampler2D tex, vec2 uv)
           mitchell_netravali_weights(1.0 - f.x),
           mitchell_netravali_weights(2.0 - f.x));
   vec4 t1 =
-    texture(tex, texel + vec2(-px.x, -px.y)) * weights.x +
-    texture(tex, texel + vec2(0.0, -px.y)) * weights.y +
-    texture(tex, texel + vec2(px.x, -px.y)) * weights.z +
-    texture(tex, texel + vec2(2.0 * px.x, -px.y)) * weights.w;
+    sample_color(tex, texel + vec2(-px.x, -px.y)) * weights.x +
+    sample_color(tex, texel + vec2(0.0, -px.y)) * weights.y +
+    sample_color(tex, texel + vec2(px.x, -px.y)) * weights.z +
+    sample_color(tex, texel + vec2(2.0 * px.x, -px.y)) * weights.w;
   vec4 t2 =
-    texture(tex, texel + vec2(-px.x, 0.0)) * weights.x +
-    texture(tex, texel + vec2(0.0)) * weights.y +
-    texture(tex, texel + vec2(px.x, 0.0)) * weights.z +
-    texture(tex, texel + vec2(2.0 * px.x, 0.0)) * weights.w;
+    sample_color(tex, texel + vec2(-px.x, 0.0)) * weights.x +
+    sample_color(tex, texel + vec2(0.0)) * weights.y +
+    sample_color(tex, texel + vec2(px.x, 0.0)) * weights.z +
+    sample_color(tex, texel + vec2(2.0 * px.x, 0.0)) * weights.w;
   vec4 t3 =
-    texture(tex, texel + vec2(-px.x, px.y)) * weights.x +
-    texture(tex, texel + vec2(0.0, px.y)) * weights.y +
-    texture(tex, texel + vec2(px.x, px.y)) * weights.z +
-    texture(tex, texel + vec2(2.0 * px.x, px.y)) * weights.w;
+    sample_color(tex, texel + vec2(-px.x, px.y)) * weights.x +
+    sample_color(tex, texel + vec2(0.0, px.y)) * weights.y +
+    sample_color(tex, texel + vec2(px.x, px.y)) * weights.z +
+    sample_color(tex, texel + vec2(2.0 * px.x, px.y)) * weights.w;
   vec4 t4 =
-    texture(tex, texel + vec2(-px.x, 2.0 * px.y)) * weights.x +
-    texture(tex, texel + vec2(0.0, 2.0 * px.y)) * weights.y +
-    texture(tex, texel + vec2(px.x, 2.0 * px.y)) * weights.z +
-    texture(tex, texel + vec2(2.0 * px.x, 2.0 * px.y)) * weights.w;
+    sample_color(tex, texel + vec2(-px.x, 2.0 * px.y)) * weights.x +
+    sample_color(tex, texel + vec2(0.0, 2.0 * px.y)) * weights.y +
+    sample_color(tex, texel + vec2(px.x, 2.0 * px.y)) * weights.z +
+    sample_color(tex, texel + vec2(2.0 * px.x, 2.0 * px.y)) * weights.w;
 
   return mitchell_netravali_weights(1.0 + f.y) * t1 +
     mitchell_netravali_weights(f.y) * t2 +
@@ -96,21 +101,22 @@ vec4 bilinear_filter(sampler2D tex, vec2 uv) {
   vec2 pixel_size = 1.0 / textureSize(tex, 0).xy;
   vec4 color = vec4(0);
   float radius = 0.5;
-  color += texture(tex, uv + vec2(-radius,  radius) * pixel_size);
-  color += texture(tex, uv + vec2( radius,  radius) * pixel_size);
-  color += texture(tex, uv + vec2(-radius, -radius) * pixel_size);
-  color += texture(tex, uv + vec2( radius, -radius) * pixel_size);
+  color += sample_color(tex, uv + vec2(-radius,  radius) * pixel_size);
+  color += sample_color(tex, uv + vec2( radius,  radius) * pixel_size);
+  color += sample_color(tex, uv + vec2(-radius, -radius) * pixel_size);
+  color += sample_color(tex, uv + vec2( radius, -radius) * pixel_size);
   return color * 0.25;
 }
 
 // Directional filter with a small sharpen kernel
 vec4 directional_filter(sampler2D tex, vec2 uv) {
   vec2 pixel_size = 1.0 / textureSize(tex, 0).xy;
-  float radius = 0.5;
-  vec4 color_nw = texture(tex, uv + vec2(-radius, -radius) * pixel_size);
-  vec4 color_ne = texture(tex, uv + vec2( radius, -radius) * pixel_size);
-  vec4 color_sw = texture(tex, uv + vec2(-radius,  radius) * pixel_size);
-  vec4 color_se = texture(tex, uv + vec2( radius,  radius) * pixel_size);
+  float radius = 1.0;
+
+  vec4 color_nw = sample_color(tex, uv + vec2(-radius, -radius) * pixel_size);
+  vec4 color_ne = sample_color(tex, uv + vec2( radius, -radius) * pixel_size);
+  vec4 color_sw = sample_color(tex, uv + vec2(-radius,  radius) * pixel_size);
+  vec4 color_se = sample_color(tex, uv + vec2( radius,  radius) * pixel_size);
 
   vec4 color = (color_nw + color_ne + color_sw + color_se) * 0.25;
 
@@ -130,9 +136,9 @@ vec4 directional_filter(sampler2D tex, vec2 uv) {
   uv_offs = 1 - ((1 - uv_offs) * (1 - uv_offs));
 
   vec2 uv_offset = uv + direction_inv * pixel_size * abs(uv_offs) * -0.125;
-  vec4 color_n = texture(tex, uv_offset - direction * 0.125 * pixel_size);
-  vec4 color_p = texture(tex, uv_offset + direction * 0.125 * pixel_size);
+  vec4 color_n = sample_color(tex, uv_offset - direction * 0.125 * pixel_size);
+  vec4 color_p = sample_color(tex, uv_offset + direction * 0.125 * pixel_size);
 
-  const float sharpness = 1.0;
+  const float sharpness = 0.9;
   return (color_n + color_p) * ((sharpness + 1.0) * 0.5) - color * sharpness;
 }

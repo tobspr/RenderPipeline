@@ -41,7 +41,7 @@ float get_log_luminance(vec3 color) {
 void main() {
     ivec2 coord_screen = ivec2(gl_FragCoord.xy) * 4;
     vec2 local_coord = (coord_screen + 1.0) / SCREEN_SIZE;
-    const vec2 pixel_offset = 2.0 / SCREEN_SIZE;
+    vec2 pixel_offset = 2.0 / SCREEN_SIZE;
 
     // Weight luminance based on distance to the borders - this is because
     // pixels in the center of the screen are more visually important

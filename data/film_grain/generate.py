@@ -60,9 +60,9 @@ class Application(ShowBase):
         node.set_shader_input("DestTex", dest_tex)
         attr = node.get_attrib(ShaderAttrib)
         self.graphicsEngine.dispatch_compute(
-            (2048 // 16, 2048 // 16, 1), attr, self.win.get_gsg())
+            (2048 // 16, 2048 // 16, 1), attr, self.win.gsg)
 
-        base.graphicsEngine.extract_texture_data(dest_tex, base.win.get_gsg())
+        base.graphicsEngine.extract_texture_data(dest_tex, base.win.gsg)
 
         # Convert to single channel
         img = PNMImage(2048, 2048, 1, 255)

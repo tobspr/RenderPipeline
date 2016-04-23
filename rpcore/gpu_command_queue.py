@@ -105,7 +105,6 @@ class GPUCommandQueue(RPObject):
         command_buffer_size = self._commands_per_frame * 32
         self.debug("Allocating command buffer of size", command_buffer_size)
         self._data_texture = Image.create_buffer("CommandQueue", command_buffer_size, "R32")
-        self._data_texture.set_clear_color(0)
 
     def _create_command_target(self):
         """ Creates the target which processes the commands """

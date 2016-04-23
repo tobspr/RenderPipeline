@@ -154,7 +154,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
 
         attr = nodepath.get_attrib(ShaderAttrib)
         Globals.base.graphicsEngine.dispatch_compute(
-            (ntx, nty, ntz), attr, Globals.base.win.get_gsg())
+            (ntx, nty, ntz), attr, Globals.base.win.gsg)
 
     def compute(self):
         """ Precomputes the scattering """

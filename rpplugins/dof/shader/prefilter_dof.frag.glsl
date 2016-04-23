@@ -27,7 +27,6 @@
 #version 400
 
 #define USE_GBUFFER_EXTENSIONS
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"

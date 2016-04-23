@@ -48,7 +48,7 @@ class SharpenStage(RenderStage):
             return {"ShadedScene": self.target.color_tex}
 
     def create(self):
-        native_size = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
+        native_size = Globals.native_resolution.x, Globals.native_resolution.y
         self.target = self.create_target("Sharpen")
         self.target.size = native_size
         self.target.add_color_attachment(bits=16)
@@ -60,6 +60,11 @@ class SharpenStage(RenderStage):
             self.target2.add_color_attachment(bits=16)
             self.target2.prepare_buffer()
             self.target2.set_shader_input("ShadedScene", self.target.color_tex)
+
+    def set_dimensions(self):
+        self.target.size = Globals.native_resolution.x, Globals.native_resolution.y
+        if self.sharpen_twice:
+            self.target2.size = Globals.native_resolution.x, Globals.native_resolution.y
 
     def reload_shaders(self):
         sharpen_shader = self.load_plugin_shader("sharpen.frag.glsl")

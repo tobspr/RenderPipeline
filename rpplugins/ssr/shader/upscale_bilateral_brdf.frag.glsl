@@ -28,7 +28,6 @@
 
 #pragma optionNV (unroll all)
 
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"

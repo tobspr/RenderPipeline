@@ -43,3 +43,4 @@ class Globals(object):
         Globals.clock = showbase.taskMgr.globalClock
         Globals.font = None
         Globals.resolution = None
+        Globals.native_resolution = None

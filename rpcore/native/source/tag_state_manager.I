@@ -75,7 +75,7 @@ inline void TagStateManager::apply_state(const string& state, NodePath np, Shade
  * @brief Returns the render mask for the given state
  * @details This returns the mask of a given render pass, which can be used
  *   to either show or hide objects from this pass.
- * 
+ *
  * @param container_name Name of the render-pass
  * @return Bit mask of the render pass
  */

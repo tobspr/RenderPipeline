@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from rplibs.six import itervalues
+from rplibs.six import itervalues, iteritems
 
 from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
@@ -103,6 +103,17 @@ class RenderStage(RPObject):
         self._targets[name] = RenderTarget(name)
         return self._targets[name]
 
+    def remove_target(self, target):
+        """ Removes a previously registered target. This unregisters the
+        target, as well as removing it from the list of assigned targets. """
+        target.remove()
+        target_key = None
+        for key, value_target in iteritems(self._targets):
+            if target == value_target:
+                target_key = key
+                break
+        del self._targets[target_key]
+
     def _get_shader_handle(self, path, *args):
         """ Returns a handle to a Shader object, containing all sources passed
         as arguments. The path argument will be used to locate shaders if no
@@ -123,7 +134,6 @@ class RenderStage(RPObject):
         # and use the default vertex shader
         if len(args) == 1:
             path_args = ["/$$rp/shader/default_post_process.vert.glsl"] + path_args
-
         return RPLoader.load_shader(*path_args)
 
     def _get_plugin_id(self):
@@ -147,3 +157,15 @@ class RenderStage(RPObject):
         see the load_shader function. """
         shader_path = "rpplugins/" + self._get_plugin_id() + "/shader/{0}"
         return self._get_shader_handle(shader_path, *args)
+
+    def handle_window_resize(self):
+        """ This method gets called when the window gets resized. By default,
+        this just resizes all render targets. """
+        self.set_dimensions()
+        for target in itervalues(self._targets):
+            target.consider_resize()
+
+    def set_dimensions(self):
+        """ This method should set the dimensions on all targets which don't
+        have a relative constraint, and also the size of all images. This
+        is called after initialization, and when the window resized. """

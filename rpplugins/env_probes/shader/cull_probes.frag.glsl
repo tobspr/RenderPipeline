@@ -26,7 +26,6 @@
 
 #version 430
 
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/envprobes.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
@@ -44,7 +43,7 @@ void main() {
     // Find the index of the cell we are about to process
     int idx = 1 + coord.x + coord.y * LC_CULLING_SLICE_WIDTH;
     int num_total_cells = texelFetch(CellListBuffer, 0).x;
-    ivec2 precompute_size = ivec2(LC_TILE_AMOUNT_X, LC_TILE_AMOUNT_Y);
+    ivec2 precompute_size = MainSceneData.lc_tile_count;
 
     // If we found no remaining cell, we are done, so just return and hope for
     // good coherency.
@@ -64,7 +63,7 @@ void main() {
     float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
 
     // Compute sample directions
-    vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size, frustumCorners);
+    vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size);
 
     int storage_offset = idx * MAX_PROBES_PER_CELL;
     int probes_written = 0;

@@ -39,7 +39,7 @@ class UpscaleStage(RenderStage):
         return {"ShadedScene": self._target.color_tex}
 
     def create(self):
-        native_size = Globals.base.win.get_x_size(), Globals.base.win.get_y_size()
+        native_size = Globals.native_resolution.x, Globals.native_resolution.y
         self._target = self.create_target("Upscale")
         self._target.size = native_size
         self._target.add_color_attachment(bits=16)

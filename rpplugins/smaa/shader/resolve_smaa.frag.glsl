@@ -26,7 +26,6 @@
 
 #version 420
 
-#define USE_MAIN_SCENE_DATA
 #pragma include "render_pipeline_base.inc.glsl"
 
 // #define RS_MAX_CLIP_DIST 0.5

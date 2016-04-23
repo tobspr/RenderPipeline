@@ -45,14 +45,9 @@ class UpdatePreviousPipesStage(RenderStage):
 
     def add_transfer(self, from_tex, to_tex):
         """ Adds a new texture which should be copied from "from_tex" to
-        "to_tex". This should be called before the stage gets constructed """
-        if from_tex.get_x_size() != Globals.resolution.x or \
-            from_tex.get_y_size() != Globals.resolution.y:
-            self.error(
-                "Storing of previous frame data which does not have window size"
-                " is not supported yet: " + to_tex.get_name())
-            return
-
+        "to_tex". This should be called before the stage gets constructed.
+        The source texture is expected to have the same size as the render
+        resolution. """
         self._transfers.append((from_tex, to_tex))
 
     def create(self):
@@ -64,6 +59,12 @@ class UpdatePreviousPipesStage(RenderStage):
         for i, (from_tex, to_tex) in enumerate(self._transfers):
             self._target.set_shader_input("SrcTex" + str(i), from_tex)
             self._target.set_shader_input("DestTex" + str(i), to_tex)
+
+    def set_dimensions(self):
+        """ Sets the dimensions on all targets. See RenderTarget::set_dimensions """
+        for from_tex, to_tex in self._transfers:
+            to_tex.set_x_size(Globals.resolution.x)
+            to_tex.set_y_size(Globals.resolution.y)
 
     def reload_shaders(self):
         """ This method augo-generates a shader which copies all textures specified
@@ -100,6 +101,7 @@ class UpdatePreviousPipesStage(RenderStage):
 
         # Load it back again
         self._target.shader = self.load_shader(shader_dest)
+
 
     def get_sampler_type(self, tex, can_write=False): # pylint: disable=W0613
         """ Returns the matching GLSL sampler type for a Texture, or image type

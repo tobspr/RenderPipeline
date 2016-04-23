@@ -61,8 +61,8 @@ class Application(ShowBase):
         node.set_shader(cshader)
         node.set_shader_input("DestTex", voxel_grid)
         attr = node.get_attrib(ShaderAttrib)
-        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.get_gsg())
-        self.graphicsEngine.extract_texture_data(voxel_grid, self.win.get_gsg())
+        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.gsg)
+        self.graphicsEngine.extract_texture_data(voxel_grid, self.win.gsg)
 
         print("Writing data ..")
         # voxel_grid.write(Filename.from_os_specific(join("result/", "#.png")), 0, 0, True, False)
@@ -77,8 +77,8 @@ class Application(ShowBase):
         node.set_shader(cshader)
         node.set_shader_input("DestTex", voxel_grid)
         attr = node.get_attrib(ShaderAttrib)
-        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.get_gsg())
-        self.graphicsEngine.extract_texture_data(voxel_grid, self.win.get_gsg())
+        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.gsg)
+        self.graphicsEngine.extract_texture_data(voxel_grid, self.win.gsg)
 
         print("Writing data ..")
         # voxel_grid.write(Filename.from_os_specific(join("result2/", "#.png")), 0, 0, True, False)

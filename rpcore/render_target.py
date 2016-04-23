@@ -58,6 +58,7 @@ class RenderTarget(RPObject):
     NUM_ALLOCATED_BUFFERS = 0
     USE_R11G11B10 = True
     REGISTERED_TARGETS = []
+    CURRENT_SORT = -300
 
     def __init__(self, name="target"):
         RPObject.__init__(self, name)
@@ -66,11 +67,13 @@ class RenderTarget(RPObject):
         self._aux_bits = 8
         self._aux_count = 0
         self._depth_bits = 0
-        self._size = LVecBase2i(-1, -1)
+        self._size = LVecBase2i(-1)
+        self._size_constraint = LVecBase2i(-1)
         self._source_window = Globals.base.win
         self._source_region = None
         self._active = False
         self._internal_buffer = None
+        self.sort = None
 
         # Public attributes
         self.engine = Globals.base.graphicsEngine
@@ -118,7 +121,7 @@ class RenderTarget(RPObject):
         of -4 produces a quarter resolution target, a value of -2 a half
         resolution target, and a value of -1 a full resolution target
         (the default). """
-        self._size = LVecBase2i(*args)
+        self._size_constraint = LVecBase2i(*args)
 
     @property
     def active(self):
@@ -227,14 +230,14 @@ class RenderTarget(RPObject):
         self._source_region = PostProcessRegion.make(self._source_window)
         self._source_region.set_sort(5)
 
-    def cleanup(self):
+    def remove(self):
         """ Deletes this buffer, restoring the previous state """
         self._internal_buffer.clear_render_textures()
         self.engine.remove_window(self._internal_buffer)
         self._active = False
-
         for target in itervalues(self._targets):
             target.release_all()
+        RenderTarget.REGISTERED_TARGETS.remove(self)
 
     def set_clear_color(self, *args):
         """ Sets the  clear color """
@@ -248,17 +251,7 @@ class RenderTarget(RPObject):
 
     def _create_buffer(self):
         """ Internal method to create the buffer object """
-        if self._source_window == Globals.base.win:
-            w, h = Globals.resolution.x, Globals.resolution.y
-        else:
-            w, h = self._source_window.get_x_size(), self._source_window.get_y_size()
-
-        if self._size.x < 0:
-            self._size.x = (w - self._size.x - 1) // (-self._size.x)
-
-        if self._size.y < 0:
-            self._size.y = (h - self._size.y - 1) // (-self._size.y)
-
+        self._compute_size_from_constraint()
         if not self._create():
             self.error("Failed to create buffer!")
             return False
@@ -268,6 +261,15 @@ class RenderTarget(RPObject):
 
             if max(self._color_bits) == 0:
                 self._source_region.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.M_none), 1000)
+
+    def _compute_size_from_constraint(self):
+        """ Computes the actual size in pixels from the targets size constraint """
+        w, h = Globals.resolution.x, Globals.resolution.y
+        self._size = LVecBase2i(self._size_constraint)
+        if self._size_constraint.x < 0:
+            self._size.x = (w - self._size_constraint.x - 1) // (-self._size_constraint.x)
+        if self._size_constraint.y < 0:
+            self._size.y = (h - self._size_constraint.y - 1) // (-self._size_constraint.y)
 
     def _setup_textures(self):
         """ Prepares all bound textures """
@@ -335,8 +337,8 @@ class RenderTarget(RPObject):
 
         self._internal_buffer = self.engine.make_output(
             self._source_window.get_pipe(), self.debug_name, 1,
-            buffer_props, window_props, GraphicsPipe.BF_refuse_window,
-            self._source_window.get_gsg(), self._source_window)
+            buffer_props, window_props, GraphicsPipe.BF_refuse_window | GraphicsPipe.BF_resizeable,
+            self._source_window.gsg, self._source_window)
 
         if not self._internal_buffer:
             self.error("Failed to create buffer")
@@ -363,9 +365,12 @@ class RenderTarget(RPObject):
             self._internal_buffer.add_render_texture(
                 self.aux_tex[i], GraphicsOutput.RTM_bind_or_copy, target_mode)
 
-        sort = -300 + RenderTarget.NUM_ALLOCATED_BUFFERS * 10
+        if not self.sort:
+            RenderTarget.CURRENT_SORT += 20
+            self.sort = RenderTarget.CURRENT_SORT
+
         RenderTarget.NUM_ALLOCATED_BUFFERS += 1
-        self._internal_buffer.set_sort(sort)
+        self._internal_buffer.set_sort(self.sort)
         self._internal_buffer.disable_clears()
         self._internal_buffer.get_display_region(0).disable_clears()
         self._internal_buffer.get_overlay_display_region().disable_clears()
@@ -373,3 +378,13 @@ class RenderTarget(RPObject):
 
         RenderTarget.REGISTERED_TARGETS.append(self)
         return True
+
+    def consider_resize(self):
+        """ Checks if the target has to get resized, and if this is the case,
+        performs the resize. This should be called when the window resolution
+        changed. """
+        current_size = LVecBase2i(self._size)
+        self._compute_size_from_constraint()
+        if current_size != self._size:
+            if self._internal_buffer:
+                self._internal_buffer.set_size(self._size.x, self._size.y)

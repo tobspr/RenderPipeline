@@ -149,7 +149,7 @@ class BufferViewer(DraggableWindow):
 
         # Collect texture stages
         self._stages = []
-        for entry in self.entries:
+        for entry in sorted(self.entries, key=lambda entry: entry.sort):
             if isinstance(entry, Texture):
                 if self._display_images:
                     self._stages.append(entry)
@@ -179,7 +179,7 @@ class BufferViewer(DraggableWindow):
 
         self._remove_components()
         entries_per_row = 6
-        aspect = Globals.base.win.get_y_size() / Globals.base.win.get_x_size()
+        aspect = Globals.native_resolution.y / Globals.native_resolution.x
         entry_width = 235
         entry_height = (entry_width - 20) * aspect + 55
 
@@ -201,6 +201,8 @@ class BufferViewer(DraggableWindow):
             node.set_pos(10 + xoffs * (entry_width - 14), 1, yoffs * (entry_height - 14 + 10))
 
             r, g, b = 0.2, 0.2, 0.2
+            if isinstance(stage_tex, Image):
+                r, g, b = 0.2, 0.2, 0.4
 
             stage_name = stage_name.replace("render_pipeline_internal:", "")
             parts = stage_name.split(":")

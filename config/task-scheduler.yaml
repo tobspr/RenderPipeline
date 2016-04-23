@@ -1,52 +1,33 @@
 
 # This file controls which tasks are allowed to run each frame.
-# Tasks should be uniformly distributed, based on what time they estimate to perform
-
-# The complexity is a percentage compared to a full G-Buffer pass. For example,
-# if rendering the gbuffer would take 5 ms, then an complexity of 0.1 means
-# the pass will take approximately 5 * 0.1 = 0.5 ms.
-# Notice this is an approximation only!
+# Usually you do not have to edit this file, except when developing plugins.
 
 frame_cycles: !!omap
 
   - frame1:
-    # First frame - cull the environment probes, and also select which we want
-    # to update next. Also already update the scene shadows arround the
-    # probe to make sure it gets updated accordingly
     - envprobes_select_and_cull
     - pssm_scene_shadows
 
   - frame2:
-    # Second frame - render the first face of the envmap, and also update
-    # the distant shadow map.
     - envprobes_capture_envmap_face0
     - pssm_distant_shadows
 
   - frame3:
-    # Third frame - render the second face of the envmap, and convert the
-    # previously rendered distant shadow map to an exponential shadow map.
     - envprobes_capture_envmap_face1
     - pssm_convert_distant_to_esm
 
   - frame4:
-    # Fourth frame - render the third face of the envmap, and blur the distant
-    # shadow map verticlly
     - envprobes_capture_envmap_face2
     - pssm_blur_distant_vert
 
   - frame5:
-    # Fifth frame - render the fourth face of the envmap, and blur the distant
-    # shadow map horizontally
     - pssm_blur_distant_horiz
     - envprobes_capture_envmap_face3
     - envprobes_capture_envmap_face4
 
   - frame6:
-    # Sixth frame - render the fift face of the envmap, and blur the distant
-    # shadow map horizontally
     - envprobes_capture_envmap_face5
     - scattering_update_envmap
 
   - frame7:
-    # Seventh frame - just filter the envmap
     - envprobes_filter_and_store_envmap

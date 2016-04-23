@@ -51,19 +51,20 @@ class CullProbesStage(RenderStage):
         return {"MAX_PROBES_PER_CELL": self.max_probes_per_cell}
 
     def create(self):
-        max_cells = self._pipeline.light_mgr.total_tiles
-
-        self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self.target = self.create_target("CullProbes")
         # TODO: Use no oversized triangle in this stage
-        self.target.size = self.slice_width, self.num_rows
+        self.target = self.create_target("CullProbes")
+        self.target.size = 0, 0
         self.target.prepare_buffer()
 
-        self.per_cell_probes = Image.create_buffer(
-            "PerCellProbes", max_cells * self.max_probes_per_cell, "R32I")
-        self.per_cell_probes.set_clear_color(0)
+        self.per_cell_probes = Image.create_buffer("PerCellProbes", 0, "R32I")
         self.per_cell_probes.clear_image()
         self.target.set_shader_input("PerCellProbes", self.per_cell_probes)
+
+    def set_dimensions(self):
+        max_cells = self._pipeline.light_mgr.total_tiles
+        num_rows = int(math.ceil(max_cells / float(self.slice_width)))
+        self.per_cell_probes.set_x_size(max_cells * self.max_probes_per_cell)
+        self.target.size = self.slice_width, num_rows
 
     def reload_shaders(self):
         self.target.shader = self.load_plugin_shader(

@@ -37,33 +37,39 @@ class CollectUsedCellsStage(RenderStage):
     @property
     def produced_pipes(self):
         return {
-            "CellListBuffer": self._cell_list_buffer,
-            "CellIndices": self._cell_index_buffer,
+            "CellListBuffer": self.cell_list_buffer,
+            "CellIndices": self.cell_index_buffer,
         }
 
     def create(self):
-        tile_amount = self._pipeline.light_mgr.num_tiles
-
         self.target = self.create_target("CollectUsedCells")
-        self.target.size = tile_amount.x, tile_amount.y
+        self.target.size = 0, 0
         self.target.prepare_buffer()
 
+        self.cell_list_buffer = Image.create_buffer("CellList", 0, "R32I")
+        self.cell_index_buffer = Image.create_2d_array("CellIndices", 0, 0, 0, "R32I")
+
+        self.target.set_shader_input("CellListBuffer", self.cell_list_buffer)
+        self.target.set_shader_input("CellListIndices", self.cell_index_buffer)
+
+    def update(self):
+        self.cell_list_buffer.clear_image()
+        self.cell_index_buffer.clear_image()
+
+    def set_dimensions(self):
+        tile_amount = self._pipeline.light_mgr.num_tiles
         num_slices = self._pipeline.settings["lighting.culling_grid_slices"]
         max_cells = tile_amount.x * tile_amount.y * num_slices
 
-        self.debug("Allocating", max_cells, "cells")
-        self._cell_list_buffer = Image.create_buffer("CellList", 1 + max_cells, "R32I")
-        self._cell_list_buffer.set_clear_color(0)
-        self._cell_index_buffer = Image.create_2d_array(
-            "CellIndices", tile_amount.x, tile_amount.y, num_slices, "R32I")
-        self._cell_index_buffer.set_clear_color(0)
+        self.cell_list_buffer.set_x_size(1 + max_cells)
+        self.cell_index_buffer.set_x_size(tile_amount.x)
+        self.cell_index_buffer.set_y_size(tile_amount.y)
+        self.cell_index_buffer.set_z_size(num_slices)
 
-        self.target.set_shader_input("CellListBuffer", self._cell_list_buffer)
-        self.target.set_shader_input("CellListIndices", self._cell_index_buffer)
+        self.cell_list_buffer.clear_image()
+        self.cell_index_buffer.clear_image()
 
-    def update(self):
-        self._cell_list_buffer.clear_image()
-        self._cell_index_buffer.clear_image()
+        self.target.size = tile_amount.x, tile_amount.y
 
     def reload_shaders(self):
         self.target.shader = self.load_shader("collect_used_cells.frag.glsl")

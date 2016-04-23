@@ -42,8 +42,8 @@ class Effect(RPObject):
 
     _DEFAULT_OPTIONS = {
         "render_gbuffer": True,
-        "render_shadows": True,
-        "render_voxel": True,
+        "render_shadow": True,
+        "render_voxelize": True,
         "render_envmap": True,
         "render_forward": False,
         "alpha_testing": True,
@@ -51,7 +51,7 @@ class Effect(RPObject):
         "parallax_mapping": False,
     }
 
-    _PASSES = ("gbuffer", "shadows", "voxelize", "envmap", "forward")
+    _PASSES = ("gbuffer", "shadow", "voxelize", "envmap", "forward")
     _GLOBAL_CACHE = {}
     _EFFECT_ID = 0
 

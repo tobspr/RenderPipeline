@@ -57,10 +57,10 @@ np.set_shader(cshader)
 np.set_shader_input("SourceTex", cubemap)
 np.set_shader_input("DestTex", dest_tex)
 attr = np.get_attrib(ShaderAttrib)
-base.graphicsEngine.dispatch_compute((w // 16, h // 16, 1), attr, base.win.get_gsg())
+base.graphicsEngine.dispatch_compute((w // 16, h // 16, 1), attr, base.win.gsg)
 
 print("Extracting data ..")
-base.graphicsEngine.extract_texture_data(dest_tex, base.win.get_gsg())
+base.graphicsEngine.extract_texture_data(dest_tex, base.win.gsg)
 
 print("Writing texture ..")
 dest_tex.write("envmap.png")

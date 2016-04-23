@@ -24,14 +24,14 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division, print_function
+from __future__ import division
 
 import sys
 import time
 import math
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, MaterialAttrib
+from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
@@ -40,19 +40,19 @@ from rplibs.six.moves import range
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
+from rpcore.rpobject import RPObject
 from rpcore.common_resources import CommonResources
 from rpcore.native import TagStateManager, PointLight, SpotLight
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
-from rpcore.util.task_scheduler import TaskScheduler
 
-from rpcore.rpobject import RPObject
+from rpcore.util.task_scheduler import TaskScheduler
 from rpcore.util.network_communication import NetworkCommunication
 from rpcore.util.ies_profile_loader import IESProfileLoader
 
 from rpcore.gui.debugger import Debugger
-from rpcore.gui.loading_screen import LoadingScreen, EmptyLoadingScreen
+from rpcore.gui.loading_screen import LoadingScreen
 
 from rpcore.mount_manager import MountManager
 from rpcore.stage_manager import StageManager
@@ -68,23 +68,16 @@ from rpcore.stages.upscale_stage import UpscaleStage
 
 class RenderPipeline(RPObject):
 
-    """ This is the main pipeline logic, it combines all components of the
-    pipeline to form a working system. It does not do much work itself, but
-    instead setups all the managers and systems to be able to do their work.
+    """ This is the main render pipeline class, it combines all components of
+    the pipeline to form a working system. It does not do much work itself, but
+    instead setups all the managers and systems to be able to do their work. """
 
-    It also derives from RPExtensions to provide some useful functions like
-    creating a default skybox or loading effect files. """
-
-    def __init__(self, outdated_parameter=None):
+    def __init__(self):
         """ Creates a new pipeline with a given showbase instance. This should
         be done before intializing the ShowBase, the pipeline will take care of
-        that. """
+        that. If the showbase has been initialized before, have a look at
+        the alternative initialization of the render pipeline (the first sample)."""
         RPObject.__init__(self)
-        if outdated_parameter is not None:
-            self.fatal("The render pipeline no longer takes the ShowBase argument "
-                       "as constructor parameter. Please have a look at the "
-                       "00-Loading the pipeline sample to see how to initialize "
-                       "the pipeline properly.")
         self.debug("Using Python {}.{} with architecture {}".format(
             sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
         self.debug("Using Panda3D {} built on {}".format(
@@ -93,17 +86,15 @@ class RenderPipeline(RPObject):
             self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
         else:
             self.debug("Using custom Panda3D build")
-        self.mount_mgr = MountManager(self)
-        self.settings = {}
-        self._pre_showbase_initialized = False
-        self._first_frame = None
-        self.set_default_loading_screen()
-
-        # Check for the right Panda3D version
         if not self._check_version():
             self.fatal("Your Panda3D version is outdated! Please update to the newest \n"
                        "git version! Checkout https://github.com/panda3d/panda3d to "
                        "compile panda from source, or get a recent buildbot build.")
+        self.mount_mgr = MountManager(self)
+        self.settings = {}
+        self._pre_showbase_initialized = False
+        self._first_frame = None
+        self.set_loading_screen_image("/$$rp/data/gui/loading_screen_bg.txo")
 
     def load_settings(self, path):
         """ Loads the pipeline configuration from a given filename. Usually
@@ -112,32 +103,33 @@ class RenderPipeline(RPObject):
         self.settings = load_yaml_file_flat(path)
 
     def reload_shaders(self):
-        """ Reloads all shaders """
+        """ Reloads all shaders. This will reload the shaders of all plugins,
+        as well as the pipelines internally used shaders. Because of the
+        complexity of some shaders, this operation take might take several
+        seconds. Also notice that all applied effects will be lost, and instead
+        the default effect will be set on all elements again. Due to this fact,
+        this method is primarly useful for fast iterations when developing new
+        shaders. """
         if self.settings["pipeline.display_debugger"]:
             self.debug("Reloading shaders ..")
-            self._debugger.get_error_msg_handler().clear_messages()
-            self._debugger.set_reload_hint_visible(True)
+            self.debugger.error_msg_handler.clear_messages()
+            self.debugger.set_reload_hint_visible(True)
             self._showbase.graphicsEngine.render_frame()
             self._showbase.graphicsEngine.render_frame()
-
         self.tag_mgr.cleanup_states()
         self.stage_mgr.reload_shaders()
         self.light_mgr.reload_shaders()
-
-        # Set the default effect on render and trigger the reload hook
         self._set_default_effect()
         self.plugin_mgr.trigger_hook("shader_reload")
-
         if self.settings["pipeline.display_debugger"]:
-            self._debugger.set_reload_hint_visible(False)
+            self.debugger.set_reload_hint_visible(False)
 
     def pre_showbase_init(self):
         """ Setups all required pipeline settings and configuration which have
         to be set before the showbase is setup. This is called by create(),
         in case the showbase was not initialized, however you can (and have to)
         call it manually before you init your custom showbase instance.
-        See the 00-Loading the pipeline sample for more information."""
-
+        See the 00-Loading the pipeline sample for more information. """
         if not self.mount_mgr.is_mounted:
             self.debug("Mount manager was not mounted, mounting now ...")
             self.mount_mgr.mount()
@@ -146,14 +138,10 @@ class RenderPipeline(RPObject):
             self.debug("No settings loaded, loading from default location")
             self.load_settings("/$$rpconfig/pipeline.yaml")
 
-        # Check if the pipeline was properly installed, before including anything else
         if not isfile("/$$rp/data/install.flag"):
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
-        # Load the default prc config
         load_prc_file("/$$rpconfig/panda3d-config.prc")
-
-        # Set the initialization flag
         self._pre_showbase_initialized = True
 
     def create(self, base=None):
@@ -169,246 +157,45 @@ class RenderPipeline(RPObject):
 
         start_time = time.time()
         self._init_showbase(base)
-        self._init_globals()
 
-        # Create the loading screen
-        self._loading_screen.create()
+        if not self._showbase.win.gsg.supports_compute_shaders:
+            self.fatal("Sorry, your GPU does not support compute shaders! Make sure\n"
+                       "you have the latest drivers. If you already have, your gpu might\n"
+                       "be too old, or you might be using the open source drivers on linux.")
+
+        self._init_globals()
+        self.loading_screen.create()
         self._adjust_camera_settings()
         self._create_managers()
-
-        # Load plugins and daytime settings
         self.plugin_mgr.load()
         self.daytime_mgr.load_settings()
-        self._com_resources.write_config()
-
-        # Init the onscreen debugger
+        self.common_resources.write_config()
         self._init_debugger()
 
-        # Let the plugins setup their stages
         self.plugin_mgr.trigger_hook("stage_setup")
 
         self._create_common_defines()
-        self._setup_managers()
+        self._initialize_managers()
         self._create_default_skybox()
 
         self.plugin_mgr.trigger_hook("pipeline_created")
 
-        # Hide the loading screen
-        self._loading_screen.remove()
-
-        # Start listening for updates
+        self.loading_screen.remove()
         self._listener = NetworkCommunication(self)
         self._set_default_effect()
 
-        # Measure how long it took to initialize everything
+        # Measure how long it took to initialize everything, and also store
+        # when we finished, so we can measure how long it took to render the
+        # first frame (where the shaders are actually compiled)
         init_duration = (time.time() - start_time)
         self.debug("Finished initialization in {:3.3f} s".format(init_duration))
-
         self._first_frame = time.clock()
 
-    def _create_managers(self):
-        """ Internal method to create all managers and instances"""
-        self.task_scheduler = TaskScheduler(self)
-        self.tag_mgr = TagStateManager(Globals.base.cam)
-        self.plugin_mgr = PluginManager(self)
-        self.stage_mgr = StageManager(self)
-        self.light_mgr = LightManager(self)
-        self.daytime_mgr = DayTimeManager(self)
-        self.ies_loader = IESProfileLoader(self)
-
-        # Load commonly used resources
-        self._com_resources = CommonResources(self)
-        self._init_common_stages()
-
-    def _setup_managers(self):
-        """ Internal method to setup all managers """
-        self.stage_mgr.setup()
-        self.stage_mgr.reload_shaders()
-        self.light_mgr.reload_shaders()
-        self._init_bindings()
-        self.light_mgr.init_shadows()
-
-    def _init_debugger(self):
-        """ Internal method to initialize the GUI-based debugger """
-        if self.settings["pipeline.display_debugger"]:
-            self._debugger = Debugger(self)
-        else:
-            # Use an empty onscreen debugger in case the debugger is not
-            # enabled, which defines all member functions as empty lambdas
-            class EmptyDebugger(object):
-                def __getattr__(self, *args, **kwargs):
-                    return lambda *args, **kwargs: None
-            self._debugger = EmptyDebugger()
-            del EmptyDebugger
-
-    def _init_globals(self):
-        """ Inits all global bindings """
-        Globals.load(self._showbase)
-        w, h = self._showbase.win.get_x_size(), self._showbase.win.get_y_size()
-
-        scale_factor = self.settings["pipeline.resolution_scale"]
-        w = int(float(w) * scale_factor)
-        h = int(float(h) * scale_factor)
-
-        # Make sure the resolution is a multiple of 4
-        w = w - w % 4
-        h = h - h % 4
-
-        self.debug("Render resolution is", w, "x", h)
-        Globals.resolution = LVecBase2i(w, h)
-
-        # Connect the render target output function to the debug object
-        RenderTarget.RT_OUTPUT_FUNC = lambda *args: RPObject.global_warn(
-            "RenderTarget", *args[1:])
-
-        RenderTarget.USE_R11G11B10 = self.settings["pipeline.use_r11_g11_b10"]
-
-    def _init_showbase(self, base):
-        """ Inits the the given showbase object """
-
-        # Construct the showbase and init global variables
-        if base:
-            # Check if we have to init the showbase
-            if not hasattr(base, "render"):
-                self.pre_showbase_init()
-                ShowBase.__init__(base)
-            else:
-                if not self._pre_showbase_initialized:
-                    self.fatal("You constructed your own ShowBase object but you "
-                               "did not call pre_show_base_init() on the render "
-                               "pipeline object before! Checkout the 00-Loading the "
-                               "pipeline sample to see how to initialize the RP.")
-            self._showbase = base
-        else:
-            self.pre_showbase_init()
-            self._showbase = ShowBase()
-
-    def _init_bindings(self):
-        """ Inits the tasks and keybindings """
-
-        # Add a hotkey to reload the shaders, but only if the debugger is enabled
-        if self.settings["pipeline.display_debugger"]:
-            self._showbase.accept("r", self.reload_shaders)
-
-        self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
-        self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
-        self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=15)
-        self._showbase.addTask(self._update_inputs_and_stages, "RP_UpdateInputsAndStages", sort=18)
-        self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
-
-    def _clear_state_cache(self, task=None):
-        """ Task which repeatedly clears the state cache to avoid storing
-        unused states. """
-        task.delayTime = 2.0
-        TransformState.clear_cache()
-        RenderState.clear_cache()
-        return task.again
-
-    def _manager_update_task(self, task):
-        """ Update task which gets called before the rendering """
-        self.task_scheduler.step()
-        self._listener.update()
-        self._debugger.update()
-        self.daytime_mgr.update()
-        self.light_mgr.update()
-        return task.cont
-
-    def _update_inputs_and_stages(self, task):
-        """ Updates teh commonly used inputs """
-        self._com_resources.update()
-        self.stage_mgr.update()
-        return task.cont
-
-    def _plugin_pre_render_update(self, task):
-        """ Update task which gets called before the rendering, and updates the
-        plugins. This is a seperate task to split the work, and be able to do
-        better performance analysis """
-        self.plugin_mgr.trigger_hook("pre_render_update")
-        return task.cont
-
-    def _plugin_post_render_update(self, task):
-        """ Update task which gets called after the rendering """
-        self.plugin_mgr.trigger_hook("post_render_update")
-
-        if self._first_frame is not None:
-            duration = time.clock() - self._first_frame
-            self.debug("Took", round(duration, 3), "s until first frame")
-            self._first_frame = None
-
-        return task.cont
-
-    def _create_common_defines(self):
-        """ Creates commonly used defines for the shader auto config """
-        defines = self.stage_mgr.defines
-
-        # 3D viewport size
-        defines["WINDOW_WIDTH"] = Globals.resolution.x
-        defines["WINDOW_HEIGHT"] = Globals.resolution.y
-
-        # Actual window size - might differ for supersampling
-        defines["NATIVE_WINDOW_WIDTH"] = Globals.base.win.get_x_size()
-        defines["NATIVE_WINDOW_HEIGHT"] = Globals.base.win.get_y_size()
-
-        # Pass camera near and far plane
-        defines["CAMERA_NEAR"] = round(Globals.base.camLens.get_near(), 10)
-        defines["CAMERA_FAR"] = round(Globals.base.camLens.get_far(), 10)
-
-        # Work arround buggy nvidia driver, which expects arrays to be const
-        if "NVIDIA 361.43" in self._showbase.win.get_gsg().get_driver_version():
-            defines["CONST_ARRAY"] = "const"
-        else:
-            defines["CONST_ARRAY"] = ""
-
-        # Provide driver vendor as a default
-        vendor = self._showbase.win.get_gsg().get_driver_vendor().lower()
-        if "nvidia" in vendor:
-            defines["IS_NVIDIA"] = 1
-        if "ati" in vendor:
-            defines["IS_AMD"] = 1
-        if "intel" in vendor:
-            defines["IS_INTEL"] = 1
-
-        defines["REFERENCE_MODE"] = self.settings["pipeline.reference_mode"]
-
-        # Only activate this experimental feature if the patch was applied,
-        # since it is a local change in my Panda3D build which is not yet
-        # reviewed by rdb. Once it is in public Panda3D Dev-Builds this will
-        # be the default.
-        if (not isfile("/$$rp/data/panda3d_patches/prev-model-view-matrix.diff") or
-                isfile("D:/__dev__")):
-
-            # You can find the required patch in
-            # data/panda3d_patches/prev-model-view-matrix.diff.
-            # Delete it after you applied it, so the render pipeline knows the
-            # patch is available.
-            # self.warn("Experimental feature activated, no guarantee it works!")
-            # defines["EXPERIMENTAL_PREV_TRANSFORM"] = 1
-            pass
-            
-        self.light_mgr.init_defines()
-        self.plugin_mgr.init_defines()
-
-    def set_loading_screen(self, loading_screen):
-        """ Sets a loading screen to be used while loading the pipeline. When
-        the pipeline gets constructed (and creates the showbase), create()
-        will be called on the object. During the loading progress,
-        progress(msg) will be called. After the loading is finished,
-        remove() will be called. If a custom loading screen is passed, those
-        methods should be implemented. """
-        self._loading_screen = loading_screen
-
-    def set_default_loading_screen(self):
-        """ Tells the pipeline to use the default loading screen. """
-        self._loading_screen = LoadingScreen(self)
-
-    def set_empty_loading_screen(self):
-        """ Tells the pipeline to use no loading screen """
-        self._loading_screen = EmptyLoadingScreen()
-
-    @property
-    def loading_screen(self):
-        """ Returns the current loading screen """
-        return self._loading_screen
+    def set_loading_screen_image(self, image_source):
+        """ Tells the pipeline to use the default loading screen, which consists
+        of a simple loading image. The image source should be a fullscreen
+        16:9 image, and not too small, to avoid being blurred out. """
+        self.loading_screen = LoadingScreen(self, image_source)
 
     def add_light(self, light):
         """ Adds a new light to the rendered lights, check out the LightManager
@@ -419,24 +206,6 @@ class RenderPipeline(RPObject):
         """ Removes a previously attached light, check out the LightManager
         remove_light documentation for further information. """
         self.light_mgr.remove_light(light)
-
-    def _create_default_skybox(self, size=40000):
-        """ Returns the default skybox, with a scale of <size>, and all
-        proper effects and shaders already applied. The skybox is already
-        parented to render as well. """
-        skybox = self._com_resources.load_default_skybox()
-        skybox.set_scale(size)
-        skybox.reparent_to(Globals.render)
-        skybox.set_bin("unsorted", 10000)
-        self.set_effect(skybox, "effects/skybox.yaml", {
-            "render_shadows":   False,
-            "render_envmap":    False,
-            "render_voxel":     False,
-            "alpha_testing":    False,
-            "normal_mapping":   False,
-            "parallax_mapping": False
-        }, 1000)
-        return skybox
 
     def load_ies_profile(self, filename):
         """ Loads an IES profile from a given filename and returns a handle which
@@ -450,71 +219,37 @@ class RenderPipeline(RPObject):
         effect will be applied to that nodepath and all nodepaths below whose
         current effect sort is less than the new effect sort (passed by the
         sort parameter). """
-
         effect = Effect.load(effect_src, options)
         if effect is None:
             return self.error("Could not apply effect")
 
-        # Apply default stage shader
-        if not effect.get_option("render_gbuffer"):
-            nodepath.hide(self.tag_mgr.get_mask("gbuffer"))
-        else:
-            nodepath.set_shader(effect.get_shader_obj("gbuffer"), sort)
-            nodepath.show(self.tag_mgr.get_mask("gbuffer"))
+        for i, stage in enumerate(("gbuffer", "shadow", "voxelize", "envmap", "forward")):
+            if not effect.get_option("render_" + stage):
+                nodepath.hide(self.tag_mgr.get_mask(stage))
+            else:
+                shader = effect.get_shader_obj(stage)
+                if stage == "gbuffer":
+                    nodepath.set_shader(shader, 25)
+                else:
+                    self.tag_mgr.apply_state(stage, nodepath, shader, str(effect.effect_id), 25 + 10 * i + sort)
+                nodepath.show_through(self.tag_mgr.get_mask(stage))
 
-        # Apply shadow stage shader
-        if not effect.get_option("render_shadows"):
-            nodepath.hide(self.tag_mgr.get_mask("shadow"))
-        else:
-            shader = effect.get_shader_obj("shadows")
-            self.tag_mgr.apply_state(
-                "shadow", nodepath, shader, str(effect.effect_id), 25 + sort)
-            nodepath.show(self.tag_mgr.get_mask("shadow"))
-
-        # Apply voxelization stage shader
-        if not effect.get_option("render_voxel"):
-            nodepath.hide(self.tag_mgr.get_mask("voxelize"))
-        else:
-            shader = effect.get_shader_obj("voxelize")
-            self.tag_mgr.apply_state(
-                "voxelize", nodepath, shader, str(effect.effect_id), 35 + sort)
-            nodepath.show(self.tag_mgr.get_mask("voxelize"))
-
-        # Apply envmap stage shader
-        if not effect.get_option("render_envmap"):
-            nodepath.hide(self.tag_mgr.get_mask("envmap"))
-        else:
-            shader = effect.get_shader_obj("envmap")
-            self.tag_mgr.apply_state(
-                "envmap", nodepath, shader, str(effect.effect_id), 45 + sort)
-            nodepath.show(self.tag_mgr.get_mask("envmap"))
-
-        # Apply forward shading shader
-        if not effect.get_option("render_forward"):
-            nodepath.hide(self.tag_mgr.get_mask("forward"))
-        else:
-            shader = effect.get_shader_obj("forward")
-            self.tag_mgr.apply_state(
-                "forward", nodepath, shader, str(effect.effect_id), 55 + sort)
-            nodepath.show_through(self.tag_mgr.get_mask("forward"))
-
-        # Check for invalid options
         if effect.get_option("render_gbuffer") and effect.get_option("render_forward"):
             self.error("You cannot render an object forward and deferred at the same time! Either "
                        "use render_gbuffer or use render_forward, but not both.")
 
     def add_environment_probe(self):
         """ Constructs a new environment probe and returns the handle, so that
-        the probe can be modified """
-
-        # TODO: This method is super hacky
+        the probe can be modified. In case the env_probes plugin is not activated,
+        this returns a dummy object which can be modified but has no impact. """
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
-            self.warn("EnvProbe plugin is not loaded, can not add environment probe")
+            self.warn("env_probes plugin is not loaded - cannot add environment probe")
             class DummyEnvironmentProbe(object):
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
             return DummyEnvironmentProbe()
 
+        # Ugh ..
         from rpplugins.env_probes.environment_probe import EnvironmentProbe
         probe = EnvironmentProbe()
         self.plugin_mgr.instances["env_probes"].probe_mgr.add_probe(probe)
@@ -522,12 +257,19 @@ class RenderPipeline(RPObject):
 
     def prepare_scene(self, scene):
         """ Prepares a given scene, by converting panda lights to render pipeline
-        lights """
+        lights. This also converts all empties with names starting with 'ENVPROBE'
+        to environment probes. Conversion of blender to render pipeline lights
+        is done by scaling their intensity by 100 to match lumens.
 
-        # TODO: IES profiles
-        ies_profile = self.load_ies_profile("soft_display.ies") # pylint: disable=W0612
+        Additionally, this finds all materials with the 'TRANSPARENT' shading
+        model, and sets the proper effects on them to ensure they are rendered
+        properly.
+
+        This method also returns a dictionary with handles to all created
+        objects, that is lights, environment probes, and transparent objects.
+        This can be used to store them and process them later on, or delete
+        them when a newer scene is loaded."""
         lights = []
-
         for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
             rp_light = PointLight()
@@ -559,8 +301,6 @@ class RenderPipeline(RPObject):
             lights.append(rp_light)
 
         envprobes = []
-
-        # Add environment probes
         for np in scene.find_all_matches("**/ENVPROBE*"):
             probe = self.add_environment_probe()
             probe.set_mat(np.get_mat())
@@ -569,7 +309,7 @@ class RenderPipeline(RPObject):
             np.remove_node()
             envprobes.append(probe)
 
-        # Find transparent objects and set the right effect
+        transparent_objects = []
         for geom_np in scene.find_all_matches("**/+GeomNode"):
             geom_node = geom_np.node()
             geom_count = geom_node.get_num_geoms()
@@ -584,62 +324,265 @@ class RenderPipeline(RPObject):
                 # SHADING_MODEL_TRANSPARENT
                 if shading_model == 3:
                     if geom_count > 1:
-                        self.error("Transparent materials must have their own geom!")
+                        self.error("Transparent materials must be on their own geom!\n"
+                                   "If you are exporting from blender, split them into\n"
+                                   "seperate meshes, then re-export your scene. The\n"
+                                   "problematic mesh is: " + geom_np.get_name())
                         continue
+                    self.set_effect(geom_np, "effects/default.yaml",
+                                    {"render_forward": True, "render_gbuffer": False}, 100)
 
-                    self.set_effect(
-                        geom_np, "effects/default.yaml",
-                        {"render_forward": True, "render_gbuffer": False}, 100)
+        return {"lights": lights, "envprobes": envprobes,
+                "transparent_objects": transparent_objects}
 
-                 # SHADING_MODEL_FOLIAGE
-                elif shading_model == 5:
-                    # XXX: Maybe only enable alpha testing for foliage unless
-                    # specified otherwise
-                    pass
+    def _create_managers(self):
+        """ Internal method to create all managers and instances. This also
+        initializes the commonly used render stages, which are always required,
+        independently of which plugins are enabled. """
+        self.task_scheduler = TaskScheduler(self)
+        self.tag_mgr = TagStateManager(Globals.base.cam)
+        self.plugin_mgr = PluginManager(self)
+        self.stage_mgr = StageManager(self)
+        self.light_mgr = LightManager(self)
+        self.daytime_mgr = DayTimeManager(self)
+        self.ies_loader = IESProfileLoader(self)
+        self.common_resources = CommonResources(self)
+        self._init_common_stages()
 
+    def _initialize_managers(self):
+        """ Internal method to initialize all managers, after they have been
+        created earlier in _create_managers. The creation and initialization
+        is seperated due to the fact that plugins and various other subprocesses
+        have to get initialized inbetween. """
+        self.stage_mgr.setup()
+        self.stage_mgr.reload_shaders()
+        self.light_mgr.reload_shaders()
+        self._init_bindings()
+        self.light_mgr.init_shadows()
 
-        return {"lights": lights, "envprobes": envprobes}
+    def _init_debugger(self):
+        """ Internal method to initialize the GUI-based debugger. In case debugging
+        is disabled, this constructs a dummy debugger, which does nothing.
+        The debugger itself handles the various onscreen components. """
+        if self.settings["pipeline.display_debugger"]:
+            self.debugger = Debugger(self)
+        else:
+            # Use an empty onscreen debugger in case the debugger is not
+            # enabled, which defines all member functions as empty lambdas
+            class EmptyDebugger(object):
+                def __getattr__(self, *args, **kwargs):
+                    return lambda *args, **kwargs: None
+            self.debugger = EmptyDebugger()
+            del EmptyDebugger
+
+    def _init_globals(self):
+        """ Inits all global bindings. This includes references to the global
+        ShowBase instance, as well as the render resolution, the GUI font,
+        and various global logging and output methods. """
+        Globals.load(self._showbase)
+        native_w, native_h = self._showbase.win.get_x_size(), self._showbase.win.get_y_size()
+        Globals.native_resolution = LVecBase2i(native_w, native_h)
+        self._last_window_dims = LVecBase2i(Globals.native_resolution)
+        self._compute_render_resolution()
+        RenderTarget.RT_OUTPUT_FUNC = lambda *args: RPObject.global_warn(
+            "RenderTarget", *args[1:])
+        RenderTarget.USE_R11G11B10 = self.settings["pipeline.use_r11_g11_b10"]
+
+    def _set_default_effect(self):
+        """ Sets the default effect used for all objects if not overridden, this
+        just calls set_effect with the default effect and options as parameters.
+        This uses a very low sort, to make sure that overriding the default
+        effect does not require a custom sort parameter to be passed. """
+        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
+
+    def _adjust_camera_settings(self):
+        """ Sets the default camera settings, this includes the cameras
+        near and far plane, as well as FoV. The reason for this is, that pandas
+        default field of view is very small, and thus we increase it. """
+        self._showbase.camLens.set_near_far(0.1, 70000)
+        self._showbase.camLens.set_fov(60)
+
+    def _compute_render_resolution(self):
+        """ Computes the internally used render resolution. This might differ
+        from the window dimensions in case a resolution scale is set. """
+        scale_factor = self.settings["pipeline.resolution_scale"]
+        w = int(float(Globals.native_resolution.x) * scale_factor)
+        h = int(float(Globals.native_resolution.y) * scale_factor)
+        # Make sure the resolution is a multiple of 4
+        w, h = w - w % 4, h - h % 4
+        self.debug("Render resolution is", w, "x", h)
+        Globals.resolution = LVecBase2i(w, h)
+
+    def _init_showbase(self, base):
+        """ Inits the the given showbase object. This is part of an alternative
+        method of initializing the showbase. In case base is None, a new
+        ShowBase instance will be created and initialized. Otherwise base() is
+        expected to either be an uninitialized ShowBase instance, or an
+        initialized instance with pre_showbase_init() called inbefore. """
+        if not base:
+            self.pre_showbase_init()
+            self._showbase = ShowBase()
+        else:
+            if not hasattr(base, "render"):
+                self.pre_showbase_init()
+                ShowBase.__init__(base)
+            else:
+                if not self._pre_showbase_initialized:
+                    self.fatal("You constructed your own ShowBase object but you\n"
+                               "did not call pre_show_base_init() on the render\n"
+                               "pipeline object before! Checkout the 00-Loading the\n"
+                               "pipeline sample to see how to initialize the RP.")
+            self._showbase = base
+
+        # Now that we have a showbase and a window, we can print out driver info
+        self.debug("Driver Version =", self._showbase.win.gsg.driver_version)
+        self.debug("Driver Vendor =", self._showbase.win.gsg.driver_vendor)
+        self.debug("Driver Renderer =", self._showbase.win.gsg.driver_renderer)
+
+    def _init_bindings(self):
+        """ Internal method to init the tasks and keybindings. This constructs
+        the tasks to be run on a per-frame basis. """
+        self._showbase.addTask(self._manager_update_task, "RP_UpdateManagers", sort=10)
+        self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
+        self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=15)
+        self._showbase.addTask(self._update_inputs_and_stages, "RP_UpdateInputsAndStages", sort=18)
+        self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
+        self._showbase.accept("window-event", self._handle_window_event)
+
+    def _handle_window_event(self, event):
+        """ Checks for window events. This mainly handles incoming resizes,
+        and calls the required handlers """
+        self._showbase.windowEvent(event)
+        window_dims = LVecBase2i(self._showbase.win.get_x_size(), self._showbase.win.get_y_size())
+        if window_dims != self._last_window_dims and window_dims != Globals.native_resolution:
+            self._last_window_dims = LVecBase2i(window_dims)
+
+            # Ensure the dimensions are a multiple of 4, and if not, correct it
+            if window_dims.x % 4 != 0 or window_dims.y % 4 != 0:
+                self.debug("Correcting non-multiple of 4 window size:", window_dims)
+                window_dims.x = window_dims.x - window_dims.x % 4
+                window_dims.y = window_dims.y - window_dims.y % 4
+                props = WindowProperties.size(window_dims.x, window_dims.y)
+                self._showbase.win.request_properties(props)
+
+            self.debug("Resizing to", window_dims.x, "x", window_dims.y)
+            Globals.native_resolution = window_dims
+            self._compute_render_resolution()
+            self.light_mgr.compute_tile_size()
+            self.stage_mgr.handle_window_resize()
+            self.debugger.handle_window_resize()
+
+    def _clear_state_cache(self, task=None):
+        """ Task which repeatedly clears the state cache to avoid storing
+        unused states. While running once a while, this task prevents over-polluting
+        the state-cache with unused states. This complements Panda3D's internal
+        state garbarge collector, which does a great job, but still cannot clear
+        up all states. """
+        task.delayTime = 2.0
+        TransformState.clear_cache()
+        RenderState.clear_cache()
+        return task.again
+
+    def _manager_update_task(self, task):
+        """ Update task which gets called before the rendering, and updates
+        all managers."""
+        self.task_scheduler.step()
+        self._listener.update()
+        self.debugger.update()
+        self.daytime_mgr.update()
+        self.light_mgr.update()
+        return task.cont
+
+    def _update_inputs_and_stages(self, task):
+        """ Updates the commonly used inputs each frame. This is a seperate
+        task to be able view detailed performance information in pstats, since
+        a lot of matrix calculations are involved here. """
+        self.common_resources.update()
+        self.stage_mgr.update()
+        return task.cont
+
+    def _plugin_pre_render_update(self, task):
+        """ Update task which gets called before the rendering, and updates the
+        plugins. This is a seperate task to split the work, and be able to do
+        better performance analysis in pstats later on. """
+        self.plugin_mgr.trigger_hook("pre_render_update")
+        return task.cont
+
+    def _plugin_post_render_update(self, task):
+        """ Update task which gets called after the rendering, and should cleanup
+        all unused states and objects. This also triggers the plugin post-render
+        update hook. """
+        self.plugin_mgr.trigger_hook("post_render_update")
+        if self._first_frame is not None:
+            duration = time.clock() - self._first_frame
+            self.debug("Took", round(duration, 3), "s until first frame")
+            self._first_frame = None
+        return task.cont
+
+    def _create_common_defines(self):
+        """ Creates commonly used defines for the shader configuration. """
+        defines = self.stage_mgr.defines
+        defines["CAMERA_NEAR"] = round(Globals.base.camLens.get_near(), 10)
+        defines["CAMERA_FAR"] = round(Globals.base.camLens.get_far(), 10)
+
+        # Work arround buggy nvidia driver, which expects arrays to be const
+        if "NVIDIA 361.43" in self._showbase.win.gsg.get_driver_version():
+            defines["CONST_ARRAY"] = "const"
+        else:
+            defines["CONST_ARRAY"] = ""
+
+        # Provide driver vendor as a define
+        vendor = self._showbase.win.gsg.get_driver_vendor().lower()
+        defines["IS_NVIDIA"] = "nvidia" in vendor
+        defines["IS_AMD"] = "ati" in vendor
+        defines["IS_INTEL"] = "intel" in vendor
+
+        defines["REFERENCE_MODE"] = self.settings["pipeline.reference_mode"]
+        self.light_mgr.init_defines()
+        self.plugin_mgr.init_defines()
+
+    def _create_default_skybox(self, size=40000):
+        """ Returns the default skybox, with a scale of <size>, and all
+        proper effects and shaders already applied. The skybox is already
+        parented to render as well. """
+        skybox = self.common_resources.load_default_skybox()
+        skybox.set_scale(size)
+        skybox.reparent_to(Globals.render)
+        skybox.set_bin("unsorted", 10000)
+        self.set_effect(skybox, "effects/skybox.yaml", {
+            "render_shadow":    False,
+            "render_envmap":    False,
+            "render_voxelize":  False,
+            "alpha_testing":    False,
+            "normal_mapping":   False,
+            "parallax_mapping": False
+        }, 1000)
+        return skybox
 
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
         True if the version is new enough, and False if the version is outdated. """
-
         from panda3d.core import PointLight as Panda3DPointLight
         if not hasattr(Panda3DPointLight(""), "shadow_caster"):
             return False
-
         return True
 
     def _init_common_stages(self):
         """ Inits the commonly used stages, which don't belong to any plugin,
         but yet are necessary and widely used. """
         add_stage = self.stage_mgr.add_stage
-
         self._ambient_stage = AmbientStage(self)
         add_stage(self._ambient_stage)
-
         self._gbuffer_stage = GBufferStage(self)
         add_stage(self._gbuffer_stage)
-
         self._final_stage = FinalStage(self)
         add_stage(self._final_stage)
-
         self._downscale_stage = DownscaleZStage(self)
         add_stage(self._downscale_stage)
-
         self._combine_velocity_stage = CombineVelocityStage(self)
         add_stage(self._combine_velocity_stage)
 
         # Add an upscale/downscale stage in case we render at a different resolution
-        if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.05:
+        if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.005:
             self._upscale_stage = UpscaleStage(self)
             add_stage(self._upscale_stage)
-
-    def _set_default_effect(self):
-        """ Sets the default effect used for all objects if not overridden """
-        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
-
-    def _adjust_camera_settings(self):
-        """ Sets the default camera settings """
-        self._showbase.camLens.set_near_far(0.1, 70000)
-        self._showbase.camLens.set_fov(60)

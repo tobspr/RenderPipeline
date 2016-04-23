@@ -68,7 +68,7 @@ class Plugin(BasePlugin):
         """ Internal method to compute the SMAA sub-pixel frame offsets """
         self._jitters = []
         self._jitter_index = 0
-        scale = 1.0 / float(Globals.base.win.get_x_size())
+        scale = 1.0 / float(Globals.native_resolution.x)
 
         for x, y in JITTERS[self.get_setting("jitter_pattern")]:
         # for x, y in ((-0.25, 0.25), (0.25, -0.25)):

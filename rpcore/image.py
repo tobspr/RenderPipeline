@@ -28,7 +28,7 @@ from panda3d.core import Texture, GeomEnums
 
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
-# from rpcore.gui.buffer_viewer import BufferViewer
+from rpcore.render_target import RenderTarget
 
 class StuffToMakePylintHappyAgain(object):
 
@@ -131,6 +131,8 @@ class Image(RPObject, Texture, StuffToMakePylintHappyAgain):
         RPObject.__init__(self, name)
         Texture.__init__(self, name)
         Image.REGISTERED_IMAGES.append(self)
+        self.set_clear_color(0)
+        self.sort = RenderTarget.CURRENT_SORT
 
     def __del__(self):
         """ Destroys the image """
@@ -138,9 +140,8 @@ class Image(RPObject, Texture, StuffToMakePylintHappyAgain):
 
     def write(self, pth):
         """ Writes the image to disk """
-        Globals.base.graphicsEngine.extract_texture_data(self, Globals.base.win.get_gsg())
+        Globals.base.graphicsEngine.extract_texture_data(self, Globals.base.win.gsg)
         if self.get_texture_type() in [Texture.TT_3d_texture, Texture.TT_cube_map]:
             Texture.write(self, "#_" + pth, 0, 0, True, False)
         else:
             Texture.write(self, pth)
-

@@ -52,26 +52,25 @@ class CullLightsStage(RenderStage):
     @property
     def produced_defines(self):
         return {
-            "LC_SHADE_SLICES": self.num_rows,
+            "LC_SLICE_WIDTH": self.slice_width,
             "LC_LIGHT_CLASS_COUNT": self.num_light_classes
         }
 
     def create(self):
-        max_cells = self._pipeline.light_mgr.total_tiles
-        self.num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self.target = self.create_target("CullLights")
-
         # TODO: Use no oversized triangle in this stage
-        self.target.size = self.slice_width, self.num_rows
+        self.target = self.create_target("CullLights")
+        self.target.size = 0, 0
         self.target.prepare_buffer()
 
-        self.per_cell_lights = Image.create_buffer(
-            "PerCellLights", max_cells * (self.max_lights_per_cell + self.num_light_classes),
-            "R32I")
-        self.per_cell_lights.set_clear_color(0)
+        self.per_cell_lights = Image.create_buffer("PerCellLights", 0, "R32I")
         self.target.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
-
-        self.debug("Using", self.num_rows, "culling lines")
 
     def reload_shaders(self):
         self.target.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")
+
+    def set_dimensions(self):
+        max_cells = self._pipeline.light_mgr.total_tiles
+        num_rows = int(math.ceil(max_cells / float(self.slice_width)))
+        self.per_cell_lights.set_x_size(
+            max_cells * (self.max_lights_per_cell + self.num_light_classes))
+        self.target.size = self.slice_width, num_rows

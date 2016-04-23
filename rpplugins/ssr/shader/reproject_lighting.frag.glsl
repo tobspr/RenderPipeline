@@ -29,7 +29,6 @@
 // Copies the previous scene color to the first mipmap.
 // Also outputs the current frame intersection depth
 
-#define USE_MAIN_SCENE_DATA
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"

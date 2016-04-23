@@ -27,6 +27,8 @@ THE SOFTWARE.
 from __future__ import division
 from panda3d.core import Vec4
 
+from rplibs.six import itervalues
+
 from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
 from rpcore.image import Image
@@ -49,7 +51,33 @@ class AutoExposureStage(RenderStage):
         self.target_lum.add_color_attachment(bits=(16, 0, 0, 0))
         self.target_lum.prepare_buffer()
 
-        # Get the current quarter-window size
+        self.mip_targets = []
+
+        # Create the storage for the exposure, this stores the current and last
+        # frames exposure
+        # XXX: We have to use F_r16 instead of F_r32 because of a weird nvidia
+        # driver bug! However, 16 bits should be enough for sure.
+        self.tex_exposure = Image.create_buffer("ExposureStorage", 1, "R16")
+        self.tex_exposure.set_clear_color(Vec4(0.5))
+        self.tex_exposure.clear_image()
+
+        # Create the target which extracts the exposure from the average brightness
+        self.target_analyze = self.create_target("AnalyzeBrightness")
+        self.target_analyze.size = 1, 1
+        self.target_analyze.prepare_buffer()
+
+        self.target_analyze.set_shader_input("ExposureStorage", self.tex_exposure)
+
+        # Create the target which applies the generated exposure to the scene
+        self.target_apply = self.create_target("ApplyExposure")
+        self.target_apply.add_color_attachment(bits=16)
+        self.target_apply.prepare_buffer()
+        self.target_apply.set_shader_input("Exposure", self.tex_exposure)
+
+    def set_dimensions(self):
+        for old_target in self.mip_targets:
+            self.remove_target(old_target)
+
         wsize_x = (Globals.resolution.x + 3) // 4
         wsize_y = (Globals.resolution.y + 3) // 4
 
@@ -63,40 +91,25 @@ class AutoExposureStage(RenderStage):
             mip_target = self.create_target("DScaleLum:S" + str(wsize_x))
             mip_target.add_color_attachment(bits=(16, 0, 0, 0))
             mip_target.size = wsize_x, wsize_y
+            mip_target.sort = self.target_lum.sort + len(self.mip_targets)
             mip_target.prepare_buffer()
             mip_target.set_shader_input("SourceTex", last_tex)
             self.mip_targets.append(mip_target)
             last_tex = mip_target.color_tex
 
-        # Create the storage for the exposure, this stores the current and last
-        # frames exposure
+        self.target_analyze.set_shader_input("DownscaledTex", self.mip_targets[-1].color_tex)
 
-        # XXX: We have to use F_r16 instead of F_r32 because of a weird nvidia
-        # driver bug! However, 16 bits should be enough for sure.
-        self.tex_exposure = Image.create_buffer("ExposureStorage", 1, "R16")
-        self.tex_exposure.set_clear_color(Vec4(0.5))
-        self.tex_exposure.clear_image()
-
-        # Create the target which extracts the exposure from the average brightness
-        self.target_analyze = self.create_target("AnalyzeBrightness")
-        self.target_analyze.size = 1, 1
-        self.target_analyze.prepare_buffer()
-
-        self.target_analyze.set_shader_input(
-            "ExposureStorage", self.tex_exposure)
-        self.target_analyze.set_shader_input("DownscaledTex", last_tex)
-
-        # Create the target which applies the generated exposure to the scene
-        self.target_apply = self.create_target("ApplyExposure")
-        self.target_apply.add_color_attachment(bits=16)
-        self.target_apply.prepare_buffer()
-        self.target_apply.set_shader_input("Exposure", self.tex_exposure)
+        # Shaders might not have been loaded at this point
+        if hasattr(self, "mip_shader"):
+            for target in self.mip_targets:
+                target.shader = self.mip_shader
 
     def reload_shaders(self):
         self.target_lum.shader = self.load_plugin_shader("generate_luminance.frag.glsl")
         self.target_analyze.shader = self.load_plugin_shader("analyze_brightness.frag.glsl")
         self.target_apply.shader = self.load_plugin_shader("apply_exposure.frag.glsl")
 
-        mip_shader = self.load_plugin_shader("downscale_luminance.frag.glsl")
+        # Keep shader as reference, required when resizing
+        self.mip_shader = self.load_plugin_shader("downscale_luminance.frag.glsl")
         for target in self.mip_targets:
-            target.shader = mip_shader
+            target.shader = self.mip_shader

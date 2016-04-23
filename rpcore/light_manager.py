@@ -149,7 +149,6 @@ class LightManager(RPObject):
         per_light_vec4s = 4
         self.img_light_data = Image.create_buffer(
             "LightData", self.MAX_LIGHTS * per_light_vec4s, "RGBA16")
-        self.img_light_data.set_clear_color(0)
         self.img_light_data.clear_image()
 
         self.pta_max_light_index = PTAInt.empty_array(1)
@@ -162,7 +161,6 @@ class LightManager(RPObject):
         # shadow filtering occur due to precision issues
         self.img_source_data = Image.create_buffer(
             "ShadowSourceData", self.MAX_SOURCES * per_source_vec4s, "RGBA32")
-        self.img_light_data.set_clear_color(0)
         self.img_light_data.clear_image()
 
         # Register the buffer
@@ -197,8 +195,6 @@ class LightManager(RPObject):
         defines = self.pipeline.stage_mgr.defines
         defines["LC_TILE_SIZE_X"] = self.tile_size.x
         defines["LC_TILE_SIZE_Y"] = self.tile_size.y
-        defines["LC_TILE_AMOUNT_X"] = self.num_tiles.x
-        defines["LC_TILE_AMOUNT_Y"] = self.num_tiles.y
         defines["LC_TILE_SLICES"] = self.pipeline.settings["lighting.culling_grid_slices"]
         defines["LC_MAX_DISTANCE"] = self.pipeline.settings["lighting.culling_max_distance"]
         defines["LC_CULLING_SLICE_WIDTH"] = self.pipeline.settings["lighting.culling_slice_width"]

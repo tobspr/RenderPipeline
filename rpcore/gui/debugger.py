@@ -52,137 +52,156 @@ from rpcore.image import Image
 
 class Debugger(RPObject):
 
-    """ This class manages the onscreen gui and """
+    """ This class manages the onscreen control, and displays statistics. """
 
     def __init__(self, pipeline):
         RPObject.__init__(self)
         self.debug("Creating debugger")
-        self._pipeline = pipeline
-        self._analyzer = SceneGraphAnalyzer()
+        self.pipeline = pipeline
+        self.analyzer = SceneGraphAnalyzer()
 
-        self._load_config()
-        self._fullscreen_node = Globals.base.pixel2d.attach_new_node(
-            "PipelineDebugger")
-        self._create_components()
-        self._init_keybindings()
-        self._init_notify()
+        self.fullscreen_node = Globals.base.pixel2d.attach_new_node("rp_debugger")
+        self.create_components()
+        self.init_keybindings()
 
         Globals.base.doMethodLater(
-            0.5, lambda task: self._collect_scene_data(), "RPDebugger_collectSceneData_initial")
-        Globals.base.doMethodLater(0.1, self._update_stats, "RPDebugger_updateStats")
+            0.5, lambda task: self.collect_scene_data(), "RPDebugger_collectSceneData_initial")
+        Globals.base.doMethodLater(0.1, self.update_stats, "RPDebugger_updateStats")
 
-    def _load_config(self):
-        """ Loads the gui configuration from config/debugging.yaml """
-
-
-    def _create_components(self):
+    def create_components(self):
         """ Creates the gui components """
 
-        # When using small resolutions, scale the GUI so its still useable,
-        # otherwise the sub-windows are bigger than the main window
-        scale_factor = min(1.0, Globals.base.win.get_x_size() / 1920.0)
-        self._fullscreen_node.set_scale(scale_factor)
-        self._gui_scale = scale_factor
+        self.debugger_width = 460
+        self.debugger_visible = False
+        self.debugger_interval = None
 
-        # Component values
-        self._debugger_width = 460
+        self.create_stats()
+        self.create_hints()
 
-        # Create states
-        self._debugger_visible = False
+        self.pipeline_logo = Sprite(
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
+            parent=self.fullscreen_node)
 
-        # Create intervals
-        self._debugger_interval = None
+        self.exposure_node = self.fullscreen_node.attach_new_node("ExposureWidget")
+        self.exposure_widget = ExposureWidget(self.pipeline, self.exposure_node)
 
-        # Create the actual GUI
-        self._create_topbar()
-        self._create_stats()
-        self._create_hints()
+        self.fps_node = self.fullscreen_node.attach_new_node("FPSChart")
+        self.fps_node.set_pos(Vec3(21, 1, -108 - 40))
+        self.fps_widget = FPSChart(self.pipeline, self.fps_node)
 
-        self._exposure_node = self._fullscreen_node.attach_new_node("ExposureWidget")
-        self._exposure_node.set_pos(
-            Globals.base.win.get_x_size() / self._gui_scale - 200,
-            1, -Globals.base.win.get_y_size() / self._gui_scale + 120)
-        self._exposure_widget = ExposureWidget(self._pipeline, self._exposure_node)
+        self.pixel_widget = PixelInspector(self.pipeline)
+        self.buffer_viewer = BufferViewer(self.pipeline, self.fullscreen_node)
+        self.pipe_viewer = PipeViewer(self.pipeline, self.fullscreen_node)
+        self.rm_selector = RenderModeSelector(self.pipeline, self.fullscreen_node)
+        self.error_msg_handler = ErrorMessageDisplay()
 
-        self._fps_node = self._fullscreen_node.attach_new_node("FPSChart")
-        self._fps_node.set_pos(Vec3(21, 1, -108 - 40))
-        self._fps_widget = FPSChart(self._pipeline, self._fps_node)
-
-        self._pixel_widget = PixelInspector(self._pipeline)
-
-        self._buffer_viewer = BufferViewer(self._pipeline, self._fullscreen_node)
-        self._pipe_viewer = PipeViewer(self._pipeline, self._fullscreen_node)
-        self._rm_selector = RenderModeSelector(self._pipeline, self._fullscreen_node)
-
-    def _init_notify(self):
-        """ Inits the notify stream which gets all output from panda and parses
-        it """
-        self._error_msg_handler = ErrorMessageDisplay()
+        self.handle_window_resize()
 
     def update(self):
         """ Updates the gui """
-        self._error_msg_handler.update()
-        self._pixel_widget.update()
+        self.error_msg_handler.update()
+        self.pixel_widget.update()
 
-    def get_error_msg_handler(self):
-        """ Returns the error message handler """
-        return self._error_msg_handler
-
-    def _create_topbar(self):
-        """ Creates the topbar """
-        self._pipeline_logo = Sprite(
-            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
-            parent=self._fullscreen_node)
-
-    def _collect_scene_data(self, task=None):
+    def collect_scene_data(self, task=None):
         """ Analyzes the scene graph to provide useful information """
-        self._analyzer.clear()
+        self.analyzer.clear()
         for geom_node in Globals.base.render.find_all_matches("**/+GeomNode"):
-            self._analyzer.add_node(geom_node.node())
+            self.analyzer.add_node(geom_node.node())
         if task:
             return task.again
 
-    def _create_stats(self):
+    def create_stats(self):
         """ Creates the stats overlay """
-        self._overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
-        self._overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
-        self._debug_lines = []
+        self.overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
+        self.debug_lines = []
         for i in range(6):
-            self._debug_lines.append(TextNode(
-                pos=Vec2(0, -i * 0.046), parent=self._overlay_node,
-                pixel_size=16, align="right", color=Vec3(1)))
+            self.debug_lines.append(TextNode(
+                pos=Vec2(0, -i * 0.046), parent=self.overlay_node, align="right", color=Vec3(1)))
 
-    def _create_hints(self):
+    def create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
-        self._hint_reloading = Sprite(
+        self.hint_reloading = Sprite(
             image="/$$rp/data/gui/shader_reload_hint.png",
-            x=float((Globals.base.win.get_x_size()) // 2) / self._gui_scale - 465 // 2, y=220,
-            parent=self._fullscreen_node)
+            parent=self.fullscreen_node)
         self.set_reload_hint_visible(False)
 
+        self.python_warning = None
         if not NATIVE_CXX_LOADED:
             # Warning when using the python version
-            python_warning = Sprite(
+            self.python_warning = Sprite(
                 image="/$$rp/data/gui/python_warning.png",
-                x=((Globals.base.win.get_x_size()/self._gui_scale) - 1054) // 2,
-                y=(Globals.base.win.get_y_size()/self._gui_scale) - 118 - 40,
-                parent=self._fullscreen_node)
-
+                parent=self.fullscreen_node)
             Sequence(
-                python_warning.color_scale_interval(0.7, Vec4(0.3, 1, 1, 0.7), blendType="easeOut"),
-                python_warning.color_scale_interval(0.7, Vec4(1, 1, 1, 1.0), blendType="easeOut"),
+                self.python_warning.color_scale_interval(0.7, Vec4(0.3, 1, 1, 0.7), blendType="easeOut"),
+                self.python_warning.color_scale_interval(0.7, Vec4(1, 1, 1, 1.0), blendType="easeOut"),
             ).loop()
 
         # Keybinding hints
-        self._keybinding_instructions = Sprite(
-            image="/$$rp/data/gui/keybindings.png", x=30,
-            y=Globals.base.win.get_y_size()//self._gui_scale - 510.0,
-            parent=self._fullscreen_node, any_filter=False)
+        self.keybinding_instructions = Sprite(
+            image="/$$rp/data/gui/keybindings.png",
+            parent=self.fullscreen_node, any_filter=False)
 
-    def _update_stats(self, task=None):
+    def set_reload_hint_visible(self, flag):
+        """ Sets whether the shader reload hint is visible """
+        if flag:
+            self.hint_reloading.show()
+        else:
+            self.hint_reloading.hide()
+
+    def handle_window_resize(self):
+        """ Handles the window resize, repositions the GUI elements to fit on
+        screen. """
+        # When using small resolutions, scale the GUI so its still useable,
+        # otherwise the sub-windows are bigger than the main window
+        self.gui_scale = min(1.0, Globals.native_resolution.x / 1920.0)
+        self.fullscreen_node.set_scale(self.gui_scale)
+
+        self.exposure_node.set_pos(
+            Globals.native_resolution.x // self.gui_scale - 200,
+            1, -Globals.native_resolution.y // self.gui_scale + 120)
+        self.hint_reloading.set_pos(
+            float((Globals.native_resolution.x) // 2) / self.gui_scale - 465 // 2, 220)
+        self.keybinding_instructions.set_pos(
+            30, Globals.native_resolution.y // self.gui_scale - 510.0,)
+        self.overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
+        if self.python_warning:
+            self.python_warning.set_pos(
+                (Globals.native_resolution.x // self.gui_scale - 1054) // 2,
+                (Globals.native_resolution.y // self.gui_scale - 118 - 40))
+
+        for text in self.debug_lines:
+            text.set_pixel_size(16 * max(0.8, self.gui_scale))
+
+    def init_keybindings(self):
+        """ Inits the debugger keybindings """
+        Globals.base.accept("v", self.buffer_viewer.toggle)
+        Globals.base.accept("c", self.pipe_viewer.toggle)
+        Globals.base.accept("z", self.rm_selector.toggle)
+        Globals.base.accept("f5", self.toggle_gui_visible)
+        Globals.base.accept("f6", self.toggle_fps_visible)
+        Globals.base.accept("r", self.pipeline.reload_shaders)
+
+    def toggle_gui_visible(self):
+        """ Shows / Hides the gui """
+
+        if not self.fullscreen_node.is_hidden():
+            self.fullscreen_node.hide()
+            self.overlay_node.hide()
+        else:
+            self.fullscreen_node.show()
+            self.overlay_node.show()
+
+    def toggle_fps_visible(self):
+        """ Shows / Hides the FPS graph """
+        if not self.fps_node.is_hidden():
+            self.fps_node.hide()
+        else:
+            self.fps_node.show()
+
+    def update_stats(self, task=None):
         """ Updates the stats overlay """
         clock = Globals.clock
-        self._debug_lines[0].text = "{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
+        self.debug_lines[0].text = "{:3.0f} fps  |  {:3.1f} ms  |  {:3.1f} ms max".format(
             clock.get_average_frame_rate(),
             1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0)
@@ -190,33 +209,32 @@ class Debugger(RPObject):
         text = "{:4d} render states  |  {:4d} transforms"
         text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources  "
         text += "|  {:3.1f}% atlas usage"
-        self._debug_lines[1].text = text.format(
+        self.debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
-            self._pipeline.light_mgr.cmd_queue.num_processed_commands,
-            self._pipeline.light_mgr.num_lights,
-            self._pipeline.light_mgr.num_shadow_sources,
-            self._pipeline.light_mgr.shadow_atlas_coverage)
+            self.pipeline.light_mgr.cmd_queue.num_processed_commands,
+            self.pipeline.light_mgr.num_lights,
+            self.pipeline.light_mgr.num_shadow_sources,
+            self.pipeline.light_mgr.shadow_atlas_coverage)
 
         text = "Pipeline:   {:3.0f} MiB VRAM  |  {:5d} images  |  {:5d} textures  |  "
         text += "{:5d} render targets  |  {:3d} plugins  | {:2d}  views  ({:2d} active)"
-        tex_memory, tex_count = self._buffer_viewer.stage_information
+        tex_memory, tex_count = self.buffer_viewer.stage_information
 
         views, active_views = 0, 0
         for target in RenderTarget.REGISTERED_TARGETS:
             if not target.create_default_region:
                 num_regions = target.internal_buffer.get_num_display_regions()
                 for i, region in enumerate(target.internal_buffer.get_display_regions()):
+                    # Skip overlay display region
                     if i == 0 and num_regions > 1:
-                        # Skip overlay display region
                         continue
                     views += 1
                     active_views += 1 if target.active and region.active else 0
 
-
-        self._debug_lines[2].text = text.format(
+        self.debug_lines[2].text = text.format(
             tex_memory / (1024**2), len(Image.REGISTERED_IMAGES), tex_count,
             RenderTarget.NUM_ALLOCATED_BUFFERS,
-            len(self._pipeline.plugin_mgr.enabled_plugins),
+            len(self.pipeline.plugin_mgr.enabled_plugins),
             views, active_views)
 
         text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  "
@@ -225,36 +243,34 @@ class Debugger(RPObject):
         for tex in TexturePool.find_all_textures():
             scene_tex_size += tex.estimate_texture_memory()
 
-        self._debug_lines[3].text = text.format(
+        self.debug_lines[3].text = text.format(
             scene_tex_size / (1024**2),
             len(TexturePool.find_all_textures()),
-            self._analyzer.get_num_geoms(),
-            self._analyzer.get_num_nodes(),
-            self._analyzer.get_num_vertices(),
-            self._analyzer.get_vertex_data_size() / (1024**2),
-        )
+            self.analyzer.get_num_geoms(),
+            self.analyzer.get_num_nodes(),
+            self.analyzer.get_num_vertices(),
+            self.analyzer.get_vertex_data_size() / (1024**2),)
 
         sun_vector = Vec3(0)
-        if self._pipeline.plugin_mgr.is_plugin_enabled("scattering"):
-            sun_vector = self._pipeline.plugin_mgr.instances["scattering"].sun_vector
+        if self.pipeline.plugin_mgr.is_plugin_enabled("scattering"):
+            sun_vector = self.pipeline.plugin_mgr.instances["scattering"].sun_vector
 
         text = "{} ({:1.3f})  |  {:0.2f} {:0.2f} {:0.2f}  |  {:3d} daytime settings  |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
         text += "    |  Total tasks:  {:2d}   |   scheduled: {:2d}"
-        self._debug_lines[4].text = text.format(
-            self._pipeline.daytime_mgr.formatted_time,
-            self._pipeline.daytime_mgr.time,
+        self.debug_lines[4].text = text.format(
+            self.pipeline.daytime_mgr.formatted_time,
+            self.pipeline.daytime_mgr.time,
             sun_vector.x, sun_vector.y, sun_vector.z,
-            len(self._pipeline.plugin_mgr.day_settings),
+            len(self.pipeline.plugin_mgr.day_settings),
             Globals.base.camera.get_x(Globals.base.render),
             Globals.base.camera.get_y(Globals.base.render),
             Globals.base.camera.get_z(Globals.base.render),
-            self._pipeline.task_scheduler.num_tasks,
-            self._pipeline.task_scheduler.num_scheduled_tasks,
-        )
+            self.pipeline.task_scheduler.num_tasks,
+            self.pipeline.task_scheduler.num_scheduled_tasks,)
 
         text = "Scene shadows:  "
-        if "pssm" in self._pipeline.plugin_mgr.enabled_plugins:
-            focus = self._pipeline.plugin_mgr.instances["pssm"].scene_shadow_stage.last_focus
+        if "pssm" in self.pipeline.plugin_mgr.enabled_plugins:
+            focus = self.pipeline.plugin_mgr.instances["pssm"].scene_shadow_stage.last_focus
             if focus is not None:
                 text += "{:3.1f} {:3.1f} {:3.1f} r {:3.1f}".format(focus[0].x, focus[0].y, focus[0].z, focus[1])
             else:
@@ -262,45 +278,15 @@ class Debugger(RPObject):
         else:
             text += "inactive"
 
-        text += "  |  H {:3.1f} P {:3.1f} R {:3.1f}"
-
-        self._debug_lines[5].text = text.format(
+        text += "  |  H {:3.1f} P {:3.1f} R {:3.1f}  |   {:4d} x {:4d} pixels @ {:3.1f} %   |  {:3d} x {:3d} tiles"
+        self.debug_lines[5].text = text.format(
             Globals.base.camera.get_h(Globals.base.render),
             Globals.base.camera.get_p(Globals.base.render),
             Globals.base.camera.get_r(Globals.base.render),
-        )
-
+            Globals.native_resolution.x,
+            Globals.native_resolution.y,
+            self.pipeline.settings["pipeline.resolution_scale"] * 100.0,
+            self.pipeline.light_mgr.num_tiles.x,
+            self.pipeline.light_mgr.num_tiles.y,)
         if task:
             return task.again
-
-    def set_reload_hint_visible(self, flag):
-        """ Sets whether the shader reload hint is visible """
-        if flag:
-            self._hint_reloading.show()
-        else:
-            self._hint_reloading.hide()
-
-    def _init_keybindings(self):
-        """ Inits the debugger keybindings """
-        Globals.base.accept("v", self._buffer_viewer.toggle)
-        Globals.base.accept("c", self._pipe_viewer.toggle)
-        Globals.base.accept("z", self._rm_selector.toggle)
-        Globals.base.accept("f5", self._toggle_gui_visible)
-        Globals.base.accept("f6", self._toggle_fps_visible)
-
-    def _toggle_gui_visible(self):
-        """ Shows / Hides the gui """
-
-        if not self._fullscreen_node.is_hidden():
-            self._fullscreen_node.hide()
-            self._overlay_node.hide()
-        else:
-            self._fullscreen_node.show()
-            self._overlay_node.show()
-
-    def _toggle_fps_visible(self):
-        """ Shows / Hides the FPS graph """
-        if not self._fps_node.is_hidden():
-            self._fps_node.hide()
-        else:
-            self._fps_node.show()
