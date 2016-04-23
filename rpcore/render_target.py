@@ -31,7 +31,7 @@ from panda3d.core import Vec4, TransparencyAttrib, ColorWriteAttrib, SamplerStat
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
 from panda3d.core import LVecBase2i
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 from rplibs.six import iterkeys, itervalues
 
 from rpcore.globals import Globals
@@ -41,7 +41,7 @@ from rpcore.util.post_process_region import PostProcessRegion
 __all__ = "RenderTarget",
 __version__ = "2.0"
 
-class setter(object): # pylint: disable=C0103
+class setter(object): # pylint: disable=invalid-name,too-few-public-methods
     """ Setter only property """
     def __init__(self, func):
         self.__func = func

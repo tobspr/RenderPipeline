@@ -36,7 +36,7 @@ from rpcore.rpobject import RPObject
 
 __all__ = ("RPLoader",)
 
-class timed_loading_operation(object): # pylint: disable=C0103
+class timed_loading_operation(object): # pylint: disable=invalid-name,too-few-public-methods
 
     """ Context manager for a synchronous loading operation, keeping track
     on how much time elapsed during the loading process, and warning about

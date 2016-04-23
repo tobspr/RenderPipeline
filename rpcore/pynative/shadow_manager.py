@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import print_function
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 from panda3d.core import Camera, MatrixLens
 

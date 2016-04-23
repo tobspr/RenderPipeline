@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 import struct
 
@@ -79,6 +79,6 @@ class GPUCommand(object):
         offset = command_index * 32 * 4
         dest.set_subdata(offset, 32 * 4, data)
 
-    def write(self, out=None): # pylint: disable=W0613
+    def write(self, out=None): # pylint: disable=unused-argument
         print("GPUCommand(type=", self._command_type, "size=", self._current_index, ")")
         print("Data:", ', '.join([str(i) for i in self._data]))

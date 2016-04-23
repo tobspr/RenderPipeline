@@ -223,7 +223,7 @@ settings: !!omap
         label: Scene shadow Resolution
         description: >
             Controls the size of the shadow map which is used when rendering
-            environment probes. 
+            environment probes.
 
     - scene_shadow_sundist:
         type: float

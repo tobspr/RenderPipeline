@@ -104,7 +104,7 @@ uniform int maxLightIndex;
         #if HAVE_PLUGIN(env_probes)
             // vec4 probe_spec, probe_diff;
             // apply_all_probes(m, probe_spec, probe_diff);
-            
+
             // ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
             // ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
 
@@ -166,7 +166,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
         return 1.0;
     #else
         vec3 sun_vector = get_sun_vector();
-        
+
         vec3 biased_position = position;
 
         // XXX: make this configurable
@@ -192,7 +192,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
 }
 
 #if VIEWSPACE_SHADING
-    
+
     vec3 get_sun_shading(Material m, vec3 view_vector) {
         #if HAVE_PLUGIN(scattering)
 
@@ -216,7 +216,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
 
         // XXX: Need a shadow map. Maybe reuse pssm but thats super expensive
         // float shadow = get_sun_shadow_factor(m.position, m.normal);
-        
+
         float shadow = 1.0;
 
         return apply_light(m, view_vector, l, sun_color, 1.0, shadow, vec3(1));

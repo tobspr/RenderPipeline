@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 class PointerSlotStorage(object):
 

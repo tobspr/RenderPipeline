@@ -29,7 +29,7 @@ from panda3d.core import Vec3, Mat3
 
 def color_from_temperature(temperature):
     # Thanks to rdb for this conversion script
-    mm = 1000.0 / temperature
+    mm = 1000.0 / temperature # pylint: disable=invalid-name
     mm2 = mm**2
     mm3 = mm2 * mm
     x, y = 0, 0
@@ -39,8 +39,8 @@ def color_from_temperature(temperature):
     else:
         x = -3.0258469 * mm3 + 2.1070379 * mm2 + 0.2226347 * mm + 0.240390
 
-    x2 = x**2
-    x3 = x2 * x
+    x2 = x**2 # pylint: disable=invalid-name
+    x3 = x2 * x # pylint: disable=invalid-name
     if temperature < 2222:
         y = -1.1063814 * x3 - 1.34811020 * x2 + 2.18555832 * x - 0.20219683
     elif temperature < 4000:

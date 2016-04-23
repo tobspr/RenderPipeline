@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+# pylint: skip-file
+
 # Jitters from
 # https://github.com/playdeadgames/temporal/blob/master/Assets/Scripts/FrustumJitter.cs
 
@@ -35,7 +37,7 @@ __all__ = ("JITTERS",)
 JITTERS = {
 
     "still": [
-         Vec2(0.0, 0.0),
+        Vec2(0.0, 0.0),
     ],
 
     "uniorm2": [

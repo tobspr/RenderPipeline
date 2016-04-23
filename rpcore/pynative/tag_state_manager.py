@@ -34,7 +34,7 @@ class TagStateManager(object):
     """ Please refer to the native C++ implementation for docstrings and comments.
     This is just the python implementation, which does not contain documentation! """
 
-    class StateContainer(object):
+    class StateContainer(object): # pylint: disable=too-few-public-methods
         def __init__(self, tag_name, mask, write_color):
             self.cameras = []
             self.tag_states = {}

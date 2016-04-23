@@ -29,7 +29,6 @@ from rplibs.yaml import load_yaml_file
 
 from direct.stdpy.file import open
 
-from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.gui.pipe_viewer import PipeViewer
 from rpcore.image import Image

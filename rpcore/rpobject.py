@@ -27,7 +27,7 @@ THE SOFTWARE.
 # Disable the xxx has no yyy member warning, pylint seems to be
 # unable to figure out the Colorama properties, and throws an error
 # for each property.
-# pylint: disable=E1101
+# pylint: disable=no-member
 
 from __future__ import print_function
 

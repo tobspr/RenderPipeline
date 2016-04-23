@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 # Disable the unused variable warning - this occurs since we read a lot more
 # properties from the IES file than we actually need
-# pylint: disable=W0612
+# pylint: disable=unused-variable
 
 from __future__ import print_function
 
@@ -36,7 +36,7 @@ from panda3d.core import PTAFloat, Filename, SamplerState, VirtualFileSystem
 from panda3d.core import get_model_path
 from direct.stdpy.file import open, join, isfile
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 from rpcore.native import IESDataset
 from rpcore.image import Image

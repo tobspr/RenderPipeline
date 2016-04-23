@@ -31,6 +31,7 @@ from panda3d.core import PTAFloat, PTALVecBase3f
 
 from rpcore.rpobject import RPObject
 from rpcore.util.smooth_connected_curve import SmoothConnectedCurve
+from rpcore.pluginbase.setting_types import make_setting_from_factory
 
 __all__ = ["make_daysetting_from_data"]
 
@@ -42,19 +43,7 @@ def make_daysetting_from_data(data):
         "color": ColorType,
         "scalar": ScalarType
     }
-    if data["type"] not in factory:
-        raise Exception("Unkown setting type: {}".format(data["type"]))
-
-    try:
-        instance = factory[data["type"]](data)
-    except Exception:
-        print("Exception occured while parsing", data)
-        raise
-
-    if data:
-        raise Exception("Unparsed data left in plugin setting: {}".format(data))
-    return instance
-
+    return make_setting_from_factory(data, factory)
 
 class BaseType(RPObject):
     """ Base setting type for all setting types """

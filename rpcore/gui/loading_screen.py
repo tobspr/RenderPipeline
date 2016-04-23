@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 
 from rpcore.gui.sprite import Sprite
 from rpcore.rpobject import RPObject

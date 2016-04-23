@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from __future__ import division
-from rplibs.six.moves import range
+from rplibs.six.moves import range # pylint: disable=import-error
 from rplibs.six import itervalues
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, Vec3, PTAInt
