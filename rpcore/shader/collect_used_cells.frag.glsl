@@ -26,6 +26,9 @@
 
 #version 430
 
+// Shader which iterates over the camera-space voxel grid and collects
+// all cells which have been flagged into a big atomic driven list.
+
 #pragma optionNV (unroll all)
 
 #pragma include "render_pipeline_base.inc.glsl"

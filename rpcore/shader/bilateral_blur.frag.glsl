@@ -26,6 +26,8 @@
 
 #version 420
 
+// This shader provides a generic blur respecting depth and normals
+
 #pragma optionNV (unroll all)
 
 #pragma include "render_pipeline_base.inc.glsl"
@@ -37,6 +39,7 @@ uniform sampler2D SourceTex;
 uniform sampler2D DownscaledDepth;
 uniform GBufferData GBuffer;
 
+// Can be used to only select a specific component. Currently hardcoded and unused.
 #define ONLY_RED_COMPONENT 1
 #if ONLY_RED_COMPONENT
     #define VALUE_TYPE float
@@ -50,13 +53,13 @@ out VALUE_TYPE result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    const vec2 pixel_size = 2.0 / SCREEN_SIZE;
+    vec2 pixel_size = 2.0 / SCREEN_SIZE;
 
     // Store accumulated color
     VALUE_TYPE accum = VALUE_TYPE(0);
     float accum_w = 0.0;
 
-    // Amount of samples, don't forget to change the weights array, too
+    // Amount of samples, don't forget to change the weights array in case you change this.
     const int blur_size = 4;
 
     // Get the mid pixel normal and depth
@@ -66,19 +69,20 @@ void main() {
     // Blur to the right and left
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         vec2 offcoord = texcoord + pixel_size * i * blur_direction;
-        VALUE_TYPE sampled = textureLod(SourceTex, offcoord, 0) SWIZLLE ;
+        VALUE_TYPE sampled = textureLod(SourceTex, offcoord, 0) SWIZLLE;
         vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
-        float d = texture(DownscaledDepth, offcoord).x;
+        float depth = texture(DownscaledDepth, offcoord).x;
 
         float weight = gaussian_weights_4[abs(i)];
+
+        // Weight by normal and depth
         weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 1.0);
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) * 3);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(depth - pixel_depth) * 3);
 
         accum += sampled * weight;
         accum_w += weight;
     }
 
-    accum /= max(0.05, accum_w);
-    // accum = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0).x;
+    accum /= max(0.04, accum_w);
     result = accum;
 }

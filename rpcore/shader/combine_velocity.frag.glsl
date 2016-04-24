@@ -26,6 +26,9 @@
 
 #version 420
 
+// Combines camera and per object velocity by using the velocity of the
+// closest fragment
+
 #pragma optionNV (unroll all)
 
 #define USE_GBUFFER_EXTENSIONS
@@ -34,15 +37,14 @@
 
 out vec2 result;
 
-// Combines camera and per object velocity
-
 void main() {
   vec2 texcoord = get_texcoord();
   ivec2 coord = ivec2(gl_FragCoord.xy);
 
-  // Take velocity of closest fragment
   vec3 closest = vec3(0, 0, 1);
-  const int filter_size = 2;
+  const int filter_size = 1;
+
+  // Take velocity of closest fragment
   for (int i = -filter_size; i <= filter_size; ++i) {
     for (int j = -filter_size; j <= filter_size; ++j) {
       if ((i == 0 && j == 0) || (abs(i) == 2 && abs(j) == 2)) {
@@ -55,6 +57,9 @@ void main() {
     }
   }
 
+  // Combine camera and per object velocity.
+  // XXX: Most likely this is wrong. But since per-object velocity currently
+  // is disabled, its not an issue.
   vec2 camera_velocity = get_camera_velocity(closest.xy);
   vec2 per_object_velocity = get_object_velocity_at(closest.xy);
   result = camera_velocity + per_object_velocity;

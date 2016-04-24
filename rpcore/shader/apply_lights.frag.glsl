@@ -26,6 +26,8 @@
 
 #version 420
 
+// This shader performs the screen space shading of all lights
+
 #pragma include "render_pipeline_base.inc.glsl"
 
 // Tell the lighting pipeline we are doing this in screen space, so gl_FragCoord
@@ -51,8 +53,7 @@ void main() {
     // Extract material properties
     vec2 texcoord = get_texcoord();
     Material m = unpack_material(GBuffer);
-    ivec3 tile = get_lc_cell_index(
-        ivec2(gl_FragCoord.xy),
+    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy),
         distance(MainSceneData.camera_pos, m.position));
 
     // Don't shade pixels out of the shading range
@@ -64,8 +65,7 @@ void main() {
     #endif
 
     // Apply all lights
-    result.xyz = shade_material_from_tile_buffer(m, tile);
-    result.w = 1.0;
+    result = vec4(shade_material_from_tile_buffer(m, tile), 1);
 
     /*
 

@@ -26,6 +26,8 @@
 
 #version 400
 
+// This shader applies the ambient term to the shaded scene
+
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
@@ -39,8 +41,6 @@ uniform sampler2D PrefilteredMetalBRDF;
 uniform sampler2D PrefilteredCoatBRDF;
 
 uniform samplerCube DefaultEnvmap;
-
-#define USE_WHITE_ENVIRONMENT 0
 
 #if HAVE_PLUGIN(scattering)
     uniform samplerCube ScatteringIBLDiffuse;
@@ -68,26 +68,18 @@ uniform samplerCube DefaultEnvmap;
 out vec4 result;
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
-    // return occlusion;
     return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
 }
 
 // From: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 vec3 compute_bloom_luminance(vec3 bloom_color, float bloom_ec, float current_ev) {
-    // currentEV is the value calculated at the previous frame
     float bloom_ev = current_ev + bloom_ec;
-    // convert to luminance
     return bloom_color * pow(2, bloom_ev - 3);
 }
 
 void main() {
-
     vec2 texcoord = get_texcoord();
-
-    // Get material properties
     Material m = unpack_material(GBuffer);
-
-    // Get view vector
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
 
     // Store the accumulated ambient term in a variable
@@ -109,7 +101,6 @@ void main() {
                     result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
                 #endif
             #endif
-
             return;
         }
 
@@ -120,17 +111,8 @@ void main() {
         // Compute angle between normal and view vector
         float NxV = clamp(-dot(m.normal, view_vector), 1e-5, 1.0);
 
-        // OPTIONAL: Increase mipmap level at grazing angles to decrease aliasing
-        #if 0
-            float mipmap_bias = abs(dFdx(m.roughness)) + abs(dFdy(m.roughness));
-            mipmap_bias += saturate(pow(1.0 - NxV, 15.0));
-            mipmap_bias *= 4.0;
-        #else
-            float mipmap_bias = 0.0;
-        #endif
-
         // Get mipmap offset for the material roughness
-        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV) + mipmap_bias;
+        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
 
         // Sample default environment map
         vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
@@ -141,42 +123,36 @@ void main() {
 
         // Scattering specific code
         #if HAVE_PLUGIN(scattering)
-
             float scat_mipmap = m.shading_model == SHADING_MODEL_CLEARCOAT ?
                 CLEARCOAT_ROUGHNESS : get_specular_mipmap(m);
-            scat_mipmap += mipmap_bias;
 
-            // Sample prefiltered scattering cubemap
             ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
-
-            // Diffuse IBL
             ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
         #endif
 
+        // Blend environment maps
         #if HAVE_PLUGIN(env_probes)
-            // Mix environment maps
             vec4 probe_spec = textureLod(EnvmapAmbientSpec, texcoord, 0);
             vec4 probe_diff = textureLod(EnvmapAmbientDiff, texcoord, 0);
-
             ibl_diffuse = ibl_diffuse * (1 - probe_diff.w) + probe_diff.xyz;
             ibl_specular = ibl_specular * (1 - probe_spec.w) + probe_spec.xyz;
         #endif
 
+        // Blend VXGI on top
         #if HAVE_PLUGIN(vxgi)
             // vec4 vxgi_spec = texture(VXGISpecular, texcoord);
             ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
             // ibl_specular *= ibl_diffuse;
             // ibl_specular = ibl_specular * (1 - vxgi_spec.w) + vxgi_spec.xyz;
-
         #endif
 
+        // Blend screen space reflections
         #if HAVE_PLUGIN(ssr)
             vec4 ssr_spec = textureLod(SSRSpecular, texcoord, 0);
 
             // Fade out SSR on high roughness values
             ssr_spec *= 1.0 - saturate(m.roughness / GET_SETTING(ssr, roughness_fade));
             ssr_spec *= GET_SETTING(ssr, effect_scale);
-
             ibl_specular = ibl_specular * (1 - ssr_spec.w) + ssr_spec.xyz;
         #endif
 
@@ -206,16 +182,14 @@ void main() {
         fresnel = mix(fresnel, metallic_fresnel, m.metallic);
 
         if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
-
             vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.333);
-            // vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.0);
 
             #if HAVE_PLUGIN(scattering)
                 vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir,
-                    get_specular_mipmap(m) + mipmap_bias).xyz;
+                    get_specular_mipmap(m)).xyz;
             #else
                 vec3 ibl_specular_base = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir),
-                    get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV) + mipmap_bias).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+                    get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV)).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
             #endif
 
             #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
@@ -223,18 +197,13 @@ void main() {
             #endif
 
             specular_ambient = env_brdf_coat.g * ibl_specular;
-
-            // Approximation
-            // float clearcoat_strength = 0.95 + 2 * saturate(m.linear_roughness - 0.35);
-            float clearcoat_strength = 1.0;
-            specular_ambient += env_brdf_coat.r * ibl_specular_base * m.basecolor * clearcoat_strength;
-
+            specular_ambient += env_brdf_coat.r * ibl_specular_base * m.basecolor;
         } else {
             specular_ambient = fresnel * ibl_specular;
         }
 
+        // Sample precomputed occlusion and multiply the ambient term with it
         #if HAVE_PLUGIN(ao)
-            // Sample precomputed occlusion andd multiply the ambient term with it
             float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
             float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
         #else
@@ -243,21 +212,19 @@ void main() {
         #endif
 
         // Add diffuse and specular ambient term
-        ambient = diffuse_ambient * occlusion + specular_ambient * specular_occlusion;
+        ambient += diffuse_ambient * occlusion + specular_ambient * specular_occlusion;
 
     #endif
 
     // Emissive materials
     #if !DEBUG_MODE
         if (m.shading_model == SHADING_MODEL_EMISSIVE) {
+            // TODO: For emissive, use: compute_bloom_luminance() instead of a fixed value
             ambient = m.basecolor * 5000.0;
         }
     #endif
 
-    // TODO: For emissive, use: compute_bloom_luminance()
-
     #if DEBUG_MODE
-
         #if MODE_ACTIVE(OCCLUSION)
             result = textureLod(AmbientOcclusion, texcoord, 0).xxxx;
             return;
@@ -277,14 +244,15 @@ void main() {
     vec4 scene_color = textureLod(ShadedScene, texcoord, 0);
 
     #if HAVE_PLUGIN(scattering) && !DEBUG_MODE
+        // Scattering extinction is stored in the w component of the scene texture
         ambient *= scene_color.w;
     #endif
 
     #if MODE_ACTIVE(ENVPROBE_COUNT)
+        // Pass through debug modes
         result = texture(EnvmapAmbientDiff, texcoord);
         return;
     #endif
 
-    result = scene_color * 1.0 + vec4(ambient, 1) * 1.0;
-    result.w = 1.0;
+    result = vec4(scene_color.xyz + ambient, 1);
 }

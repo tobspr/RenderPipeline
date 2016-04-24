@@ -116,9 +116,13 @@
 
 // Controls the brightness of the fallback cubemap
 #if REFERENCE_MODE
-  #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
+    #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
 #else
-  #define DEFAULT_ENVMAP_BRIGHTNESS 12.0
+    #if HAVE_PLUGIN(color_correction)
+        #define DEFAULT_ENVMAP_BRIGHTNESS 12.0
+    #else
+        #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
+    #endif
 #endif
 
 // Minimum roughness, avoids infinitely bright highlights
@@ -127,5 +131,9 @@
 // Controls at which point the sun is below the horizon and does not have any
 // influence anymore
 #define SUN_VECTOR_HORIZON 0.0
+
+// Whether to use a completely white environment, only used in reference mode
+#define USE_WHITE_ENVIRONMENT 0
+
 
 #pragma include "includes/common_functions.inc.glsl"

@@ -26,6 +26,8 @@
 
 #version 420
 
+// This shader provides a bilateral blur at half-resolution
+
 #pragma optionNV (unroll all)
 
 #pragma include "render_pipeline_base.inc.glsl"
@@ -42,51 +44,36 @@ float get_lin_z(vec2 ccoord) {
     return get_linear_z_from_z(get_gbuffer_depth(GBuffer, ccoord));
 }
 
-const vec2 pixel_size = 2.0 / SCREEN_SIZE;
-
-void do_blur(vec2 coord, int i, float weight, vec3 pixel_nrm, float pixel_depth, inout vec4 accum, inout float accum_w) {
-    vec2 offcoord = coord + pixel_size * i * blur_direction;
-    vec4 sampled = textureLod(SourceTex, offcoord, 0);
-    vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
-    float d = get_lin_z(offcoord);
-
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) / 0.01);
-    weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(d - pixel_depth) / 0.001);
-
-    accum += sampled * weight;
-    accum_w += weight;
-}
-
-
 void main() {
-
     vec2 texcoord = get_half_native_texcoord();
+    vec2 pixel_size = 2.0 / SCREEN_SIZE;
 
     // Store accumulated color
     vec4 accum = vec4(0);
     float accum_w = 0.0;
 
-    // Get the weights array
+    // Amount of samples, don't forget to change the weights array in case you change this.
     const int blur_size = 4;
-    CONST_ARRAY float weights[blur_size] = gaussian_weights_4; // <-- this is based on the blur size
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
     float pixel_depth = get_lin_z(texcoord);
 
     // Blur to the right
-    for (int i = 0; i < blur_size; ++i) {
-        float weight = weights[i];
-        do_blur(texcoord, i, weight, pixel_nrm, pixel_depth, accum, accum_w);
+    for (int i = -blur_size + 1; i < blur_size; ++i) {
+        vec2 offcoord = coord + pixel_size * i * blur_direction;
+        vec4 sampled = textureLod(SourceTex, offcoord, 0);
+        vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
+        float depth = get_lin_z(offcoord);
+
+        float weight = gaussian_weights_4[abs(i)];
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) / 0.01);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(depth - pixel_depth) / 0.001);
+
+        accum += sampled * weight;
+        accum_w += weight;
     }
 
-    // Blur to the left
-    for (int i = -1; i > -blur_size; --i) {
-        float weight = weights[-i];
-        do_blur(texcoord, i, weight, pixel_nrm, pixel_depth, accum, accum_w);
-    }
-
-    accum /= max(1e-5, accum_w);
-    // accum = texelFetch(SourceTex, ivec2(gl_FragCoord.xy), 0);
+    accum /= max(0.04, accum_w);
     result = accum;
 }

@@ -26,19 +26,20 @@
 
 #version 420
 
+// Shader which upscales a half resolution image to full resolution,
+// respecting the normals and depth
+
 #pragma optionNV (unroll all)
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
-out vec4 result;
-
-// x: Max Depth, y: Max Nrm
+// x: Max depth difference, y: Max normal difference
 uniform vec2 upscaleWeights;
-uniform bool useZAsWeight;
-
 uniform sampler2D SourceTex;
 uniform GBufferData GBuffer;
+
+out vec4 result;
 
 void main() {
     // Get sample coordinates
@@ -49,12 +50,8 @@ void main() {
     float mid_depth = get_gbuffer_depth(GBuffer, coord);
     vec3 mid_nrm = get_gbuffer_normal(GBuffer, coord);
 
-    const float max_depth_diff = upscaleWeights.x; // 0.001
-    const float max_nrm_diff = upscaleWeights.y; // 0.001
-
-    // const float max_depth_diff = 0.0001;
-    // const float max_nrm_diff = 0.001;
-
+    const float max_depth_diff = upscaleWeights.x;
+    const float max_nrm_diff = upscaleWeights.y;
 
     float weights = 0.0;
     vec4 accum = vec4(0);
@@ -79,10 +76,6 @@ void main() {
             float weight = 1.0 - saturate(depth_diff);
             weight *= pow(nrm_diff, 1.0 / max_nrm_diff);
 
-            // if (useZAsWeight) {
-            //     weight *= source_sample.w;
-            // }
-
             // Make sure we don't have a null-weight, but instead only a very
             // small weight, so that in case no pixel matches, we still have
             // data to work with.
@@ -97,11 +90,7 @@ void main() {
         // When no sample was valid, take the center sample - this is still
         // better than invalid pixels
         result = texelFetch(SourceTex, coord / 2, 0);
-        // result = vec4(1, 0, 0, 1);
     } else {
         result = accum / weights;
     }
-
-    // result = texelFetch(SourceTex, coord / 2, 0);
-
 }

@@ -26,13 +26,14 @@
 
 #version 430
 
+// This shader collects the list of all lights for a given cell, sorts them
+// and then writes them out as a list.
+
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
-
-// #pragma optionNV (unroll all)
 
 flat in mat4 frustumCorners;
 uniform isamplerBuffer CellListBuffer;
@@ -40,7 +41,6 @@ uniform writeonly iimageBuffer RESTRICT PerCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
-
 
 void main() {
 
@@ -83,7 +83,6 @@ void main() {
     for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
         light_counts[i] = 0;
     }
-
 
     // Cull all lights
     for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; i++) {
