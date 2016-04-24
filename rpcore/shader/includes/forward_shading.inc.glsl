@@ -260,7 +260,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
     vec3 shading_result = vec3(0);
 
     for (int i = 0; i <= maxLightIndex; ++i) {
-        LightData light_data = read_light_data(AllLightsData, i * 4);
+        LightData light_data = read_light_data(AllLightsData, i);
         int light_type = get_light_type(light_data);
 
         // Skip Null-Lights

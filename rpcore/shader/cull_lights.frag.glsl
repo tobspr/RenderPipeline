@@ -64,31 +64,24 @@ void main() {
 
     // Amount to increment the minimum and maximum distance of the slice. This
     // avoids false negatives in culling.
-    float distance_bias = 0.0;
+    const float distance_bias = 0.0;
 
     // Find the tiles minimum and maximum distance
     float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
     float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
 
     // Get the offset in the per-cell light list
-    int storage_offs = (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT) * idx;
+    int storage_offs = (LC_MAX_LIGHTS_PER_CELL + 1) * idx;
     int num_rendered_lights = 0;
 
     // Compute sample directions
     vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size);
 
-    // Create storage for all lights
-    int light_counts[LIGHT_CLS_COUNT];
-    int light_indices[LIGHT_CLS_COUNT][LC_MAX_LIGHTS_PER_CELL];
-    for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
-        light_counts[i] = 0;
-    }
-
     // Cull all lights
     for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; i++) {
 
         // Fetch data of current light
-        LightData light_data = read_light_data(AllLightsData, i * 4);
+        LightData light_data = read_light_data(AllLightsData, i);
         int light_type = get_light_type(light_data);
 
         // Skip Null-Lights
@@ -100,9 +93,6 @@ void main() {
 
         bool visible = false;
 
-        // Base type of the light
-        int light_classification = LIGHT_CLS_INVALID;
-
         // Point Lights
         switch(light_type) {
 
@@ -112,11 +102,10 @@ void main() {
 
                 // Take area lights into account
                 radius += inner_radius;
-                for (int k = 0; k < num_raydirs; ++k) {
+                for (int k = 0; k < num_raydirs && !visible; ++k) { //XXX: Test how much && !visible does
                     visible = visible || viewspace_ray_sphere_distance_intersection(
                         light_pos_view.xyz, radius, local_ray_dirs[k], min_distance, max_distance);
                 }
-                light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_POINT_SHADOW : LIGHT_CLS_POINT_NOSHADOW;
                 break;
             }
 
@@ -125,11 +114,10 @@ void main() {
                 vec3 direction = get_spotlight_direction(light_data);
                 vec3 direction_view = world_normal_to_view(direction);
                 float fov = get_spotlight_fov(light_data);
-                for (int k = 0; k < num_raydirs; ++k) {
+                for (int k = 0; k < num_raydirs && !visible; ++k) {
                     visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz,
                         direction_view, radius, fov, local_ray_dirs[k], min_distance, max_distance);
                 }
-                light_classification = get_casts_shadows(light_data) ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
                 break;
             }
         }
@@ -139,23 +127,12 @@ void main() {
 
         // Write the light to the light buffer
         if (visible) {
-            int current_count = light_counts[light_classification];
-            light_indices[light_classification][current_count] = i;
-            light_counts[light_classification] = current_count + 1;
+            // Add one since the first element is the counter storing the total count
+            imageStore(PerCellLightsBuffer, storage_offs + 1 + num_rendered_lights, ivec4(i));
+            ++num_rendered_lights;
         }
     }
 
-    int offset = storage_offs;
-
-    // Write the light counts
-    for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
-        imageStore(PerCellLightsBuffer, offset++, ivec4(light_counts[i]));
-    }
-
-    // Write the light indices
-    for (int i = 0; i < LIGHT_CLS_COUNT; ++i) {
-        for (int k = 0; k < light_counts[i]; ++k) {
-            imageStore(PerCellLightsBuffer, offset++, ivec4(light_indices[i][k]));
-        }
-    }
+    // Write the total light count
+    imageStore(PerCellLightsBuffer, storage_offs, ivec4(num_rendered_lights));
 }

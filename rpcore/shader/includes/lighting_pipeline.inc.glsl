@@ -192,7 +192,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Spotlights without shadow
     for (int i = 0; i < num_spot_noshadow; ++i) {
-        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x;
         LightData light_data = read_light_data(AllLightsData, light_offs);
         shading_result += process_spotlight(m, light_data, v, 1.0);
     }
@@ -200,14 +200,14 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Pointlights without shadow
     for (int i = 0; i < num_point_noshadow; ++i) {
-        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x;
         LightData light_data = read_light_data(AllLightsData, light_offs);
         shading_result += process_pointlight(m, light_data, v, 1.0);
     }
 
     // Spotlights with shadow
     for (int i = 0; i < num_spot_shadow; ++i) {
-        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x;
         LightData light_data = read_light_data(AllLightsData, light_offs);
 
         // Get shadow factor
@@ -220,7 +220,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Pointlights with shadow
     for (int i = 0; i < num_point_shadow; ++i) {
-        int light_offs = texelFetch(PerCellLights, curr_offs++).x * 4;
+        int light_offs = texelFetch(PerCellLights, curr_offs++).x;
         LightData light_data = read_light_data(AllLightsData, light_offs);
 
         // Get shadow factor

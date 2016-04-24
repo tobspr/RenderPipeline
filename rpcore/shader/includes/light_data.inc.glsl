@@ -14,12 +14,19 @@ https://github.com/tobspr/RenderPipeline/wiki/LightStorage
 // Reads the light data from a given buffer and offset
 LightData read_light_data(samplerBuffer LightDataBuffer, int offset) {
     LightData data;
-    data.Data0 = texelFetch(LightDataBuffer, offset + 0);
-    data.Data1 = texelFetch(LightDataBuffer, offset + 1);
-    data.Data2 = texelFetch(LightDataBuffer, offset + 2);
-    data.Data3 = texelFetch(LightDataBuffer, offset + 3);
+    data.Data0 = texelFetch(LightDataBuffer, offset * 4 + 0);
+    data.Data1 = texelFetch(LightDataBuffer, offset * 4 + 1);
+    data.Data2 = texelFetch(LightDataBuffer, offset * 4 + 2);
+    data.Data3 = texelFetch(LightDataBuffer, offset * 4 + 3);
     return data;
 }
+
+// Only reads the light type, in case nothing else is required
+int read_light_type(samplerBuffer LightDataBuffer, int offset) {
+    float data0x = texelFetch(LightDataBuffer, offset * 4 + 0).x;
+    return gpu_cq_unpack_int_from_float(data0x);
+}
+
 
 // Extracts the type of a light
 int get_light_type(LightData data) {

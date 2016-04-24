@@ -62,8 +62,9 @@ void main() {
         result = prev_result;
         return;
     }
+    
+    vec3 noise_vec = rand_rgb(texcoord + 0.5 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
 
-    vec3 noise_vec = rand_rgb(texcoord + 0.5 * (MainSceneData.frame_index % 8));
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);

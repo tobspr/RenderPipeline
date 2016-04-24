@@ -47,7 +47,7 @@ class CullLightsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"PerCellLights": self.per_cell_lights}
+        return {"PerCellLights": self.grouped_cell_lights}
 
     @property
     def produced_defines(self):
@@ -61,16 +61,28 @@ class CullLightsStage(RenderStage):
         self.target = self.create_target("CullLights")
         self.target.size = 0, 0
         self.target.prepare_buffer()
+        
+        # TODO: Use no oversized triangle in this stage
+        self.target_group = self.create_target("GroupLightsByClass")
+        self.target_group.size = 0, 0
+        self.target_group.prepare_buffer()
 
         self.per_cell_lights = Image.create_buffer("PerCellLights", 0, "R32I")
+        self.grouped_cell_lights = Image.create_buffer("GroupedPerCellLights", 0, "R32I")
         self.target.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
+        self.target_group.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
+        self.target_group.set_shader_input("GroupedCellLightsBuffer", self.grouped_cell_lights)
 
     def reload_shaders(self):
         self.target.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")
+        self.target_group.shader = self.load_shader("tiled_culling.vert.glsl", "group_lights.frag.glsl")
 
     def set_dimensions(self):
         max_cells = self._pipeline.light_mgr.total_tiles
         num_rows = int(math.ceil(max_cells / float(self.slice_width)))
         self.per_cell_lights.set_x_size(
+            max_cells * (self.max_lights_per_cell + 1))
+        self.grouped_cell_lights.set_x_size(
             max_cells * (self.max_lights_per_cell + self.num_light_classes))
         self.target.size = self.slice_width, num_rows
+        self.target_group.size = self.slice_width, num_rows
