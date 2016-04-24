@@ -57,25 +57,36 @@ class CullLightsStage(RenderStage):
         }
 
     def create(self):
+        self.target_visible = self.create_target("GetVisibleLights")
+        self.target_visible.size = 16, 16
+        self.target_visible.prepare_buffer()
+
         # TODO: Use no oversized triangle in this stage
-        self.target = self.create_target("CullLights")
-        self.target.size = 0, 0
-        self.target.prepare_buffer()
+        self.target_cull = self.create_target("CullLights")
+        self.target_cull.size = 0, 0
+        self.target_cull.prepare_buffer()
         
         # TODO: Use no oversized triangle in this stage
         self.target_group = self.create_target("GroupLightsByClass")
         self.target_group.size = 0, 0
         self.target_group.prepare_buffer()
 
+        self.frustum_lights = Image.create_buffer("FrustumLights", self._pipeline.light_mgr.MAX_LIGHTS, "R32I")
         self.per_cell_lights = Image.create_buffer("PerCellLights", 0, "R32I")
         self.grouped_cell_lights = Image.create_buffer("GroupedPerCellLights", 0, "R32I")
-        self.target.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
+        self.target_visible.set_shader_input("FrustumLights", self.frustum_lights)
+        self.target_cull.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
+        self.target_cull.set_shader_input("FrustumLights", self.frustum_lights)
         self.target_group.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
         self.target_group.set_shader_input("GroupedCellLightsBuffer", self.grouped_cell_lights)
 
     def reload_shaders(self):
-        self.target.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")
+        self.target_cull.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")
         self.target_group.shader = self.load_shader("tiled_culling.vert.glsl", "group_lights.frag.glsl")
+        self.target_visible.shader = self.load_shader("view_frustum_cull.frag.glsl")
+
+    def update(self):
+        self.frustum_lights.clear_image()
 
     def set_dimensions(self):
         max_cells = self._pipeline.light_mgr.total_tiles
@@ -84,5 +95,5 @@ class CullLightsStage(RenderStage):
             max_cells * (self.max_lights_per_cell + 1))
         self.grouped_cell_lights.set_x_size(
             max_cells * (self.max_lights_per_cell + self.num_light_classes))
-        self.target.size = self.slice_width, num_rows
+        self.target_cull.size = self.slice_width, num_rows
         self.target_group.size = self.slice_width, num_rows

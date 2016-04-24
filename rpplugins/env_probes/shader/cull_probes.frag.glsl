@@ -31,7 +31,6 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
 
-flat in mat4 frustumCorners;
 out vec4 result;
 
 uniform isamplerBuffer CellListBuffer;
@@ -74,10 +73,15 @@ void main() {
         vec4 pos_view = MainSceneData.view_mat_z_up * vec4(map.bounding_sphere_center, 1);
 
         bool visible = false;
+
+        Sphere sphere;
+        sphere.pos = pos_view.xyz;
+        sphere.radius = map.bounding_sphere_radius + bsphere_bias;
+
         // Check for visibility
         for (int k = 0; k < num_raydirs; ++k) {
             visible = visible || viewspace_ray_sphere_distance_intersection(
-                pos_view.xyz, map.bounding_sphere_radius + bsphere_bias, local_ray_dirs[k], min_distance, max_distance);
+                sphere, local_ray_dirs[k], min_distance, max_distance);
         }
 
         if (visible) {

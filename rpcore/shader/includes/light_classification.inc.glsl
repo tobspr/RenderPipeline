@@ -39,3 +39,14 @@
 #if LIGHT_CLS_COUNT != LC_LIGHT_CLASS_COUNT
     #error GLSL and Python lighting system does not match up! Make sure you updated the number of light classes.
 #endif
+
+int classify_light(int light_type, bool casts_shadows) {
+    switch (light_type) {
+        case LT_SPOT_LIGHT:
+            return casts_shadows ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
+        case LT_POINT_LIGHT:
+            return casts_shadows ? LIGHT_CLS_POINT_SHADOW : LIGHT_CLS_POINT_NOSHADOW;
+
+    };
+    return LIGHT_CLS_INVALID;
+}

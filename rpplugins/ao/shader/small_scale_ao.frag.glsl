@@ -71,7 +71,7 @@ void main() {
 
     float kernel_scale = min(5.0, 10.0 / pixel_z);
     const float sample_radius = 11.0;
-    const int num_samples = 2;
+    const int num_samples = 4;
     // const float bias = max(0, -0.5 + 2.6 / kernel_scale);
     const float bias = 0.0001 + 0.006 / kernel_scale;
     float max_range = 2.7;
@@ -83,8 +83,10 @@ void main() {
     sample_offset /= kernel_scale;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec3 offset = poisson_disk_3D_16[8 * i];
-        offset = mix(offset, noise_vec, 0.5);
+        vec3 offset = poisson_disk_3D_16[4 * i];
+        if (GET_SETTING(ao, clip_length) > 1) {
+            offset = mix(offset, noise_vec, 0.5);
+        }
 
         // Flip offset in case it faces away from the normal
         offset = face_forward(offset, pixel_view_normal);

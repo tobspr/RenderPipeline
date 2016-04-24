@@ -154,8 +154,12 @@ void main() {
 
     float t_low, t_high, tmp;
 
-    bool rb = ray_sphere_intersection(earth_mid, cloud_start, ray_start, ray_dir, t_low, tmp);
-    bool rt = ray_sphere_intersection(earth_mid, cloud_end, ray_start, ray_dir, t_high, tmp);
+    Sphere earth_sphere;
+    earth_sphere.pos = earth_mid;
+    earth_sphere.radius = cloud_start;
+    bool rb = ray_sphere_intersection(earth_sphere, ray_start, ray_dir, t_low, tmp);
+    earth_sphere.radius = cloud_end;
+    bool rt = ray_sphere_intersection(earth_sphere, ray_start, ray_dir, t_high, tmp);
 
     if (t_low < 0.0) t_low = 0.0;
     if (t_high < 0.0 || distance(t_high, t_low) < 0.01) {

@@ -81,7 +81,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     // Debugging: Fast rendering path
     #if 0
-        return max(0, dot(m.normal, l)) * light_color * attenuation * m.basecolor * shadow;
+        return light_color * attenuation;
     #endif
 
     float NxL = saturate(dot(m.normal, l_diffuse));

@@ -233,5 +233,10 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         shading_result += process_pointlight(m, light_data, v, shadow_factor);
     }
 
-    return shading_result;
+    // Fade out lights as they reach the culling distance
+    float curr_dist = distance(m.position, MainSceneData.camera_pos);
+    float fade = saturate(curr_dist / LC_MAX_DISTANCE);
+    fade = 1 - pow(fade, 25.0);
+
+    return shading_result * fade;
 }

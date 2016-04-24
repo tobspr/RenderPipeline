@@ -35,7 +35,6 @@
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
 
-flat in mat4 frustumCorners;
 uniform isamplerBuffer CellListBuffer;
 uniform isamplerBuffer PerCellLightsBuffer;
 uniform writeonly iimageBuffer RESTRICT GroupedCellLightsBuffer;
@@ -74,9 +73,10 @@ void main() {
         for (int i = 0; i < num_culled_lights; ++i) {
             int light_index = texelFetch(PerCellLightsBuffer, data_offset + 1 + i).x;
             int light_type = read_light_type(AllLightsData, light_index);
+            bool casts_shadows = read_casts_shadows(AllLightsData, light_index);
 
             // In case the culled light is of the same type as the type we are looking for
-            if (light_type == light_class) {
+            if (classify_light(light_type, casts_shadows) == light_class) {
                 imageStore(GroupedCellLightsBuffer, light_dest_offset + num_processed_lights, ivec4(light_index));
                 ++light_count;
                 ++num_processed_lights;

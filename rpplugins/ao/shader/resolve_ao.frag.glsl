@@ -30,6 +30,8 @@
 
 #define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length))
 #define RS_USE_POSITION_TECHNIQUE 1
+#define RS_DISTANCE_SCALE 0.4
+
 #pragma include "includes/temporal_resolve.inc.glsl"
 
 uniform sampler2D CurrentTex;

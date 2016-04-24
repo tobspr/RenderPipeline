@@ -18,7 +18,7 @@ Deferred Realtime Rendering Pipeline with Physically Based Shading for the <a hr
 You can click on the images to enlarge them. Besides of that, you can find many more screenshots in my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox folder</a>.
 
 **Car rendering**
-<img src="http://i.imgur.com/4baBYJB.png" alt="Car rendering" />
+<img src="http://i.imgur.com/ZDbOwRI.png" alt="Car rendering" />
 
 **Terrain and volumetric clouds**
 <img src="http://i.imgur.com/zE0ywPl.png" />

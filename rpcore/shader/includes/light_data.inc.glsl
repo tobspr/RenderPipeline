@@ -27,6 +27,10 @@ int read_light_type(samplerBuffer LightDataBuffer, int offset) {
     return gpu_cq_unpack_int_from_float(data0x);
 }
 
+bool read_casts_shadows(samplerBuffer LightDataBuffer, int offset) {
+    float data0z = texelFetch(LightDataBuffer, offset * 4 + 0).z;
+    return gpu_cq_unpack_int_from_float(data0z) >= 0;
+}
 
 // Extracts the type of a light
 int get_light_type(LightData data) {
@@ -56,9 +60,6 @@ vec3 get_light_color(LightData data) {
     return vec3(data.Data1.zw, data.Data2.x);
 }
 
-
-
-
 /*
 
 Point Light Dataset
@@ -74,7 +75,6 @@ float get_pointlight_radius(LightData data) {
 float get_pointlight_inner_radius(LightData data) {
     return data.Data2.z;
 }
-
 
 /*
 
@@ -124,5 +124,4 @@ mat4 get_source_mvp(SourceData data) {
 vec4 get_source_uv(SourceData data) {
     return data.Data4;
 }
-
 

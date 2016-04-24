@@ -35,12 +35,11 @@
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
 
-flat in mat4 frustumCorners;
 uniform isamplerBuffer CellListBuffer;
+uniform isamplerBuffer FrustumLights;
 uniform writeonly iimageBuffer RESTRICT PerCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
-uniform int maxLightIndex;
 
 void main() {
 
@@ -77,15 +76,15 @@ void main() {
     // Compute sample directions
     vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size);
 
+    // Get amount of visible lights in frustum
+    int max_frustum_lights = texelFetch(FrustumLights, 0).x;
+
     // Cull all lights
-    for (int i = 0; i < maxLightIndex + 1 && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; i++) {
+    for (int i = 0; i < max_frustum_lights && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; i++) {
+        int light_index = texelFetch(FrustumLights, i + 1).x;
 
         // Fetch data of current light
-        LightData light_data = read_light_data(AllLightsData, i);
-        int light_type = get_light_type(light_data);
-
-        // Skip Null-Lights
-        if (light_type < 1) continue;
+        LightData light_data = read_light_data(AllLightsData, light_index);
 
         // Get Light position and project it to view space
         vec3 light_pos = get_light_position(light_data);
@@ -93,33 +92,11 @@ void main() {
 
         bool visible = false;
 
-        // Point Lights
-        switch(light_type) {
-
-            case LT_POINT_LIGHT: {
-                float radius = get_pointlight_radius(light_data);
-                float inner_radius = get_pointlight_inner_radius(light_data);
-
-                // Take area lights into account
-                radius += inner_radius;
-                for (int k = 0; k < num_raydirs && !visible; ++k) { //XXX: Test how much && !visible does
-                    visible = visible || viewspace_ray_sphere_distance_intersection(
-                        light_pos_view.xyz, radius, local_ray_dirs[k], min_distance, max_distance);
-                }
-                break;
-            }
-
-            case LT_SPOT_LIGHT: {
-                float radius = get_spotlight_radius(light_data);
-                vec3 direction = get_spotlight_direction(light_data);
-                vec3 direction_view = world_normal_to_view(direction);
-                float fov = get_spotlight_fov(light_data);
-                for (int k = 0; k < num_raydirs && !visible; ++k) {
-                    visible = visible || viewspace_ray_cone_distance_intersection(light_pos_view.xyz,
-                        direction_view, radius, fov, local_ray_dirs[k], min_distance, max_distance);
-                }
-                break;
-            }
+        // Get a sphere encapsulating the light and cull against that
+        Sphere sphere = get_representative_sphere(light_data);
+        for (int k = 0; k < num_raydirs; ++k) {
+            visible = visible || viewspace_ray_sphere_distance_intersection(
+                sphere, local_ray_dirs[k], min_distance, max_distance);
         }
 
         // Uncomment this to see if the culling produces any issues
@@ -128,7 +105,7 @@ void main() {
         // Write the light to the light buffer
         if (visible) {
             // Add one since the first element is the counter storing the total count
-            imageStore(PerCellLightsBuffer, storage_offs + 1 + num_rendered_lights, ivec4(i));
+            imageStore(PerCellLightsBuffer, storage_offs + 1 + num_rendered_lights, ivec4(light_index));
             ++num_rendered_lights;
         }
     }
