@@ -137,7 +137,7 @@ def distribute():
         shutil.rmtree(tmp_dir)
     os.makedirs(tmp_dir)
 
-    for dname in ("direct", "etc", "models", "panda3d", "pandac", "Pmw", "python"):
+    for dname in ("direct", "etc", "models", "panda3d", "pandac", "python"):
         copy_tree(panda_pth, tmp_dir, panda_ignores, dname)
 
     copy_tree(panda_pth, tmp_dir, panda_ignores + [".exe"], "bin")
