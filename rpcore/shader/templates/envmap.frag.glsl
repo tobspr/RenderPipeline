@@ -28,40 +28,35 @@
 
 // Shader used for the environment map
 
-%DEFINES%
+%defines%
 
-#define IS_ENVMAP_SHADER 1
-
-#define USE_TIME_OF_DAY
+#define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/shadows.inc.glsl"
-#pragma include "includes/material.struct.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "includes/vertex_output.struct.glsl"
 
-%INCLUDES%
-%INOUT%
+%includes%
+%inout%
 
-uniform sampler2D p3d_Texture0;
-uniform Panda3DMaterial p3d_Material;
-
-layout(location=0) in VertexOutput vOutput;
-
-#pragma include "includes/forward_shading.inc.glsl"
+#pragma include "includes/nonviewspace_shading_pipeline.inc.glsl"
 
 layout(location=0) out vec4 result;
 
 void main() {
-
+    vec2 texcoord = vOutput.texcoord;
     MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
 
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mInput.color;
+    %texcoord%
 
-    vec3 ambient = get_forward_ambient(mInput, basecolor);
-    vec3 sun_lighting = get_sun_shading(mInput, basecolor);
-    vec3 lights = get_forward_light_shading(basecolor);
+    MaterialShaderOutput m = prepare_material(mInput, texcoord);
 
-    vec3 combined_lighting = (ambient + lights + sun_lighting) * 0.17;
+    %material%
 
+    // Actual lighting pass
+    Material m_out = emulate_gbuffer_pass(m, vOutput.position);
+
+    vec3 ambient = get_forward_ambient(m_out);
+    vec3 sun_lighting = get_sun_shading(m_out);
+    vec3 lights = get_forward_light_shading(m_out);
+
+    vec3 combined_lighting = (ambient + lights + sun_lighting) * 0.17; // XXX: Magic number
     result = vec4(combined_lighting, 1);
 }

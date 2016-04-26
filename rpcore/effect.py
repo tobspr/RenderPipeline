@@ -24,22 +24,22 @@ THE SOFTWARE.
 
 """
 
-import copy
-
 from rplibs.six import iteritems, iterkeys
 from rplibs.yaml import load_yaml_file
 
 from panda3d.core import Filename
+from direct.stdpy.file import open
 
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
-from rpcore.util.shader_template import ShaderTemplate
 
 class Effect(RPObject):
 
     """ This class represents an instance of a compiled effect. It can be loaded
-    from a File. """
+    from a file. """
 
+    # Configuration options which can be set per effect instance. These control
+    # which features are available in the effect, and which passes to render.
     _DEFAULT_OPTIONS = {
         "render_gbuffer": True,
         "render_shadow": True,
@@ -51,8 +51,16 @@ class Effect(RPObject):
         "parallax_mapping": False,
     }
 
+    # All supported render passes, should match the available passes in the
+    # TagStateManager class.
     _PASSES = ("gbuffer", "shadow", "voxelize", "envmap", "forward")
+
+    # Effects are cached based on their source filename and options, this is
+    # the cache where compiled are effects stored.
     _GLOBAL_CACHE = {}
+
+    # Global counter to store the amount of generated effects, used to create
+    # a unique id used for writing temporary files.
     _EFFECT_ID = 0
 
     @classmethod
@@ -92,21 +100,19 @@ class Effect(RPObject):
         # Hash the options, that is, sort the keys to make sure the values
         # are always in the same order, and then convert the flags to strings using
         # '1' for a set flag, and '0' for a unset flag
-        options_hash = ''.join(['1' if options[key] else '-' for key in sorted(iterkeys(options))])
+        options_hash = "".join(["1" if options[key] else "0" for key in sorted(iterkeys(options))])
         return file_hash + "-" + options_hash
 
     def __init__(self):
-        """ Constructs a new empty effect """
+        """ Constructs a new empty effect, this is a private constructor and
+        should not be called. Instead, use Effect.load() """
         RPObject.__init__(self)
-        self._effect_id = Effect._EFFECT_ID
+        self.effect_id = Effect._EFFECT_ID
         Effect._EFFECT_ID += 1
-        self._options = copy.deepcopy(self._DEFAULT_OPTIONS)
-        self._source = ""
-
-    @property
-    def effect_id(self):
-        """ Returns a unique id for the effect """
-        return self._effect_id
+        self.filename = None
+        self._options = self._DEFAULT_OPTIONS.copy()
+        self._generated_shader_paths = {}
+        self._shader_objs = {}
 
     def get_option(self, name):
         """ Returns a given option value by name """
@@ -123,113 +129,176 @@ class Effect(RPObject):
     def do_load(self, filename):
         """ Internal method to load the effect from the given filename, do
         not use this directly, instead use load(). """
-        self._source = filename
-        self._effect_name = self._convert_filename_to_name(filename)
-        self._shader_paths = {}
-        self._effect_hash = self._generate_hash(filename, self._options)
-        self._shader_objs = {}
+        self.filename = filename
+        self.effect_name = self._convert_filename_to_name(filename)
+        self.effect_hash = self._generate_hash(filename, self._options)
 
         # Load the YAML file
         parsed_yaml = load_yaml_file(filename) or {}
         self._parse_content(parsed_yaml)
 
-        # Construct a shader for each pass
+        # Construct a shader object for each pass
         for pass_id in self._PASSES:
-            vertex_src = self._shader_paths["vertex"]
-            fragment_src = self._shader_paths[pass_id]
+            vertex_src = self._generated_shader_paths["vertex-" + pass_id]
+            fragment_src = self._generated_shader_paths["fragment-" + pass_id]
             self._shader_objs[pass_id] = RPLoader.load_shader(vertex_src, fragment_src)
-
         return True
 
     def get_shader_obj(self, pass_id):
+        """ Returns a handle to the compiled shader object for a given render
+        pass. """
         if pass_id not in self._shader_objs:
             self.warn("Pass '" + pass_id + "' not found!")
             return False
         return self._shader_objs[pass_id]
 
     def _convert_filename_to_name(self, filename):
-        """ Constructs an effect name from a filename """
+        """ Constructs an effect name from a filename, this is used for writing
+        out temporary files """
         return filename.replace(".yaml", "").replace("effects/", "")\
             .replace("/", "_").replace("\\", "_").replace(".", "-")
 
     def _parse_content(self, parsed_yaml):
         """ Internal method to construct the effect from a yaml object """
-        for key, val in iteritems(parsed_yaml):
-            self._parse_shader_template(key, val)
+        vtx_data = parsed_yaml.get("vertex", None) or {}
+        frag_data = parsed_yaml.get("fragment", None) or {}
 
-        # Create missing programs using the default options
-        if "vertex" not in parsed_yaml:
-            self._parse_shader_template("vertex", {})
+        for pass_id in self._PASSES:
+            self._parse_shader_template(pass_id, "vertex", vtx_data)
+            self._parse_shader_template(pass_id, "fragment", frag_data)
 
-        for key in self._PASSES:
-            if key not in parsed_yaml:
-                self._parse_shader_template(key, {})
+    def _parse_shader_template(self, pass_id, stage, data):
+        """ Parses a fragment template. This just finds the default template
+        for the shader, and redirects that to construct_shader_from_data """
+        if stage == "fragment":
+            shader_ext = {"vertex": "vert", "fragment": "frag"}[stage]
+            template_src = "/$$rp/shader/templates/{}.{}.glsl".format(pass_id, shader_ext)
+        elif stage == "vertex":
+            # Using a shared vertex shader
+            template_src = "/$$rp/shader/templates/vertex.vert.glsl"
 
-    def _parse_shader_template(self, shader_id, data):
-        """ Parses a fragment template """
-        shader_ext = "vert" if shader_id == "vertex" else "frag"
-        default_template = "/$$rp/shader/templates/{}.{}.glsl".format(shader_id, shader_ext)
-        shader_path = self._construct_shader_from_data(shader_id, default_template, data)
-        self._shader_paths[shader_id] = shader_path
+        shader_path = self._construct_shader_from_data(pass_id, stage, template_src, data)
+        self._generated_shader_paths[stage + "-" + pass_id] = shader_path
 
-    def _construct_shader_from_data(self, shader_id, default_template, data): # pylint: disable=too-many-branches
+    def _construct_shader_from_data(self, pass_id, stage, template_src, data): # pylint: disable=too-many-branches
         """ Constructs a shader from a given dataset """
-        injects = {}
-        template_src = default_template
+        injects = {"defines": []}
 
-        # Check the template
-        if "template" in data:
-            data_template = data["template"]
-            if data_template != "default":
-                template_src = data_template
-
-        # Add defines to the injects
-        injects['defines'] = []
         for key, val in iteritems(self._options):
-            val_str = str(val)
             if isinstance(val, bool):
                 val_str = "1" if val else "0"
-            injects['defines'].append("#define OPT_" + key.upper() + " " + val_str)
+            else:
+                val_str = str(val)
+            injects["defines"].append("#define OPT_{} {}".format(key.upper(), val_str))
+
+        injects["defines"].append("#define IN_" + stage.upper() + "_SHADER 1")
+        injects["defines"].append("#define IN_" + pass_id.upper() + "_SHADER 1")
+        injects["defines"].append("#define IN_RENDERING_PASS 1")
 
         # Parse dependencies
         if "dependencies" in data:
             injects["includes"] = []
             for dependency in data["dependencies"]:
-                include_str = "#pragma include \"" + dependency + "\""
+                include_str = "#pragma include \"{}\"".format(dependency)
                 injects["includes"].append(include_str)
-
-        # Append inouts
-        if "inout" in data:
-            injects["inout"] = data["inout"]
+            del data["dependencies"]
 
         # Append aditional injects
-        if "inject" in data:
-            data_injects = data["inject"]
-            for key, val in iteritems(data_injects):
-                if val is None:
-                    self.warn("Empty insertion: '" + key + "'")
-                    continue
+        for key, val in iteritems(data):
+            if val is None:
+                self.warn("Empty insertion: '" + key + "'")
+                continue
 
-                if isinstance(val, (list, tuple)):
-                    self.warn("Invalid syntax, you used a list but you should have used a string:")
-                    self.warn(val)
-                    continue
-                val = [i for i in val.split("\n")]
+            if isinstance(val, (list, tuple)):
+                self.warn("Invalid syntax, you used a list but you should have used a string:")
+                self.warn(val)
+                continue
+            injects[key] = injects.get(key, []) + [i for i in val.split("\n")]
 
-                if key in injects:
-                    injects[key] += val
-                else:
-                    injects[key] = val
+        cache_key = self.effect_name + "@" + stage + "-" + pass_id + "@" + self.effect_hash
+        return self._process_shader_template(template_src, cache_key, injects)
 
-        # Check for unrecognized keys
-        for key in data:
-            if key not in ["dependencies", "inout", "inject", "template"]:
-                self.warn("Unrecognized key:", key)
+    def _process_shader_template(self, template_src, cache_key, injections):
+        """ Generates a compiled shader object from a given shader
+        source location and code injection definitions. """
+        with open(template_src, "r") as handle:
+            shader_lines = handle.readlines()
 
-        shader = ShaderTemplate(
-            template_src, self._effect_name + "@" + shader_id + "@" + self._effect_hash)
+        parsed_lines = ["\n\n"]
+        parsed_lines.append("/* Compiled Shader Template")
+        parsed_lines.append(" * generated from: '" + template_src + "'")
+        parsed_lines.append(" * cache key: '" + cache_key + "'")
+        parsed_lines.append(" *")
+        parsed_lines.append(" * !!! Autogenerated, do not edit! Your changes will be lost. !!!")
+        parsed_lines.append(" */\n\n")
 
-        for key, val in iteritems(injects):
-            shader.register_template_value(key, val)
+        # Store whether we are in the main function already - we need this
+        # to properly insert scoped code blocks
+        in_main = False
 
-        return shader.create()
+        for line in shader_lines: # pylint: disable=too-many-nested-blocks
+            stripped_line = line.strip().lower()
+
+            # Check if we are already in the main function
+            if "void main()" in stripped_line:
+                in_main = True
+
+            # Check if the current line is a hook
+            if stripped_line.startswith("%") and stripped_line.endswith("%"):
+
+                # If the line is a hook, get the hook name and save the
+                # indent so we can indent all injected lines properly.
+                hook_name = stripped_line[1:-1]
+                indent = " " * (len(line) - len(line.lstrip()))
+
+                # Inject all registered template values into the hook
+                if hook_name in injections:
+
+                    # Directly remove the value from the list so we can check which
+                    # hooks were not found in the template
+                    insertions = injections.pop(hook_name)
+
+                    if len(insertions) > 0:
+
+                        # When we are in the main function, we have to make sure we
+                        # use a seperate scope, so there are no conflicts with variable
+                        # declarations
+                        header = indent + "/* Hook: " + hook_name + " */" + (" {" if in_main else "")
+                        parsed_lines.append(header)
+
+                        for line_to_insert in insertions:
+                            if line_to_insert is None:
+                                self.warn("Empty insertion '" + hook_name + "'")
+                                continue
+
+                            if not isinstance(line_to_insert, str):
+                                self.warn("Invalid line type: ", line_to_insert)
+                                continue
+
+                            # Dont indent defines and pragmas
+                            if line_to_insert.startswith("#"):
+                                parsed_lines.append(line_to_insert)
+                            else:
+                                parsed_lines.append(indent + line_to_insert)
+
+                        if in_main:
+                            parsed_lines.append(indent + "}")
+
+            else:
+                parsed_lines.append(line.rstrip())
+
+        # Add a closing newline to the file
+        parsed_lines.append("")
+
+        # Warn the user about all unused hooks
+        for key in injections:
+            self.warn("Hook '" + key + "' not found in template '" + template_src + "'!")
+
+        # Write the constructed shader and load it back
+        shader_content = "\n".join(parsed_lines)
+        temp_path = "/$$rptemp/$$effect-" + cache_key + ".glsl"
+
+        with open(temp_path, "w") as handle:
+            handle.write(shader_content)
+
+        return temp_path

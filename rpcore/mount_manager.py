@@ -208,9 +208,7 @@ class MountManager(RPObject):
         try:
             os.remove(fname)
             return True
-        except IOError:
-            pass
-        except WindowsError:
+        except (IOError, OSError):
             pass
         return False
 

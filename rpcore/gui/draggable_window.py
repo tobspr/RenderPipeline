@@ -45,13 +45,17 @@ class DraggableWindow(RPObject):
         self._title = title
         self._visible = True
         self._parent = parent if parent else Globals.base.pixel2d
-        self._context_scale = 1.0 / parent.get_sx()
-        self._context_width = Globals.native_resolution.x * self._context_scale
-        self._context_height = Globals.native_resolution.y * self._context_scale
-        self._pos = Vec2((self._context_width - self._width) / 2,
-                         (self._context_height - self._height) / 2)
         self._dragging = False
         self._drag_offset = Vec2(0)
+        self._pos = Vec2(0)
+
+    def center_on_screen(self):
+        """ Centers the window on screen """
+        self._context_scale = 1.0 / self._parent.get_sx()
+        self._context_width = Globals.native_resolution.x * self._context_scale
+        self._context_height = Globals.native_resolution.y * self._context_scale
+        self._set_pos(Vec2((self._context_width - self._width) / 2,
+                          (self._context_height - self._height) / 2))
 
     def set_title(self, title):
         """ Sets the window title """
@@ -61,6 +65,7 @@ class DraggableWindow(RPObject):
     def show(self):
         """ Shows the window """
         self._visible = True
+        self.center_on_screen()
         self._node.show()
 
     def hide(self):

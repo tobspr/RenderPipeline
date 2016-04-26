@@ -27,7 +27,7 @@
 #pragma once
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/material.struct.glsl"
+#pragma include "includes/material.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
 

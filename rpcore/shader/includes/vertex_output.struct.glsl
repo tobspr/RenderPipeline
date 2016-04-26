@@ -27,7 +27,9 @@
 #pragma once
 
 struct VertexOutput {
-    vec4 last_proj_position;
+    #if IN_GBUFFER_SHADER
+        vec4 last_proj_position;
+    #endif
     vec3 normal;
     vec2 texcoord;
     vec3 position;

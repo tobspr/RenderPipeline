@@ -26,7 +26,7 @@
 
 #version 420
 
-#define USE_TIME_OF_DAY
+#define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 

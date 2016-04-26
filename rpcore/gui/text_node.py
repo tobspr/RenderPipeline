@@ -42,7 +42,7 @@ class TextNode(RPObject):
         panda3d implementation """
         RPObject.__init__(self)
         self._node = TextNodeImpl('FTN')
-        self._node.set_text("Text")
+        self._node.set_text("")
         self._node.set_align(getattr(TextNodeImpl, "A_" + align))
         self._node.set_text_color(color.x, color.y, color.z, 1)
 

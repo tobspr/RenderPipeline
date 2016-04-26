@@ -26,15 +26,13 @@
 
 #version 430
 
-%DEFINES%
-
-#define IS_SHADOW_SHADER 1
+%defines%
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
 
-%INCLUDES%
-%INOUT%
+%includes%
+%inout%
 
 layout(location=0) in VertexOutput vOutput;
 
@@ -51,5 +49,11 @@ void main() {
         if (sampled_alpha < 0.1) discard;
     #endif
 
-    %ALPHA_TEST%
+    %alpha_test%
+
+    #if 0
+        // This prevents the effect compiler from emitting a warning about
+        // a undefined hook.
+        %material%
+    #endif
 }

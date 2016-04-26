@@ -117,3 +117,29 @@ MaterialShaderOutput make_default_material_output() {
     result.shading_model_param0 = 0.0;
     return result;
 }
+
+// Required for ior_to_specular
+#pragma include "includes/brdf.inc.glsl"
+
+#ifdef IN_RENDERING_PASS
+
+
+    // Emulates the gbuffer pass
+    Material emulate_gbuffer_pass(MaterialShaderOutput m_out, vec3 position) {
+        // Copy properties
+        Material m;
+        m.shading_model = m_out.shading_model;
+        m.basecolor = m_out.basecolor;
+        m.normal = m_out.normal;
+        m.specular_ior = m_out.specular_ior;
+        m.metallic = m_out.metallic;
+        m.shading_model_param0 = m_out.shading_model_param0;
+
+        // Assign new properties
+        m.position = position;
+        m.specular = ior_to_specular(m_out.specular_ior);
+        m.linear_roughness = m_out.roughness;
+        m.roughness *= m.roughness;
+        return m;
+    }
+#endif

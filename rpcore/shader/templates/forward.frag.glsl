@@ -31,18 +31,16 @@
 // Set DONT_FETCH_DEFAULT_TEXTURES to prevent any material textures to get sampled
 // Set DONT_SET_MATERIAL_PROPERTIES to prevent any material properties to be set.
 
-%DEFINES%
+%defines%
 
-#define IS_FORWARD_SHADER 1
 #define VIEWSPACE_SHADING 1
-
-#define USE_TIME_OF_DAY
+#define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material.struct.glsl"
+#pragma include "includes/material.inc.glsl"
 
-%INCLUDES%
+%includes%
 
 layout(location=0) in VertexOutput vOutput;
 
@@ -68,7 +66,7 @@ uniform Panda3DMaterial p3d_Material;
 
 uniform sampler2D ShadedScene;
 
-%INOUT%
+%inout%
 
 layout(location=0) out vec4 color_result;
 
@@ -83,7 +81,7 @@ void main() {
         texcoord = get_parallax_texcoord(p3d_Texture4, mInput.normalfactor);
     #endif
 
-    %TEXCOORD%
+    %texcoord%
 
     // Fetch texture data
     #if DONT_FETCH_DEFAULT_TEXTURES
@@ -134,7 +132,7 @@ void main() {
     #endif
 
     // Generate the material output
-    Material m;
+    MaterialShaderOutput m;
 
     #if DONT_SET_MATERIAL_PROPERTIES
         // Leave material properties unitialized, and hope the user knows
@@ -154,47 +152,39 @@ void main() {
         m.shading_model_param0 = mInput.arbitrary0;
     #endif
 
-    %MATERIAL%
-
-    // Glassy look
-    // m.metallic = 0;
-    // m.shading_model_param0 = 0.7;
-    // m.specular_ior = 2.3;
-    // m.basecolor = vec3(0.2);
+    %material%
 
     // Emulate gbuffer pass
-    m.position = vOutput.position;
-    m.specular = ior_to_specular(m.specular_ior);
-    m.linear_roughness = m.roughness;
-    m.roughness *= m.roughness;
+    Material m_out = emulate_gbuffer_pass(m, vOutput.position);
 
-    vec3 view_dir = normalize(vOutput.position - MainSceneData.camera_pos);
+    vec3 view_dir = normalize(m_out.position - MainSceneData.camera_pos);
     vec3 color = vec3(0);
 
-    float alpha = m.shading_model_param0;
-    AmbientResult ambient = get_full_forward_ambient(m, view_dir); 
+    float alpha = m_out.shading_model_param0;
+    AmbientResult ambient = get_full_forward_ambient(m_out, view_dir);
 
     color += ambient.diffuse;
     color += ambient.specular;
-    color += get_sun_shading(m, view_dir);
+    color += get_sun_shading(m_out, view_dir);
+
+    // XXX: Apply shading from lights too
 
     alpha = mix(alpha, 1.0, ambient.fresnel);
 
-    // Refraction
+    // Refraction (experimental)
     #if 0
-    vec3 refracted_vector_view = refract(view_dir, m.normal, 1.04);
-    float refraction_dist = 0.5;
-    vec3 refraction_dest = m.position + refracted_vector_view * refraction_dist;
-    vec2 refraction_screen = saturate(world_to_screen(refraction_dest).xy);
+        vec3 refracted_vector_view = refract(view_dir, m_out.normal, 1.04);
+        float refraction_dist = 0.5;
+        vec3 refraction_dest = m_out.position + refracted_vector_view * refraction_dist;
+        vec2 refraction_screen = saturate(world_to_screen(refraction_dest).xy);
 
-    vec2 scene_coord = get_texcoord();
-    vec3 back_color = texture(ShadedScene, refraction_screen).xyz;
+        vec2 scene_coord = get_texcoord();
+        vec3 back_color = texture(ShadedScene, refraction_screen).xyz;
 
-    color_result.xyz = back_color * (1 - alpha) + color * alpha;
-    color_result.w = 1.0;
+        color_result.xyz = back_color * (1 - alpha) + color * alpha;
+        color_result.w = 1.0;
     #else
-    color_result = vec4(color, alpha);
-
+        color_result = vec4(color, alpha);
     #endif
 }
 

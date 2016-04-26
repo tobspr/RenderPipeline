@@ -174,6 +174,10 @@ class Debugger(RPObject):
         for text in self.debug_lines:
             text.set_pixel_size(16 * max(0.8, self.gui_scale))
 
+        self.buffer_viewer.center_on_screen()
+        self.pipe_viewer.center_on_screen()
+        self.rm_selector.center_on_screen()
+
     def init_keybindings(self):
         """ Inits the debugger keybindings """
         Globals.base.accept("v", self.buffer_viewer.toggle)

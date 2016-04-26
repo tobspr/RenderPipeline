@@ -135,28 +135,25 @@ uniform int maxLightIndex;
 #else
 
     // cheap forward shaded ambient
-    vec3 get_forward_ambient(MaterialBaseInput mInput, vec3 basecolor) {
-        vec3 reflected = vOutput.normal;
+    vec3 get_forward_ambient(Material m) {
         vec3 shading_result = vec3(0);
 
         #if HAVE_PLUGIN(scattering)
-            vec3 diff_env = textureLod(ScatteringIBLDiffuse, vOutput.normal, 0).rgb;
-
+            vec3 diff_env = textureLod(ScatteringIBLDiffuse, m.normal, 0).rgb;
         #else
             int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
-            vec3 diff_env = textureLod(DefaultEnvmap, vOutput.normal, ibl_diffuse_mip).rgb * DEFAULT_ENVMAP_BRIGHTNESS;
+            vec3 diff_env = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).rgb * DEFAULT_ENVMAP_BRIGHTNESS;
         #endif
 
-        shading_result += (0.15 + 0.85 * basecolor) * diff_env;
+        shading_result += (0.15 + 0.85 * m.basecolor) * diff_env;
 
         // Emission
-        if (mInput.shading_model == SHADING_MODEL_EMISSIVE) {
-            shading_result = basecolor * (0.005 + diff_env) * 30.0;
+        if (m.shading_model == SHADING_MODEL_EMISSIVE) {
+            shading_result = m.basecolor * (0.005 + diff_env) * 30.0;
         }
 
         return shading_result;
     }
-
 
 #endif
 
@@ -230,23 +227,22 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
 
 #else
 
-    // Applies the sun shading, and if the pssm plugin is activated, also the sun shadows
-    vec3 get_sun_shading(MaterialBaseInput mInput, vec3 basecolor) {
+    // Applies the sun shading, and if the pssm plugin is activated, also the
+    // sun shadows
+    vec3 get_sun_shading(Material m) {
          #if HAVE_PLUGIN(scattering)
             vec3 shading_result = vec3(0);
             vec3 sun_vector = get_sun_vector();
             vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
 
             if (sun_vector.z >= SUN_VECTOR_HORIZON) {
-                float NxL = saturate(dot(sun_vector, vOutput.normal));
+                float NxL = saturate(dot(sun_vector, m.normal));
                 if (NxL > 0.0) {
-                    float shadow_term = get_sun_shadow_factor(vOutput.position, vOutput.normal);
-                    shading_result += NxL * sun_color * shadow_term * basecolor;
+                    float shadow_term = get_sun_shadow_factor(m.position, m.normal);
+                    shading_result += NxL * sun_color * shadow_term * m.basecolor;
                 }
             }
-
             return shading_result;
-
         #else
             return vec3(0);
         #endif
@@ -255,7 +251,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
 
 
 
-vec3 get_forward_light_shading(vec3 basecolor) {
+vec3 get_forward_light_shading(Material m) {
 
     vec3 shading_result = vec3(0);
 
@@ -267,7 +263,7 @@ vec3 get_forward_light_shading(vec3 basecolor) {
         if (light_type < 1) continue;
 
         vec3 light_pos = get_light_position(light_data);
-        vec3 l = light_pos - vOutput.position;
+        vec3 l = light_pos - m.position;
         float l_len = length(l);
         vec3 light_color = get_light_color(light_data);
 
@@ -277,8 +273,8 @@ vec3 get_forward_light_shading(vec3 basecolor) {
                 float radius = get_pointlight_radius(light_data);
                 float inner_radius = get_pointlight_inner_radius(light_data);
                 float att = attenuation_curve(dot(l, l), radius);
-                float NxL = saturate(dot(vOutput.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * (basecolor * light_color);
+                float NxL = saturate(dot(m.normal, l) / l_len);
+                shading_result += saturate(att) * NxL * (m.basecolor * light_color);
                 break;
             }
 
@@ -289,8 +285,8 @@ vec3 get_forward_light_shading(vec3 basecolor) {
 
                 float att = get_spotlight_attenuation(l / l_len, direction,
                     fov, radius, dot(l, l), -1);
-                float NxL = saturate(dot(vOutput.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * (basecolor * light_color);
+                float NxL = saturate(dot(m.normal, l) / l_len);
+                shading_result += saturate(att) * NxL * (m.basecolor * light_color);
                 break;
             }
 

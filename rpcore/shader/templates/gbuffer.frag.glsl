@@ -32,15 +32,13 @@
 // Set DONT_FETCH_DEFAULT_TEXTURES to prevent any material textures to get sampled
 // Set DONT_SET_MATERIAL_PROPERTIES to prevent any material properties to be set.
 
-%DEFINES%
-
-#define IS_GBUFFER_SHADER 1
+%defines%
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
-#pragma include "includes/material.struct.glsl"
+#pragma include "includes/material.inc.glsl"
 
-%INCLUDES%
+%includes%
 
 layout(location=0) in VertexOutput vOutput;
 
@@ -66,7 +64,7 @@ uniform Panda3DMaterial p3d_Material;
 
 #endif
 
-%INOUT%
+%inout%
 
 void main() {
 
@@ -79,7 +77,7 @@ void main() {
         texcoord = get_parallax_texcoord(p3d_Texture4, mInput.normalfactor);
     #endif
 
-    %TEXCOORD%
+    %texcoord%
 
     // Fetch texture data
     #if DONT_FETCH_DEFAULT_TEXTURES
@@ -151,7 +149,7 @@ void main() {
         m.shading_model_param0 = mInput.arbitrary0;
     #endif
 
-    %MATERIAL%
+    %material%
 
     render_material(m);
 }

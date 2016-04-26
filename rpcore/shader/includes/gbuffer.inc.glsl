@@ -26,14 +26,13 @@
 
 #pragma once
 
-#pragma include "includes/material.struct.glsl"
+#pragma include "includes/material.inc.glsl"
 #pragma include "includes/normal_packing.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
 
 uniform mat4 p3d_ProjectionMatrix;
 
-
-#if defined(IS_GBUFFER_SHADER)
+#if IN_GBUFFER_SHADER
 
     /*
 
@@ -93,7 +92,7 @@ uniform mat4 p3d_ProjectionMatrix;
     }
 
 
-#else // IS_GBUFFER_SHADER
+#else // IN_GBUFFER_SHADER
 
 
     /*
@@ -309,4 +308,4 @@ uniform mat4 p3d_ProjectionMatrix;
 
     #endif
 
-#endif // IS_GBUFFER_SHADER
+#endif // IN_GBUFFER_SHADER

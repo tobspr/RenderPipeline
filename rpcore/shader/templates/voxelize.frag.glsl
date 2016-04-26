@@ -26,51 +26,41 @@
 
 #version 430
 
-// Shader used for Voxelization, required for GI
+// Shader used for voxelization, required for GI
 
-%DEFINES%
+%defines%
 
-#define IS_VOXELIZE_SHADER 1
-
-#define USE_TIME_OF_DAY
+#define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/shadows.inc.glsl"
-#pragma include "includes/material.struct.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "includes/vertex_output.struct.glsl"
+
+%includes%
+%inout%
 
 // Voxel data
 uniform vec3 voxelGridPosition;
 uniform writeonly image3D RESTRICT VoxelGridDest;
 
-
-%INCLUDES%
-%INOUT%
-
-uniform sampler2D p3d_Texture0;
-uniform Panda3DMaterial p3d_Material;
-
-layout(location=0) in VertexOutput vOutput;
-
-#pragma include "includes/forward_shading.inc.glsl"
+#pragma include "includes/nonviewspace_shading_pipeline.inc.glsl"
 
 void main() {
-
+    vec2 texcoord = vOutput.texcoord;
     MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
 
-    vec3 basecolor = texture(p3d_Texture0, vOutput.texcoord).rgb * mInput.color;
+    %texcoord%
 
-    vec3 ambient = get_forward_ambient(mInput, basecolor);
-    vec3 sun_lighting = get_sun_shading(mInput, basecolor);
-    vec3 lights = get_forward_light_shading(basecolor);
+    MaterialShaderOutput m = prepare_material(mInput, texcoord);
 
-    vec3 shading_result = vec3(ambient * 0.0 + lights + sun_lighting);
+    %material%
+
+    Material m_out = emulate_gbuffer_pass(m, vOutput.position);
+
+    // Actual lighting pass
+    vec3 sun_lighting = get_sun_shading(m_out);
+    vec3 lights = get_forward_light_shading(m_out);
+    vec3 combined_lighting = lights + sun_lighting;
 
     // Tonemapping to pack color
-    shading_result = shading_result / (1 + shading_result);
-    // shading_result = pow(shading_result, vec3(1.0 / 2.2));
-    // shading_result = saturate(shading_result);
-
+    combined_lighting = combined_lighting / (1 + combined_lighting);
 
     // Get destination voxel
     const int resolution = GET_SETTING(vxgi, grid_resolution);
@@ -79,6 +69,6 @@ void main() {
     ivec3 vs_icoord = ivec3(vs_coord * resolution + 1e-5);
 
     // Write voxel
-    imageStore(VoxelGridDest, vs_icoord, vec4(shading_result, 1.0));
+    imageStore(VoxelGridDest, vs_icoord, vec4(combined_lighting, 1.0));
 }
 

@@ -61,7 +61,7 @@ void main() {
 
     // Blur to the right
     for (int i = -blur_size + 1; i < blur_size; ++i) {
-        vec2 offcoord = coord + pixel_size * i * blur_direction;
+        vec2 offcoord = texcoord + pixel_size * i * blur_direction;
         vec4 sampled = textureLod(SourceTex, offcoord, 0);
         vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
         float depth = get_lin_z(offcoord);

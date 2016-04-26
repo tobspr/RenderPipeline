@@ -26,7 +26,7 @@
 
 #pragma once
 
-#pragma include "includes/material.struct.glsl"
+#pragma include "includes/material.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
 #pragma include "includes/lights.inc.glsl"
 #pragma include "includes/light_data.inc.glsl"

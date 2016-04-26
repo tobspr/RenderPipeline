@@ -101,6 +101,10 @@ void main() {
                     result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
                 #endif
             #endif
+
+            #if 0
+                result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
+            #endif
             return;
         }
 
