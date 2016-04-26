@@ -22,7 +22,7 @@ from rplibs.six.moves import input # pylint: disable=import-error
 
 # TODO: Add option to skip gui folders if debugger is disabled
 
-ignores = [
+rp_ignores = [
 
     # data
     "skybox-blend.zip",
@@ -78,50 +78,80 @@ ignores = [
 
 ]
 
+panda_ignores = [
+    ".pdb",
+    ".pyc",
+    "python/.vs",
+    "python/include",
+]
+
+app_ignores = [
+    ".pyc",
+    ".blend"
+]
+
+def copy_tree(source_dir, dest_dir, ignorelist, tree_pth):
+    source = join(source_dir, tree_pth)
+    dest = join(dest_dir, tree_pth)
+    for basepath, dirnames, files in os.walk(source):
+        for f in files:
+            abspath = realpath(join(basepath, f))
+            abspath = abspath.replace("\\", "/")
+
+            for ignore in ignorelist:
+                if ignore in abspath:
+                    break
+            else:
+                local_pth = relpath(abspath, start=source)
+                dest_pth = join(dest, local_pth)
+                dname = dirname(dest_pth)
+                if not isdir(dname):
+                    print("Creating", dname)
+                    os.makedirs(dname)
+                shutil.copyfile(abspath, dest_pth)
 
 def distribute():
     print("Render Pipeline Distributor v0.1")
     print("")
     print("Copying tree ..")
 
-    tmp_dir = join(base_dir, "render_pipeline_dist")
+    dist_folder_name = "built"
+
+    tmp_dir = join(base_dir, dist_folder_name, "render_pipeline")
     if isdir(tmp_dir):
         shutil.rmtree(tmp_dir)
     os.makedirs(tmp_dir)
 
-    def copy_tree(tree_pth):
-        source = join(rp_dir, tree_pth)
-        dest = join(tmp_dir, tree_pth)
-        for basepath, dirnames, files in os.walk(source):
-            for f in files:
-                abspath = realpath(join(basepath, f))
-                abspath = abspath.replace("\\", "/")
+    for dname in ("config", "data", "rplibs", "effects", "rpcore", "rpplugins", "toolkit"):
+        copy_tree(rp_dir, tmp_dir, rp_ignores, dname)
 
-                for ignore in ignores:
-                    if ignore in abspath:
-                        break
-                else:
-                    local_pth = relpath(abspath, start=source)
-                    dest_pth = join(dest, local_pth)
-                    dname = dirname(dest_pth)
-                    if not isdir(dname):
-                        print("Creating", local_pth)
-                        os.makedirs(dname)
-                    shutil.copyfile(abspath, dest_pth)
-
-    copy_tree("config")
-    copy_tree("data")
-    copy_tree("rplibs")
-    copy_tree("effects")
-    copy_tree("rpcore")
-    copy_tree("rpplugins")
-    copy_tree("toolkit")
-
-    # shutil.copyfile(join(rp_dir, "__init__.py"), join(tmp_dir, "__init__.py"))
-    # shutil.copyfile(join(rp_dir, "README.md"), join(tmp_dir, "README.md"))
     shutil.copyfile(join(rp_dir, "LICENSE.txt"), join(tmp_dir, "LICENSE.txt"))
-    # shutil.copyfile(join(base_dir, "whl-setup.tmpl.py"), join(tmp_dir, "setup.py"))
-    # shutil.copyfile(join(base_dir, "whl-setup.tmpl.cfg"), join(tmp_dir, "setup.cfg"))
+
+    print("Copying Panda3D build ...")
+
+    python_pth = realpath(dirname(sys.executable))
+    panda_pth = realpath(join(python_pth, ".."))
+
+    tmp_dir = join(base_dir, dist_folder_name, "panda3d")
+    if isdir(tmp_dir):
+        shutil.rmtree(tmp_dir)
+    os.makedirs(tmp_dir)
+
+    for dname in ("direct", "etc", "models", "panda3d", "pandac", "Pmw", "python"):
+        copy_tree(panda_pth, tmp_dir, panda_ignores, dname)
+
+    copy_tree(panda_pth, tmp_dir, panda_ignores + [".exe"], "bin")
+
+    shutil.copyfile(join(panda_pth, "LICENSE"), join(tmp_dir, "LICENSE.txt"))
+
+    # Copy launcher script
+    shutil.copyfile(join(base_dir, "launch.templ.bat"), join(base_dir, dist_folder_name, "launch.bat"))
+
+    # Copy application
+    app_pth = join(base_dir, "../../../RenderPipeline-Samples/01-Material-Demo/")
+    tmp_dir = join(base_dir, dist_folder_name, "application")
+
+    copy_tree(app_pth, tmp_dir, app_ignores, ".")
 
 if __name__ == "__main__":
     distribute()
