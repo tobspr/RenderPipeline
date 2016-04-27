@@ -48,6 +48,8 @@ float get_linear_depth_at(vec2 coord) {
 
 void main() {
 
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
     // Provide some variables to the kernel
     vec2 screen_size = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     vec2 pixel_size = vec2(1.0) / screen_size;
@@ -63,7 +65,9 @@ void main() {
         return;
     }
     
-    vec3 noise_vec = rand_rgb(texcoord + 0.5 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
+    // vec3 noise_vec = rand_rgb(texcoord + 0.5 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
+
+    vec3 noise_vec = rand_rgb(coord % 4 + 0.01 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
 
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
@@ -71,9 +75,9 @@ void main() {
 
     float kernel_scale = min(5.0, 10.0 / pixel_z);
     const float sample_radius = 11.0;
+
     const int num_samples = 4;
-    // const float bias = max(0, -0.5 + 2.6 / kernel_scale);
-    const float bias = 0.0001 + 0.006 / kernel_scale;
+    const float bias = 0.0005 + 0.016 / kernel_scale;
     float max_range = 2.7;
 
     float sample_offset = sample_radius * pixel_size.x * 30.0;
@@ -84,9 +88,9 @@ void main() {
 
     for (int i = 0; i < num_samples; ++i) {
         vec3 offset = poisson_disk_3D_16[4 * i];
-        if (GET_SETTING(ao, clip_length) > 1) {
+        // if (GET_SETTING(ao, clip_length) > 1) {
             offset = mix(offset, noise_vec, 0.5);
-        }
+        // }
 
         // Flip offset in case it faces away from the normal
         offset = face_forward(offset, pixel_view_normal);
@@ -115,6 +119,6 @@ void main() {
     // Normalize samples
     accum /= max(0.1, range_accum);
     accum = 1 - accum;
-    prev_result *= pow(accum, 3.0);
+    prev_result *= pow(accum, 2.0);
     result = prev_result;
 }

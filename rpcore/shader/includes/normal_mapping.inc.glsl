@@ -73,7 +73,7 @@ vec2 get_parallax_texcoord(sampler2D displacement_map, float strength) {
     // To disable parallax mapping:
     // return vOutput.texcoord;
 
-    const float max_dist = 30.0;
+    const float max_dist = 50.0;
     vec3 vec_to_cam = vOutput.position - MainSceneData.camera_pos;
 
     float initial_height = texture(displacement_map, vOutput.texcoord).x;

@@ -34,8 +34,8 @@ class NetworkCommunication(RPObject):
     """ Listener which accepts messages on several ports to detect incoming updates.
     Also provides functionality to send updates. """
 
-    CONFIG_PORT = 62324
-    DAYTIME_PORT = 62325
+    CONFIG_PORT = 63324
+    DAYTIME_PORT = 63325
 
     @classmethod
     def send_async(cls, port, message):

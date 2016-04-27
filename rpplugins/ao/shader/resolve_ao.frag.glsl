@@ -30,7 +30,7 @@
 
 #define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length))
 #define RS_USE_POSITION_TECHNIQUE 1
-#define RS_DISTANCE_SCALE 0.4
+#define RS_DISTANCE_SCALE 1.0
 
 #pragma include "includes/temporal_resolve.inc.glsl"
 
@@ -42,8 +42,14 @@ out vec4 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
-    vec2 last_coord = texcoord + velocity;
 
-    result = resolve_temporal(CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
+    #if GET_SETTING(ao, clip_length) < 1
+      // No reprojection needed without temporal ao
+      result = texture(CurrentTex, texcoord).xyz;
+    #else
+      vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+      vec2 last_coord = texcoord + velocity;
+
+      result = resolve_temporal(CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
+    #endif
 }

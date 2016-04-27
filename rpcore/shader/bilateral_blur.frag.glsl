@@ -60,7 +60,7 @@ void main() {
     float accum_w = 0.0;
 
     // Amount of samples, don't forget to change the weights array in case you change this.
-    const int blur_size = 4;
+    const int blur_size = 7;
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
@@ -73,7 +73,7 @@ void main() {
         vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
         float depth = texture(DownscaledDepth, offcoord).x;
 
-        float weight = gaussian_weights_4[abs(i)];
+        float weight = gaussian_weights_7[abs(i)];
 
         // Weight by normal and depth
         weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 1.0);
