@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class DemoStage(RenderStage):
 
     """ This is a demo stage which does .. nothing """

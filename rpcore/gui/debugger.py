@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
 from panda3d.core import TexturePool, SceneGraphAnalyzer
@@ -49,6 +49,7 @@ from rpcore.rpobject import RPObject
 from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.render_target import RenderTarget
 from rpcore.image import Image
+
 
 class Debugger(RPObject):
 

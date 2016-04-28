@@ -28,6 +28,7 @@ from panda3d.core import SamplerState
 
 from rpcore.render_stage import RenderStage
 
+
 class MotionBlurStage(RenderStage):
 
     """ This stage applies the motion blur, using the screen space velocity vectors """

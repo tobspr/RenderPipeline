@@ -34,9 +34,8 @@ from .scattering_stage import ScatteringStage
 from .scattering_envmap_stage import ScatteringEnvmapStage
 from .godray_stage import GodrayStage
 
-# Create the main plugin
-class Plugin(BasePlugin):
 
+class Plugin(BasePlugin):
     name = "Atmospheric Scattering"
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for Atmospheric Scattering, and a "
@@ -65,7 +64,7 @@ class Plugin(BasePlugin):
             self.scattering_model = ScatteringMethodEricBruneton(self)
         elif method == "hosek_wilkie":
             from .scattering_methods import ScatteringMethodHosekWilkie
-            self.scattering_model = ScatteringMethodHosekWilkie(self) # pylint: disable=redefined-variable-type
+            self.scattering_model = ScatteringMethodHosekWilkie(self)  # pylint: disable=redefined-variable-type # noqa
         else:
             self.error("Unrecognized scattering method!")
 

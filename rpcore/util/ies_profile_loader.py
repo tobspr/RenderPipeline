@@ -36,15 +36,17 @@ from panda3d.core import PTAFloat, Filename, SamplerState, VirtualFileSystem
 from panda3d.core import get_model_path
 from direct.stdpy.file import open, join, isfile
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 from rpcore.native import IESDataset
 from rpcore.image import Image
 from rpcore.rpobject import RPObject
 
+
 class InvalidIESProfileException(Exception):
     """ Exception which is thrown when an error occurs during loading an IES
     Profile """
+
 
 class IESProfileLoader(RPObject):
 
@@ -145,7 +147,7 @@ class IESProfileLoader(RPObject):
         self._check_version_header(lines.pop(0))
 
         # Parse arbitrary amount of keywords
-        keywords = self._extract_keywords(lines)
+        keywords = self._extract_keywords(lines)  # noqa
 
         # Next line should be TILT=NONE according to the spec
         if lines.pop(0) != "TILT=NONE":
@@ -154,35 +156,39 @@ class IESProfileLoader(RPObject):
         # From now on, lines do not matter anymore, instead everything is
         # space seperated
         new_parts = (' '.join(lines)).replace(",", " ").split()
-        read_int = lambda: int(new_parts.pop(0))
-        read_float = lambda: float(new_parts.pop(0))
+
+        def read_int():
+            return int(new_parts.pop(0))
+
+        def read_float():
+            return float(new_parts.pop(0))
 
         # Amount of Lamps
         if read_int() != 1:
             raise InvalidIESProfileException("Only 1 Lamp supported!")
 
         # Extract various properties
-        lumen_per_lamp = read_float()
-        candela_multiplier = read_float()
+        lumen_per_lamp = read_float()  # noqa
+        candela_multiplier = read_float()  # noqa
         num_vertical_angles = read_int()
         num_horizontal_angles = read_int()
 
         if num_vertical_angles < 1 or num_horizontal_angles < 1:
             raise InvalidIESProfileException("Invalid of vertical/horizontal angles!")
 
-        photometric_type = read_int()
+        photometric_type = read_int()  # noqa
         unit_type = read_int()
 
         # Check for a correct unit type, should be 1 for meters and 2 for feet
         if unit_type not in [1, 2]:
             raise InvalidIESProfileException("Invalid unit type")
 
-        width = read_float()
-        length = read_float()
-        height = read_float()
-        ballast_factor = read_float()
-        future_use = read_float() # Unused field for future usage
-        input_watts = read_float()
+        width = read_float()  # noqa
+        length = read_float()  # noqa
+        height = read_float()  # noqa
+        ballast_factor = read_float()  # noqa
+        future_use = read_float()  # Unused field for future usage  # noqa
+        input_watts = read_float()  # noqa
 
         # Read vertical angles
         vertical_angles = [read_float() for i in range(num_vertical_angles)]

@@ -37,6 +37,7 @@ from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.pluginbase.setting_types import make_setting_from_data
 from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
 
+
 class PluginManager(RPObject):
 
     """ This class manages all plugins. It provides functionality to load plugin
@@ -210,7 +211,9 @@ class PluginManager(RPObject):
         output += "# Instead of editing this file, prefer to use the Plugin Configurator\n"
         output += "# Any formatting and comments will be lost\n\n"
         output += "enabled:\n"
-        sort_criteria = lambda pid: ("A" if self.is_plugin_enabled(pid) else "B") + pid
+
+        def sort_criteria(pid):
+            return ("A" if self.is_plugin_enabled(pid) else "B") + pid
         for plugin_id in sorted(self.settings, key=sort_criteria):
             output += "   {}- {}\n".format(
                 " # " if plugin_id not in self.enabled_plugins else " ", plugin_id)

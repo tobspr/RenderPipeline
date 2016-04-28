@@ -30,6 +30,7 @@ from panda3d.core import Vec3
 from rpcore.pynative.shadow_source import ShadowSource
 from rpcore.pynative.rp_light import RPLight
 
+
 class RPSpotLight(RPLight):
 
     """ Please refer to the native C++ implementation for docstrings and comments.

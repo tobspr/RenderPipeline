@@ -30,10 +30,12 @@ from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.render_target import RenderTarget
 
-class StuffToMakePylintHappyAgain(object): # pylint: disable=too-few-public-methods
+
+class ImageFormatTypes(object):  # pylint: disable=too-few-public-methods
 
     """ This is a small helper class to prevent pylint errors about the Image
-    class not defining the enums """
+    class not defining the enums. This class just copies the enum properties
+    from panda3d's builtin Texture class. """
 
     T_float = Texture.T_float
     T_unsigned_byte = Texture.T_unsigned_byte
@@ -51,7 +53,8 @@ class StuffToMakePylintHappyAgain(object): # pylint: disable=too-few-public-meth
     format_format = Texture.format_format
     format_component_type = Texture.format_component_type
 
-class Image(RPObject, Texture, StuffToMakePylintHappyAgain):
+
+class Image(RPObject, Texture, ImageFormatTypes):
 
     """ This is a wrapper arround the Texture class from Panda3D, which keeps
     track of all images and registers / unregisters them aswell as counting

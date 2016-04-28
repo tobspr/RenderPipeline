@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class TonemappingStage(RenderStage):
 
     required_inputs = []

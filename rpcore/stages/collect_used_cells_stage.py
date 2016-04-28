@@ -27,6 +27,7 @@ THE SOFTWARE.
 from rpcore.image import Image
 from rpcore.render_stage import RenderStage
 
+
 class CollectUsedCellsStage(RenderStage):
 
     """ This stage collects the flagged cells from the FlagUsedCellsStage and

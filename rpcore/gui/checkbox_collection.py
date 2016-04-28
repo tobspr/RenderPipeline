@@ -28,6 +28,7 @@ from rpcore.rpobject import RPObject
 
 import direct.gui.DirectGuiGlobals as DGG
 
+
 class CheckboxCollection(RPObject):
 
     """ This is a container for multiple Checkboxes, controlling that

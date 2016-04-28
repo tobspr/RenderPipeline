@@ -11,14 +11,14 @@ from __future__ import print_function, division
 
 # You can get this data from http://sunpath.azurewebsites.net/
 CONFIG = {
-        "year": 2016,
-        "month": 7,
-        "day": 21,
-        "latitude": 50.778228759765625,
-        "longitude": 6.088640213012695,
-        "height": 167,
-        "precision": 6
-    }
+    "year": 2016,
+    "month": 7,
+    "day": 21,
+    "latitude": 50.778228759765625,
+    "longitude": 6.088640213012695,
+    "height": 167,
+    "precision": 6
+}
 
 if __name__ == "__main__":
 
@@ -26,11 +26,11 @@ if __name__ == "__main__":
     import math
 
     sys.path.insert(0, "../../")
-    from rplibs.six.moves import urllib # pylint: disable=import-error
+    from rplibs.six.moves import urllib  # pylint: disable=import-error
 
     CONFIG["end_day"] = CONFIG["day"]
 
-    API = "http://www.nrel.gov/midc/apps/spa.pl?syear={year}&smonth={month}&sday={day}&eyear={year}&emonth={month}&eday={end_day}&step={precision}&stepunit=1&latitude={latitude}&longitude={longitude}&timezone=%2B1&elev={height}&press=1013&temp=20&dut1=0.0&deltat=64.797&azmrot=180&slope=0&refract=0.5667&field=2&field=35&field=36&field=38&zip=0"
+    API = "http://www.nrel.gov/midc/apps/spa.pl?syear={year}&smonth={month}&sday={day}&eyear={year}&emonth={month}&eday={end_day}&step={precision}&stepunit=1&latitude={latitude}&longitude={longitude}&timezone=%2B1&elev={height}&press=1013&temp=20&dut1=0.0&deltat=64.797&azmrot=180&slope=0&refract=0.5667&field=2&field=35&field=36&field=38&zip=0"  # noqa
 
     url = API.format(**CONFIG)
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     print("Querying api ..")
-    handle =  urllib.request.urlopen(url)
+    handle = urllib.request.urlopen(url)
     data = handle.read().decode("utf-8")
     handle.close()
 
@@ -59,7 +59,6 @@ if __name__ == "__main__":
     sys.path.insert(0, "../../")
     from rpcore.pluginbase.manager import PluginManager
     from rpcore.mount_manager import MountManager
-
 
     mount_mgr = MountManager(None)
     mount_mgr.mount()
@@ -98,11 +97,11 @@ if __name__ == "__main__":
             hour += 1
             minutes = minutes % 60
 
-
     print("Saving ..")
-    plugin_mgr.day_settings["scattering"]["sun_azimuth"].curves[0].control_points = data_points_azimuth
-    plugin_mgr.day_settings["scattering"]["sun_altitude"].curves[0].control_points = data_points_altitude
-    plugin_mgr.day_settings["scattering"]["sun_intensity"].curves[0].control_points = data_points_intensity
+    settings = plugin_mgr.day_settings["scattering"]
+    settings["sun_azimuth"].curves[0].control_points = data_points_azimuth
+    settings["sun_altitude"].curves[0].control_points = data_points_altitude
+    settings["sun_intensity"].curves[0].control_points = data_points_intensity
 
     plugin_mgr.save_daytime_overrides("/$$rpconfig/daytime.yaml")
 

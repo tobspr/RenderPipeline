@@ -32,6 +32,7 @@ from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 from rpcore.util.generic import snap_shadow_map
 
+
 class PSSMDistShadowStage(RenderStage):
 
     """ This stage generates a depth map using Variance Shadow Maps for very

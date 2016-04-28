@@ -33,6 +33,7 @@ from direct.stdpy.file import join, isdir, isfile
 
 from rpcore.rpobject import RPObject
 
+
 class MountManager(RPObject):
 
     """ This classes mounts the required directories for the pipeline to run.
@@ -271,7 +272,8 @@ class MountManager(RPObject):
         self.debug("Setting up virtual filesystem")
         self._mounted = True
 
-        convert_path = lambda pth: Filename.from_os_specific(pth).get_fullpath()
+        def convert_path(pth):
+            return Filename.from_os_specific(pth).get_fullpath()
         vfs = VirtualFileSystem.get_global_ptr()
 
         # Mount config dir as $$rpconf
@@ -308,7 +310,6 @@ class MountManager(RPObject):
         get_model_path().prepend_directory("/$$rp")
         get_model_path().prepend_directory("/$$rp/shader")
         get_model_path().prepend_directory("/$$rptemp")
-
 
     def unmount(self):
         """ Unmounts the VFS """

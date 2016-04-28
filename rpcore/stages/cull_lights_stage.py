@@ -29,6 +29,7 @@ import math
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
+
 class CullLightsStage(RenderStage):
 
     """ This stage takes the list of used cells and creates a list of lights
@@ -72,7 +73,7 @@ class CullLightsStage(RenderStage):
         self.target_group.prepare_buffer()
 
         self.frustum_lights = Image.create_buffer(
-            "FrustumLights",self._pipeline.light_mgr.MAX_LIGHTS, "R32I")
+            "FrustumLights", self._pipeline.light_mgr.MAX_LIGHTS, "R32I")
         self.per_cell_lights = Image.create_buffer(
             "PerCellLights", 0, "R32I")
 

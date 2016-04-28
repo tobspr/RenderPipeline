@@ -29,6 +29,7 @@ import math
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
+
 class CullProbesStage(RenderStage):
 
     """ This stage takes the list of used cells and creates a list of environment

@@ -35,6 +35,7 @@ from rpcore.pluginbase.setting_types import make_setting_from_factory
 
 __all__ = ["make_daysetting_from_data"]
 
+
 def make_daysetting_from_data(data):
     """ Constructs a new setting from a given dataset. This method will automatically
     instantiate a new class matching the type of the given dataset. It will fill
@@ -44,6 +45,7 @@ def make_daysetting_from_data(data):
         "scalar": ScalarType
     }
     return make_setting_from_factory(data, factory)
+
 
 class BaseType(RPObject):
     """ Base setting type for all setting types """
@@ -79,6 +81,7 @@ class BaseType(RPObject):
         """ Serializes the setting to a yaml string """
         values = ','.join(i.serialize() for i in self.curves)
         return "[{}]".format(values)
+
 
 class ScalarType(BaseType):
     """ Setting type storing a single scalar """
@@ -128,6 +131,7 @@ class ScalarType(BaseType):
             result *= exp(self.logarithmic_factor * 4.0) - 1
             result = log(result + 1.0) / (4.0 * self.logarithmic_factor)
         return result
+
 
 class ColorType(BaseType):
     """ Setting type storing a RGB color triple """

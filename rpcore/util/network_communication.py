@@ -29,6 +29,7 @@ from threading import Thread
 
 from rpcore.rpobject import RPObject
 
+
 class NetworkCommunication(RPObject):
 
     """ Listener which accepts messages on several ports to detect incoming updates.
@@ -74,7 +75,7 @@ class NetworkCommunication(RPObject):
         try:
             sock.bind(("127.0.0.1", port))
             while True:
-                data, addr = sock.recvfrom(1024) # pylint: disable=unused-variable
+                data, addr = sock.recvfrom(1024)  # pylint: disable=unused-variable
                 callback(data.decode("utf-8"))
         finally:
             sock.close()

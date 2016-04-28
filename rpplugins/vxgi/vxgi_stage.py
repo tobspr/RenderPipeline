@@ -30,6 +30,7 @@ from panda3d.core import LVecBase2i, Vec2
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
 
+
 class VXGIStage(RenderStage):
 
     required_inputs = ["voxelGridPosition"]

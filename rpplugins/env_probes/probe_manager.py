@@ -30,6 +30,7 @@ from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
 
+
 class ProbeManager(RPObject):
     """ Manages all environment probes """
 
@@ -93,7 +94,8 @@ class ProbeManager(RPObject):
         view_frustum = Globals.base.camLens.make_bounds()
         view_frustum.xform(Globals.base.cam.get_transform(Globals.base.render).get_mat())
 
-        rating = lambda probe: probe.last_update
+        def rating(probe):
+            return probe.last_update
         for candidate in sorted(self.probes, key=rating):
             if view_frustum.contains(candidate.bounds) == BoundingVolume.IF_no_intersection:
                 continue

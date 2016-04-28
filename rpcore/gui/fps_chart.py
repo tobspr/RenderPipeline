@@ -35,6 +35,7 @@ from rpcore.image import Image
 from rpcore.globals import Globals
 from rpcore.loader import RPLoader
 
+
 class FPSChart(RPObject):
 
     """ Widget to show the FPS as a chart """
@@ -83,7 +84,6 @@ class FPSChart(RPObject):
             text="0 ms", parent=self._node, x=20, y=120,
             size=13, color=Vec3(1), may_change=True)
 
-
         # Create the shader which generates the visualization texture
         self._cshader_node = ComputeNode("FPSChartUpdateChart")
         self._cshader_node.add_dispatch(250 // 10, 120 // 4, 1)
@@ -113,7 +113,6 @@ class FPSChart(RPObject):
         """ Updates the widget """
         self._store_index[0] = (self._store_index[0] + 1) % 250
         self._current_ftime[0] = Globals.clock.get_dt() * 1000.0
-
 
         avg_fps = Globals.clock.get_average_frame_rate()
         if avg_fps > 122:

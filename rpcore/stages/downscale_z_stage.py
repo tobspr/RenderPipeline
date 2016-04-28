@@ -28,6 +28,7 @@ from __future__ import division
 
 from rpcore.render_stage import RenderStage
 
+
 class DownscaleZStage(RenderStage):
 
     """ This stage downscales the depth buffer """

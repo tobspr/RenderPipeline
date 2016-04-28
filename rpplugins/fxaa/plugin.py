@@ -28,6 +28,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .fxaa_stage import FXAAStage
 
+
 class Plugin(BasePlugin):
 
     name = "FXAA (Antialiasing)"

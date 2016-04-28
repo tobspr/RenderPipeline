@@ -1,24 +1,18 @@
-"""
-
-RP Distributor
-
-"""
+""" Tool to distribute the rp and the panda3d build. """
 
 from __future__ import print_function
 
-
-import re
 import os
 import sys
 import shutil
-from os.path import isfile, isdir, join, dirname, realpath, relpath
+from os.path import isdir, join, dirname, realpath, relpath
 
 base_dir = realpath(dirname(__file__))
 rp_dir = realpath(join(base_dir, "../../"))
 os.chdir(base_dir)
 
 sys.path.insert(0, rp_dir)
-from rplibs.six.moves import input # pylint: disable=import-error
+from rplibs.six.moves import input  # pylint: disable=import-error # noqa
 
 # TODO: Add option to skip gui folders if debugger is disabled
 
@@ -90,6 +84,7 @@ app_ignores = [
     ".blend"
 ]
 
+
 def copy_tree(source_dir, dest_dir, ignorelist, tree_pth):
     source = join(source_dir, tree_pth)
     dest = join(dest_dir, tree_pth)
@@ -109,6 +104,7 @@ def copy_tree(source_dir, dest_dir, ignorelist, tree_pth):
                     print("Creating", dname)
                     os.makedirs(dname)
                 shutil.copyfile(abspath, dest_pth)
+
 
 def distribute():
     print("Render Pipeline Distributor v0.1")
@@ -145,7 +141,8 @@ def distribute():
     shutil.copyfile(join(panda_pth, "LICENSE"), join(tmp_dir, "LICENSE.txt"))
 
     # Copy launcher script
-    shutil.copyfile(join(base_dir, "launch.templ.bat"), join(base_dir, dist_folder_name, "launch.bat"))
+    shutil.copyfile(
+        join(base_dir, "launch.templ.bat"), join(base_dir, dist_folder_name, "launch.bat"))
 
     # Copy application
     app_pth = join(base_dir, "../../../RenderPipeline-Samples/01-Material-Demo/")

@@ -31,10 +31,11 @@ import sys
 import zipfile
 import shutil
 
-from rplibs.six.moves import urllib # pylint: disable=import-error
+from rplibs.six.moves import urllib  # pylint: disable=import-error
 from rplibs.six import BytesIO, binary_type
 
-def download_file(url, chunk_size=100*1024):
+
+def download_file(url, chunk_size=100 * 1024):
     """ Helper method to download a file displaying a progress bar """
     print("Fetching:", url)
     file_content = None

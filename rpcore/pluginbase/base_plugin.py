@@ -28,6 +28,7 @@ from direct.stdpy.file import join
 
 from rpcore.rpobject import RPObject
 
+
 class BasePlugin(RPObject):
 
     """ This is the base class for all plugins. All plugin classes derive from

@@ -33,6 +33,7 @@ from rpcore.rpobject import RPObject
 from rpcore.util.shader_input_blocks import GroupedInputBlock
 from rpcore.pluginbase.day_setting_types import ColorType
 
+
 class DayTimeManager(RPObject):
 
     """ This manager handles all time of day settings, provides them as

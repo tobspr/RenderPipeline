@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import math
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 from rplibs.six import iteritems, itervalues
 
 from direct.stdpy.file import listdir, isfile, join
@@ -36,6 +36,7 @@ from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
 from rpcore.loader import RPLoader
+
 
 class ScatteringMethod(RPObject):
 
@@ -52,6 +53,7 @@ class ScatteringMethod(RPObject):
     def compute(self):
         """ Should compute the model here if necessary """
         raise NotImplementedError()
+
 
 class ScatteringMethodHosekWilkie(ScatteringMethod):
 
@@ -110,7 +112,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         self.textures = {
             "transmittance": img_2d("scat-trans", self.trans_w, self.trans_h, tex_format),
             "irradiance": img_2d("scat-irrad", self.sky_w, self.sky_h, tex_format),
-            "inscatter": img_3d("scat-inscat", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format), # pylint: disable=line-too-long
+            "inscatter": img_3d("scat-inscat", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),  # pylint: disable=line-too-long # noqa
             "delta_e": img_2d("scat-dx-e", self.sky_w, self.sky_h, tex_format),
             "delta_sr": img_3d("scat-dx-sr", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
             "delta_sm": img_3d("scat-dx-sm", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
@@ -134,7 +136,6 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
                 shader_name = fname.split(".")[0]
                 shader_obj = RPLoader.load_shader(fpath)
                 self.shaders[shader_name] = shader_obj
-
 
     def exec_compute_shader(self, shader_obj, shader_inputs, exec_size,
                             workgroup_size=(16, 16, 1)):

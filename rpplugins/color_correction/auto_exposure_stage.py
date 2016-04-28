@@ -31,6 +31,7 @@ from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
 from rpcore.image import Image
 
+
 class AutoExposureStage(RenderStage):
 
     required_pipes = ["ShadedScene"]
@@ -83,8 +84,8 @@ class AutoExposureStage(RenderStage):
         self.mip_targets = []
         last_tex = self.target_lum.color_tex
         while wsize_x >= 4 or wsize_y >= 4:
-            wsize_x = (wsize_x+3) // 4
-            wsize_y = (wsize_y+3) // 4
+            wsize_x = (wsize_x + 3) // 4
+            wsize_y = (wsize_y + 3) // 4
 
             mip_target = self.create_target("DScaleLum:S" + str(wsize_x))
             mip_target.add_color_attachment(bits=(16, 0, 0, 0))

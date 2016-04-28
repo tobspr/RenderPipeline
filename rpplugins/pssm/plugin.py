@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import print_function
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 from panda3d.core import PTAVecBase3f
 
 from rpcore.globals import Globals
@@ -36,6 +36,7 @@ from .pssm_stage import PSSMStage
 from .pssm_shadow_stage import PSSMShadowStage
 from .pssm_scene_shadow_stage import PSSMSceneShadowStage
 from .pssm_dist_shadow_stage import PSSMDistShadowStage
+
 
 class Plugin(BasePlugin):
 
@@ -83,7 +84,7 @@ class Plugin(BasePlugin):
         self.node.hide()
 
         # Construct the actual PSSM rig
-        self.camera_rig = PSSMCameraRig(self.get_setting("split_count")) # pylint: disable=undefined-variable
+        self.camera_rig = PSSMCameraRig(self.get_setting("split_count"))  # pylint: disable=undefined-variable # noqa
         self.camera_rig.set_sun_distance(self.get_setting("sun_distance"))
         self.camera_rig.set_pssm_distance(self.get_setting("max_distance"))
         self.camera_rig.set_logarithmic_factor(self.get_setting("logarithmic_factor"))

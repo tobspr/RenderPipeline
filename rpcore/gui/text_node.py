@@ -32,6 +32,7 @@ from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
+
 class TextNode(RPObject):
 
     """ Interface for the Panda3D TextNode. """

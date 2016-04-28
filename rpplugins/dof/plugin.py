@@ -28,6 +28,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .dof_stage import DoFStage
 
+
 class Plugin(BasePlugin):
 
     name = "Depth of Field"

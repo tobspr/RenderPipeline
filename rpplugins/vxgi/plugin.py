@@ -34,6 +34,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 from .voxelization_stage import VoxelizationStage
 from .vxgi_stage import VXGIStage
 
+
 class Plugin(BasePlugin):
 
     name = "Voxel Global Illumination"

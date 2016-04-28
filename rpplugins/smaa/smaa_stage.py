@@ -29,6 +29,7 @@ from panda3d.core import PTAInt
 
 from rpcore.render_stage import RenderStage
 
+
 class SMAAStage(RenderStage):
 
     """ This stage does the actual SMAA """

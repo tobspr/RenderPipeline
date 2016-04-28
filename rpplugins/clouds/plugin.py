@@ -34,6 +34,7 @@ from .apply_clouds_stage import ApplyCloudsStage
 # Dynamic cloud generation is disabled for now
 # from .cloud_voxel_stage import CloudVoxelStage
 
+
 class Plugin(BasePlugin):
 
     name = "Volumetric Clouds"
@@ -47,7 +48,6 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         # self.generation_stage = self.create_stage(CloudVoxelStage)
         self.apply_stage = self.create_stage(ApplyCloudsStage)
-
 
     def on_pipeline_created(self):
         # High-res noise
@@ -71,4 +71,3 @@ class Plugin(BasePlugin):
         weather.set_wrap_u(SamplerState.WM_repeat)
         weather.set_wrap_v(SamplerState.WM_repeat)
         self.apply_stage.set_shader_input("WeatherTex", weather)
-

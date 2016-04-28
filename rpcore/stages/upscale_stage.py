@@ -27,6 +27,7 @@ THE SOFTWARE.
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 
+
 class UpscaleStage(RenderStage):
 
     """ This stage upscales the scene to native resolution, using a bicubic filter """

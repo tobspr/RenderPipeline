@@ -30,10 +30,10 @@ from panda3d.core import GeomVertexFormat, GeomVertexData, Geom, GeomVertexWrite
 from panda3d.core import GeomTriangles, GeomNode, NodePath, Camera, OmniBoundingVolume
 from panda3d.core import TransparencyAttrib, OrthographicLens, Vec4
 
+
 class PostProcessRegion(RPObject):
 
-    """ Implementation of Panda3Ds PostProcessRegion in python, since rdb still
-    didn't accept my patch for it ... rdb, if you read this, accept my patch!"""
+    """ Simple wrapper class to create fullscreen triangles and quads """
 
     @classmethod
     def make(cls, internal_buffer, *args):

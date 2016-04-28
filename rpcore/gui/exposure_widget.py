@@ -36,6 +36,7 @@ from rpcore.image import Image
 from rpcore.globals import Globals
 from rpcore.loader import RPLoader
 
+
 class ExposureWidget(RPObject):
 
     """ Widget to show the current exposure """

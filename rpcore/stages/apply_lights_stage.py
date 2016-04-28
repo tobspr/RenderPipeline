@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class ApplyLightsStage(RenderStage):
 
     """ This stage applies the lights to the scene using the gbuffer """

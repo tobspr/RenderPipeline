@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 
 from __future__ import division
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 from rplibs.six import itervalues
 
 from panda3d.core import Camera, PerspectiveLens, Vec4, Vec3, PTAInt
@@ -33,6 +33,7 @@ from panda3d.core import Camera, PerspectiveLens, Vec4, Vec3, PTAInt
 from rpcore.globals import Globals
 from rpcore.image import Image
 from rpcore.render_stage import RenderStage
+
 
 class EnvironmentCaptureStage(RenderStage):
 
@@ -87,7 +88,6 @@ class EnvironmentCaptureStage(RenderStage):
             region.set_clear_depth(1.0)
             region.set_clear_color_active(True)
             region.set_clear_color(Vec4(0))
-
 
             lens = PerspectiveLens()
             lens.set_fov(90)

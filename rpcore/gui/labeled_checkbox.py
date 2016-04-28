@@ -31,6 +31,7 @@ from rpcore.rpobject import RPObject
 from rpcore.gui.checkbox import Checkbox
 from rpcore.gui.text import Text
 
+
 class LabeledCheckbox(RPObject):
 
     """ This is a checkbox, combined with a label. The arguments are
@@ -65,12 +66,12 @@ class LabeledCheckbox(RPObject):
             self._checkbox.node.bind(DGG.WITHIN, self._on_node_enter)
             self._checkbox.node.bind(DGG.WITHOUT, self._on_node_leave)
 
-    def _on_node_enter(self, *args): # pylint: disable=unused-argument
+    def _on_node_enter(self, *args):  # pylint: disable=unused-argument
         """ Internal callback when the node gets hovered """
         self._text.node["fg"] = (self.text_color.x + 0.1, self.text_color.y + 0.1,
                                  self.text_color.z + 0.1, 1.0)
 
-    def _on_node_leave(self, *args): # pylint: disable=unused-argument
+    def _on_node_leave(self, *args):  # pylint: disable=unused-argument
         """ Internal callback when the node gets no longer hovered """
         self._text.node["fg"] = (self.text_color.x, self.text_color.y, self.text_color.z, 1.0)
 

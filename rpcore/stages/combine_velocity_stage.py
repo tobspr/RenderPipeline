@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class CombineVelocityStage(RenderStage):
 
     """ This stage combines the per-object velocity with the

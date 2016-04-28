@@ -24,14 +24,14 @@ THE SOFTWARE.
 
 """
 
-
 from __future__ import division
 from functools import partial
 
 from panda3d.core import Texture, Vec3
+
 from direct.gui.DirectFrame import DirectFrame
-from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 from direct.gui.DirectGui import DGG
+from direct.gui.DirectScrolledFrame import DirectScrolledFrame
 
 from rplibs.six import itervalues
 
@@ -44,6 +44,7 @@ from rpcore.gui.sprite import Sprite
 from rpcore.gui.labeled_checkbox import LabeledCheckbox
 from rpcore.gui.text import Text
 from rpcore.gui.draggable_window import DraggableWindow
+
 
 class BufferViewer(DraggableWindow):
 
@@ -162,15 +163,15 @@ class BufferViewer(DraggableWindow):
 
         self._render_stages()
 
-    def _on_texture_hovered(self, hover_frame, evt=None): # pylint: disable=unused-argument
+    def _on_texture_hovered(self, hover_frame, evt=None):  # pylint: disable=unused-argument
         """ Internal method when a texture is hovered """
         hover_frame["frameColor"] = (0, 0, 0, 0.1)
 
-    def _on_texture_blurred(self, hover_frame, evt=None): # pylint: disable=unused-argument
+    def _on_texture_blurred(self, hover_frame, evt=None):  # pylint: disable=unused-argument
         """ Internal method when a texture is blurred """
         hover_frame["frameColor"] = (0, 0, 0, 0)
 
-    def _on_texture_clicked(self, tex_handle, evt=None): # pylint: disable=unused-argument
+    def _on_texture_clicked(self, tex_handle, evt=None):  # pylint: disable=unused-argument
         """ Internal method when a texture is blurred """
         self._tex_preview.present(tex_handle)
 
@@ -244,7 +245,8 @@ class BufferViewer(DraggableWindow):
             preview.set_shader_input("brightness", 1)
             preview.set_shader_input("tonemap", False)
 
-            preview_shader = DisplayShaderBuilder.build(stage_tex, scale_factor*w, scale_factor*h)
+            preview_shader = DisplayShaderBuilder.build(
+                stage_tex, scale_factor * w, scale_factor * h)
             preview.set_shader(preview_shader)
 
         num_rows = (index + entries_per_row) // entries_per_row

@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import Vec2
 from rpcore.render_stage import RenderStage
 
+
 class VolumetricsStage(RenderStage):
 
     """ This stage applies the volumetric lighting """

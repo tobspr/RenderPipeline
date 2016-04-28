@@ -1,12 +1,11 @@
 
 from __future__ import division, print_function
 
-def approx(roughness):
-    alpha = roughness * roughness
-    return 1.0 - 0.5 * roughness
-
 from panda3d.core import PNMImage, Vec3
-import os
+
+
+def approx(roughness):
+    return 1.0 - 0.5 * roughness
 
 for i in range(11):
     r = i / 10.0

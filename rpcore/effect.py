@@ -33,6 +33,7 @@ from direct.stdpy.file import open
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
+
 class Effect(RPObject):
 
     """ This class represents an instance of a compiled effect. It can be loaded
@@ -180,7 +181,7 @@ class Effect(RPObject):
         shader_path = self._construct_shader_from_data(pass_id, stage, template_src, data)
         self._generated_shader_paths[stage + "-" + pass_id] = shader_path
 
-    def _construct_shader_from_data(self, pass_id, stage, template_src, data): # pylint: disable=too-many-branches
+    def _construct_shader_from_data(self, pass_id, stage, template_src, data):  # pylint: disable=too-many-branches # noqa
         """ Constructs a shader from a given dataset """
         injects = {"defines": []}
 
@@ -236,7 +237,7 @@ class Effect(RPObject):
         # to properly insert scoped code blocks
         in_main = False
 
-        for line in shader_lines: # pylint: disable=too-many-nested-blocks
+        for line in shader_lines:  # pylint: disable=too-many-nested-blocks
             stripped_line = line.strip().lower()
 
             # Check if we are already in the main function
@@ -263,7 +264,7 @@ class Effect(RPObject):
                         # When we are in the main function, we have to make sure we
                         # use a seperate scope, so there are no conflicts with variable
                         # declarations
-                        header = indent + "/* Hook: " + hook_name + " */" + (" {" if in_main else "")
+                        header = indent + "/* Hook: " + hook_name + " */" + (" {" if in_main else "")  # noqa
                         parsed_lines.append(header)
 
                         for line_to_insert in insertions:

@@ -29,6 +29,7 @@ from panda3d.core import TransformState, Vec3, Mat4, BoundingSphere
 
 from rpcore.rpobject import RPObject
 
+
 class EnvironmentProbe(RPObject):
     """ Simple class, representing an environment probe """
 

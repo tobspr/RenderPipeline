@@ -30,7 +30,6 @@ THE SOFTWARE.
 
 from __future__ import print_function
 import sys
-import importlib
 from os.path import dirname, realpath
 
 from direct.stdpy.file import join, isfile
@@ -75,9 +74,9 @@ native_module = None
 # If the module was built, use it, otherwise use the python wrappers
 if NATIVE_CXX_LOADED:
     RPObject.global_debug("CORE", "Using native core module")
-    from rpcore.native import native_ as _native_module # pylint: disable=wrong-import-position
+    from rpcore.native import native_ as _native_module  # pylint: disable=wrong-import-position
 else:
-    from rpcore import pynative as _native_module # pylint: disable=wrong-import-position
+    from rpcore import pynative as _native_module  # pylint: disable=wrong-import-position
     RPObject.global_debug("CORE", "Using simulated python-wrapper module")
 
 # Import all classes

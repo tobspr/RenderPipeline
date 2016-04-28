@@ -33,6 +33,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 from .smaa_stage import SMAAStage
 from .jitters import JITTERS
 
+
 class Plugin(BasePlugin):
 
     name = "SMAA (Antialiasing)"
@@ -71,7 +72,6 @@ class Plugin(BasePlugin):
         scale = 1.0 / float(Globals.native_resolution.x)
 
         for x, y in JITTERS[self.get_setting("jitter_pattern")]:
-        # for x, y in ((-0.25, 0.25), (0.25, -0.25)):
             # The get_x_size() for both dimensions is not an error - its due to
             # how the OrtographicLens works internally.
             jitter_x = (x * 2 - 1) * scale * 0.5

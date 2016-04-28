@@ -28,6 +28,7 @@ from __future__ import division
 
 from rpcore.render_stage import RenderStage
 
+
 class ScatteringStage(RenderStage):
 
     """ This stage uses the precomputed data to display the scattering """

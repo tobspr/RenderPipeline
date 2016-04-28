@@ -29,6 +29,7 @@ from panda3d.core import Camera
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 
+
 class ForwardStage(RenderStage):
 
     """ Forward shading stage, which first renders all forward objects,

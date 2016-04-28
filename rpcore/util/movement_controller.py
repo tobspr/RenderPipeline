@@ -34,6 +34,7 @@ from __future__ import print_function
 from panda3d.core import ModifierButtons, Vec3, PStatClient
 from panda3d.core import Point3, CurveFitter
 
+
 class MovementController(object):
 
     """ This is a helper class, used to controll the camera and enable various
@@ -110,41 +111,41 @@ class MovementController(object):
     def setup(self):
         """ Attaches the movement controller and inits the keybindings """
         # x
-        self.showbase.accept("raw-w",       self.set_movement, [0, 1])
-        self.showbase.accept("raw-w-up",    self.set_movement, [0, 0])
-        self.showbase.accept("raw-s",       self.set_movement, [0, -1])
-        self.showbase.accept("raw-s-up",    self.set_movement, [0, 0])
+        self.showbase.accept("raw-w", self.set_movement, [0, 1])
+        self.showbase.accept("raw-w-up", self.set_movement, [0, 0])
+        self.showbase.accept("raw-s", self.set_movement, [0, -1])
+        self.showbase.accept("raw-s-up", self.set_movement, [0, 0])
 
         # y
-        self.showbase.accept("raw-a",       self.set_movement, [1, -1])
-        self.showbase.accept("raw-a-up",    self.set_movement, [1, 0])
-        self.showbase.accept("raw-d",       self.set_movement, [1, 1])
-        self.showbase.accept("raw-d-up",    self.set_movement, [1, 0])
+        self.showbase.accept("raw-a", self.set_movement, [1, -1])
+        self.showbase.accept("raw-a-up", self.set_movement, [1, 0])
+        self.showbase.accept("raw-d", self.set_movement, [1, 1])
+        self.showbase.accept("raw-d-up", self.set_movement, [1, 0])
 
         # z
-        self.showbase.accept("space",   self.set_movement, [2, 1])
+        self.showbase.accept("space", self.set_movement, [2, 1])
         self.showbase.accept("space-up", self.set_movement, [2, 0])
-        self.showbase.accept("shift",   self.set_movement, [2, -1])
+        self.showbase.accept("shift", self.set_movement, [2, -1])
         self.showbase.accept("shift-up", self.set_movement, [2, 0])
 
         # wireframe + debug + buffer viewer
         self.showbase.accept("f3", self.showbase.toggle_wireframe)
-        self.showbase.accept("f11", lambda: self.showbase.win.save_screenshot("screenshot.png") )
+        self.showbase.accept("f11", lambda: self.showbase.win.save_screenshot("screenshot.png"))
         self.showbase.accept("j", self.print_position)
 
         # mouse
-        self.showbase.accept("mouse1",    self.set_mouse_enabled, [True])
+        self.showbase.accept("mouse1", self.set_mouse_enabled, [True])
         self.showbase.accept("mouse1-up", self.set_mouse_enabled, [False])
 
         # arrow mouse navigation
-        self.showbase.accept("arrow_up",        self.set_hpr_movement, [1, 1])
-        self.showbase.accept("arrow_up-up",     self.set_hpr_movement, [1, 0])
-        self.showbase.accept("arrow_down",      self.set_hpr_movement, [1, -1])
-        self.showbase.accept("arrow_down-up",   self.set_hpr_movement, [1, 0])
-        self.showbase.accept("arrow_left",      self.set_hpr_movement, [0, 1])
-        self.showbase.accept("arrow_left-up",   self.set_hpr_movement, [0, 0])
-        self.showbase.accept("arrow_right",     self.set_hpr_movement, [0, -1])
-        self.showbase.accept("arrow_right-up",  self.set_hpr_movement, [0, 0])
+        self.showbase.accept("arrow_up", self.set_hpr_movement, [1, 1])
+        self.showbase.accept("arrow_up-up", self.set_hpr_movement, [1, 0])
+        self.showbase.accept("arrow_down", self.set_hpr_movement, [1, -1])
+        self.showbase.accept("arrow_down-up", self.set_hpr_movement, [1, 0])
+        self.showbase.accept("arrow_left", self.set_hpr_movement, [0, 1])
+        self.showbase.accept("arrow_left-up", self.set_hpr_movement, [0, 0])
+        self.showbase.accept("arrow_right", self.set_hpr_movement, [0, -1])
+        self.showbase.accept("arrow_right-up", self.set_hpr_movement, [0, 0])
 
         # increase / decrease speed
         self.showbase.accept("+", self.increase_speed)
@@ -201,8 +202,8 @@ class MovementController(object):
             self.last_mouse_pos = self.current_mouse_pos[:]
 
         # Compute movement in render space
-        movement_direction = (Vec3(self.movement[1], self.movement[0], 0)
-                              * self.speed * delta * 100.0)
+        movement_direction = (Vec3(self.movement[1], self.movement[0], 0) *
+                              self.speed * delta * 100.0)
 
         # transform by the camera direction
         camera_quaternion = self.showbase.camera.get_quat(self.showbase.render)
@@ -212,7 +213,7 @@ class MovementController(object):
         translated_direction.add_z(
             self.movement[2] * delta * 40.0 * self.speed)
 
-        self.velocity += translated_direction*0.15
+        self.velocity += translated_direction * 0.15
 
         # apply the new position
         self.showbase.camera.set_pos(self.showbase.camera.get_pos() + self.velocity)

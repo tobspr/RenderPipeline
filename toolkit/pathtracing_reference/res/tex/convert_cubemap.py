@@ -4,10 +4,10 @@ Converts the cubemap to a spherical one
 
 from __future__ import division, print_function
 
-from panda3d.core import *
+from panda3d.core import *  # noqa
 load_prc_file_data("", "textures-power-2 none")
 
-import direct.directbase.DirectStart
+import direct.directbase.DirectStart  # noqa
 
 cubemap = loader.load_cube_map("../../../../data/default_cubemap/source/#.jpg")
 w, h = 4096, 2048

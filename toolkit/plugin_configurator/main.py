@@ -43,7 +43,7 @@ sys.path.insert(0, os.getcwd())
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
 
-from rplibs.six import iteritems
+from rplibs.six import iteritems  # noqa
 
 # Load all PyQt classes
 try:
@@ -55,13 +55,14 @@ except ImportError as msg:
     sys.exit(1)
 
 # Load the generated UI Layout
-from ui.main_window_generated import Ui_MainWindow
+from ui.main_window_generated import Ui_MainWindow  # noqa
 
-from rpcore.pluginbase.manager import PluginManager
-from rpcore.util.network_communication import NetworkCommunication
-from rpcore.mount_manager import MountManager
+from rpcore.pluginbase.manager import PluginManager  # noqa
+from rpcore.util.network_communication import NetworkCommunication  # noqa
+from rpcore.mount_manager import MountManager  # noqa
 
 connect = QtCore.QObject.connect
+
 
 class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
@@ -86,11 +87,11 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self._update_queue = list()
 
         connect(self.lst_plugins, QtCore.SIGNAL("itemSelectionChanged()"),
-            self.on_plugin_selected)
+                self.on_plugin_selected)
         connect(self.lst_plugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"),
-            self.on_plugin_state_changed)
+                self.on_plugin_state_changed)
         connect(self.btn_reset_plugin_settings, QtCore.SIGNAL("clicked()"),
-            self.on_reset_plugin_settings)
+                self.on_reset_plugin_settings)
 
         self._load_plugin_list()
 
@@ -102,7 +103,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         update_thread = Thread(target=self.update_thread, args=())
         update_thread.start()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event):  # noqa
         event.accept()
         import os
         os._exit(1)
@@ -111,14 +112,17 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         """ Gets called when the user wants to reset settings of a plugin """
 
         # Ask the user if he's really sure about it
-        msg = "Are you sure you want to reset the settings of '" + self._current_plugin_instance.name + "'?\n"
-        msg+= "This does not reset the Time of Day settings of this plugin.\n\n"
-        msg+= "!! This cannot be undone !! They will be lost forever (a long time!)."
-        reply = QtGui.QMessageBox.question(self, "Warning",
-                         msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        msg = "Are you sure you want to reset the settings of '"
+        msg += self._current_plugin_instance.name + "'?\n"
+        msg += "This does not reset the Time of Day settings of this plugin.\n\n"
+        msg += "!! This cannot be undone !! They will be lost forever (a long time!)."
+        reply = QtGui.QMessageBox.question(
+            self, "Warning", msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
 
-            QtGui.QMessageBox.information(self, "Success", "Settings have been reset! You may have to restart the pipeline.")
+            QtGui.QMessageBox.information(
+                self, "Success",
+                "Settings have been reset! You may have to restart the pipeline.")
             self._plugin_mgr.reset_plugin_settings(self._current_plugin)
 
             # Save config
@@ -183,7 +187,9 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         self.lbl_plugin_desc.setText(self._current_plugin_instance.description)
 
         if "(!)" in version_str:
-            self.lbl_plugin_version.setStyleSheet("background: rgb(200, 50, 50); padding: 5px; color: #eee; padding-left: 3px; border-radius: 3px;")
+            self.lbl_plugin_version.setStyleSheet(
+                "background: rgb(200, 50, 50); padding: 5px; color: #eee;"
+                "padding-left: 3px; border-radius: 3px;")
         else:
             self.lbl_plugin_version.setStyleSheet("color: #4f8027;")
 
@@ -304,7 +310,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
         """ Shows a file chooser to show an path from """
 
         this_dir = os.path.dirname(os.path.realpath(__file__))
-        plugin_dir = os.path.join(this_dir, "../../rpplugins/" + self._current_plugin,"resources")
+        plugin_dir = os.path.join(this_dir, "../../rpplugins/" + self._current_plugin, "resources")
         plugin_dir = os.path.abspath(plugin_dir)
         search_dir = os.path.join(plugin_dir, setting_handle.base_path)
 
@@ -331,7 +337,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             for obj in bound_objs:
                 obj.setText(display_file)
 
-
     def _get_widget_for_setting(self, setting_id, setting):
         """ Returns an appropriate widget to control the given setting """
 
@@ -344,7 +349,7 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             box = QtGui.QCheckBox()
             box.setChecked(QtCore.Qt.Checked if setting.value else QtCore.Qt.Unchecked)
             connect(box, QtCore.SIGNAL("stateChanged(int)"),
-                partial(self._on_setting_bool_changed, setting_id))
+                    partial(self._on_setting_bool_changed, setting_id))
             layout.addWidget(box)
 
         elif setting.type == "float" or setting.type == "int":
@@ -366,12 +371,12 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             slider.setOrientation(QtCore.Qt.Horizontal)
 
             if setting.type == "float":
-                box.setSingleStep( abs(setting.maxval - setting.minval) / 100.0 )
+                box.setSingleStep(abs(setting.maxval - setting.minval) / 100.0)
                 slider.setMinimum(setting.minval * 100000.0)
                 slider.setMaximum(setting.maxval * 100000.0)
                 slider.setValue(setting.value * 100000.0)
             elif setting.type == "int":
-                box.setSingleStep( max(1, (setting.maxval - setting.minval) / 32 ))
+                box.setSingleStep(max(1, (setting.maxval - setting.minval) / 32))
                 slider.setMinimum(setting.minval)
                 slider.setMaximum(setting.maxval)
                 slider.setValue(setting.value)
@@ -380,19 +385,19 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             layout.addWidget(slider)
 
             connect(slider, QtCore.SIGNAL("valueChanged(int)"),
-                partial(self._on_setting_slider_changed, setting_id, setting.type, [box]))
+                    partial(self._on_setting_slider_changed, setting_id, setting.type, [box]))
 
             value_type = "int" if setting.type == "int" else "double"
 
             connect(box, QtCore.SIGNAL("valueChanged(" + value_type + ")"),
-                partial(self._on_setting_spinbox_changed, setting_id, setting.type, [slider]))
+                    partial(self._on_setting_spinbox_changed, setting_id, setting.type, [slider]))
 
         elif setting.type == "enum":
             box = QtGui.QComboBox()
             for value in setting.values:
                 box.addItem(value)
             connect(box, QtCore.SIGNAL("currentIndexChanged(QString)"),
-                partial(self._on_setting_enum_changed, setting_id))
+                    partial(self._on_setting_enum_changed, setting_id))
             box.setCurrentIndex(setting.values.index(setting.value))
 
             layout.addWidget(box)
@@ -411,7 +416,8 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
 
             button = QtGui.QPushButton()
             button.setText("Choose File ...")
-            connect(button, QtCore.SIGNAL("clicked()"), partial(self._choose_path, setting_id, setting, (label,) ))
+            connect(button, QtCore.SIGNAL("clicked()"), partial(
+                self._choose_path, setting_id, setting, (label,)))
 
             layout.addWidget(label)
             layout.addWidget(button)
@@ -420,7 +426,6 @@ class PluginConfigurator(QtGui.QMainWindow, Ui_MainWindow):
             print("ERROR: Unkown setting type:", setting.type)
 
         return widget
-
 
     def _set_settings_visible(self, flag):
         """ Sets whether the settings panel is visible or not """

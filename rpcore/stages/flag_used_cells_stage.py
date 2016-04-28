@@ -27,6 +27,7 @@ THE SOFTWARE.
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
+
 class FlagUsedCellsStage(RenderStage):
 
     """ This stage flags all used cells based on the depth buffer """

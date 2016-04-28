@@ -27,16 +27,17 @@ THE SOFTWARE.
 from __future__ import division
 
 import sys
-import time
 import math
+import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
 from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties
+
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
 
 from rplibs.yaml import load_yaml_file_flat
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
@@ -247,7 +248,8 @@ class RenderPipeline(RPObject):
         this returns a dummy object which can be modified but has no impact. """
         if not self.plugin_mgr.is_plugin_enabled("env_probes"):
             self.warn("env_probes plugin is not loaded - cannot add environment probe")
-            class DummyEnvironmentProbe(object): # pylint: disable=too-few-public-methods
+
+            class DummyEnvironmentProbe(object):  # pylint: disable=too-few-public-methods
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
             return DummyEnvironmentProbe()
@@ -372,10 +374,10 @@ class RenderPipeline(RPObject):
         else:
             # Use an empty onscreen debugger in case the debugger is not
             # enabled, which defines all member functions as empty lambdas
-            class EmptyDebugger(object): # pylint: disable=too-few-public-methods
+            class EmptyDebugger(object):  # pylint: disable=too-few-public-methods
                 def __getattr__(self, *args, **kwargs):
                     return lambda *args, **kwargs: None
-            self.debugger = EmptyDebugger() # pylint: disable=redefined-variable-type
+            self.debugger = EmptyDebugger()  # pylint: disable=redefined-variable-type
             del EmptyDebugger
 
     def _init_globals(self):
@@ -553,11 +555,11 @@ class RenderPipeline(RPObject):
         skybox.reparent_to(Globals.render)
         skybox.set_bin("unsorted", 10000)
         self.set_effect(skybox, "effects/skybox.yaml", {
-            "render_shadow":    False,
-            "render_envmap":    False,
-            "render_voxelize":  False,
-            "alpha_testing":    False,
-            "normal_mapping":   False,
+            "render_shadow": False,
+            "render_envmap": False,
+            "render_voxelize": False,
+            "alpha_testing": False,
+            "normal_mapping": False,
             "parallax_mapping": False
         }, 1000)
         return skybox

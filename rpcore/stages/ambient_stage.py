@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class AmbientStage(RenderStage):
 
     """ This stage computes the ambient term """

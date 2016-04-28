@@ -23,18 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-"""
 
-Script to download the Render Pipeline samples
-
-"""
+# Script to download the Render Pipeline samples
 
 import os
 import sys
+
 sys.path.insert(0, "../")
 sys.path.insert(0, "../rpcore/util")
 
-from submodule_downloader import download_submodule
+from submodule_downloader import download_submodule  # noqa
 
 if __name__ == "__main__":
 

@@ -33,6 +33,7 @@ from rpcore.rpobject import RPObject
 
 from rpcore.gui.text import Text
 
+
 class ErrorMessageDisplay(RPObject):
 
     """ This is a gui element which listens to the panda output stream

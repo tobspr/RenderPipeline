@@ -28,6 +28,7 @@ from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 from rpcore.util.shader_input_blocks import SimpleInputBlock
 
+
 class GBufferStage(RenderStage):
 
     """ This is the main pass stage, rendering the objects and creating the
@@ -57,7 +58,6 @@ class GBufferStage(RenderStage):
         self.target.add_depth_attachment(bits=32)
         self.target.add_aux_attachments(bits=16, count=2)
         self.target.prepare_render(Globals.base.cam)
-
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)

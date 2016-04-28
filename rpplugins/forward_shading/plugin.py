@@ -28,6 +28,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .forward_stage import ForwardStage
 
+
 class Plugin(BasePlugin):
 
     name = "Forward Rendering"

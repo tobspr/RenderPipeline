@@ -28,8 +28,8 @@ class Application(ShowBase):
         self.render_pipeline.set_empty_loading_screen()
         self.render_pipeline.create(self)
 
-        sphere = loader.loadModel("res/sphere.bam")
-        sphere.reparent_to(render)
+        sphere = self.loader.loadModel("res/sphere.bam")
+        sphere.reparent_to(self.render)
 
         self.disableMouse()
         self.camLens.setFov(40)
@@ -78,7 +78,7 @@ class Application(ShowBase):
 
         self.win.save_screenshot("scene-rp.png")
 
-        base.accept("r", self.reload)
+        self.accept("r", self.reload)
 
     def reload(self):
         print("Reloading")
@@ -93,5 +93,3 @@ if len(sys.argv) <= 1:
     Application().run()
 else:
     Application()
-
-

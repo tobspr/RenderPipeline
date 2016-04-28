@@ -29,6 +29,7 @@ from panda3d.core import Camera, NodePath, Mat4
 
 from rpcore.util.generic import snap_shadow_map
 
+
 class PSSMCameraRig(object):
 
     """ PSSM is not really supported in python yet (too slow), so this is a stub,
@@ -70,7 +71,7 @@ class PSSMCameraRig(object):
         transform = self._parent.get_transform(self._cam_node).get_mat()
         return transform * self._lens.get_projection_mat()
 
-    def get_camera(self, index): # pylint: disable=unused-argument
+    def get_camera(self, index):  # pylint: disable=unused-argument
         return self._cam_node
 
     def set_sun_distance(self, dist):
@@ -90,7 +91,7 @@ class PSSMCameraRig(object):
     def set_use_stable_csm(self, use_stable):
         self._snap_grid = use_stable
 
-    def _stub(self, *args, **kwargs): # pylint: disable=unused-argument
+    def _stub(self, *args, **kwargs):  # pylint: disable=unused-argument
         return None
 
     set_pssm_distance = _stub

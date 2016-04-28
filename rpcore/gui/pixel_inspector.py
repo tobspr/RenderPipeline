@@ -29,6 +29,7 @@ from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.loader import RPLoader
 
+
 class PixelInspector(RPObject):
 
     """ Widget to analyze the rendered pixels, by zooming in """

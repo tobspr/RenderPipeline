@@ -36,7 +36,8 @@ from rpcore.rpobject import RPObject
 
 __all__ = ("RPLoader",)
 
-class timed_loading_operation(object): # pylint: disable=invalid-name,too-few-public-methods
+
+class timed_loading_operation(object):  # pylint: disable=invalid-name,too-few-public-methods # noqa
 
     """ Context manager for a synchronous loading operation, keeping track
     on how much time elapsed during the loading process, and warning about
@@ -61,6 +62,7 @@ class timed_loading_operation(object): # pylint: disable=invalid-name,too-few-pu
             if timed_loading_operation.WARNING_COUNT == 5:
                 RPObject.global_warn(
                     "RPLoader", "Skipping further loading warnings (max warning count reached)")
+
 
 class RPLoader(RPObject):
 

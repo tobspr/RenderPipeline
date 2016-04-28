@@ -35,6 +35,7 @@ from rpcore.gui.labeled_checkbox import LabeledCheckbox
 
 from rpcore.util.display_shader_builder import DisplayShaderBuilder
 
+
 class TexturePreview(DraggableWindow):
 
     """ Small window which provides a preview of a texture """
@@ -173,7 +174,6 @@ class TexturePreview(DraggableWindow):
 
     def _set_enable_tonemap(self, enable_tonemap):
         self._preview_image.set_shader_input("tonemap", enable_tonemap)
-
 
     def _create_components(self):
         """ Internal method to init the components """

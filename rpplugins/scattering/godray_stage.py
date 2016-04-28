@@ -28,6 +28,7 @@ from __future__ import division
 
 from rpcore.render_stage import RenderStage
 
+
 class GodrayStage(RenderStage):
 
     """ This stage renders the suns godrays """

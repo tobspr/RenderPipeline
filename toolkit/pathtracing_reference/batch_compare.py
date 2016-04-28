@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import os
 import sys
-import shutil
 
 from panda3d.core import PNMImage
 
@@ -115,11 +114,11 @@ for i in range(11):
     roughness = i / 10.0
 
     materials_to_test.append({
-            "name": "Plastic-R" + str(roughness),
-            "basecolor": (1, 0, 0),
-            "ior": 1.51,
-            "roughness": roughness
-        })
+        "name": "Plastic-R" + str(roughness),
+        "basecolor": (1, 0, 0),
+        "ior": 1.51,
+        "roughness": roughness
+    })
 
     # materials_to_test.append({
     #         "name": "Gold-R" + str(roughness),
@@ -187,7 +186,6 @@ for material in materials_to_test:
     content = content.replace("%IOR%", str(material.get("ior", 1.51)))
     content = content.replace("%BASECOLOR%", str(material["basecolor"]).strip("()"))
     content = content.replace("%MATERIAL_SRC%", material.get("material_src", "").strip("()"))
-
 
     with open("res/scene.xml", "w") as handle:
         handle.write(content)

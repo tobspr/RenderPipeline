@@ -7,7 +7,6 @@ Script to convert spi1d files to luts
 from __future__ import print_function
 
 import os
-import sys
 from panda3d.core import PNMImage
 
 for f in os.listdir("film_luts_raw"):
@@ -46,7 +45,6 @@ for f in os.listdir("film_luts_raw"):
             else:
                 return pow((channel + 0.055) / (1.0 + 0.055), 2.4)
 
-
         for i in xrange(1024):
             line = [float(k) for k in content[i].split()]
 
@@ -54,13 +52,13 @@ for f in os.listdir("film_luts_raw"):
                 values[k].append(srgb_to_linear(line[k]))
 
         def to_linear(v):
-            return float(v) / float(64-1)
+            return float(v) / float(64 - 1)
 
         def to_linear_inv(v):
             return 1 - to_linear(v)
 
         def lookup_value(v, values):
-            return values[int(v * (len(values) - 1) )]
+            return values[int(v * (len(values) - 1))]
 
         # Generate lut
         img = PNMImage(64 * 8, 64 * 8, 3, 2**16 - 1)

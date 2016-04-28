@@ -35,6 +35,7 @@ from rpcore.image import Image
 from rpcore.util.shader_input_blocks import SimpleInputBlock, GroupedInputBlock
 from rpcore.stages.update_previous_pipes_stage import UpdatePreviousPipesStage
 
+
 class StageManager(RPObject):
 
     """ This manager takes a list of RenderStages and puts them into an order,
@@ -226,7 +227,7 @@ class StageManager(RPObject):
         self.created = True
 
         # Convert input blocks so we can access them in a better way
-        self.input_blocks = {block.name : block for block in self.input_blocks}
+        self.input_blocks = {block.name: block for block in self.input_blocks}
         self._prepare_stages()
 
         for stage in self.stages:

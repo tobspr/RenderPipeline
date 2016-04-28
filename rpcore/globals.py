@@ -26,7 +26,8 @@ THE SOFTWARE.
 
 __all__ = ("Globals",)
 
-class Globals(object): # pylint: disable=too-few-public-methods
+
+class Globals(object):  # pylint: disable=too-few-public-methods
 
     """ This class is a singleton to store globals widely used by the application.
     This is a wrapper around Panda3D's globals since ShowBase writes to __builtins__

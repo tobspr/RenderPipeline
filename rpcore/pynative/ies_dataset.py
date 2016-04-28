@@ -24,10 +24,11 @@ THE SOFTWARE.
 
 """
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 import math
 from panda3d.core import PNMImage
+
 
 class IESDataset(object):
 
@@ -56,15 +57,15 @@ class IESDataset(object):
 
         for vert in range(resolution_vertical):
             for horiz in range(resolution_horizontal):
-                vert_angle = vert / (resolution_vertical-1.0)
+                vert_angle = vert / (resolution_vertical - 1.0)
                 vert_angle = math.cos(vert_angle * math.pi) * 90.0 + 90.0
-                horiz_angle = horiz / (resolution_horizontal-1.0) * 360.0
+                horiz_angle = horiz / (resolution_horizontal - 1.0) * 360.0
                 candela = self.get_candela_value(vert_angle, horiz_angle)
                 dest.set_xel(vert, horiz, candela)
 
         dest_tex.load(dest, layer_index, 0)
 
-    def get_candela_value(self, vertical_angle, horizontal_angle): # pylint: disable=unused-argument
+    def get_candela_value(self, vertical_angle, horizontal_angle):  # pylint: disable=unused-argument # noqa
         # NOTICE: Since python is slower, we always only assume a dataset without
         # horizontal angles. This still produces convincing results, but does
         # generate much faster.

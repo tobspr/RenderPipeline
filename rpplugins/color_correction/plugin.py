@@ -36,6 +36,7 @@ from .manual_exposure_stage import ManualExposureStage
 from .sharpen_stage import SharpenStage
 from .tonemapping_stage import TonemappingStage
 
+
 class Plugin(BasePlugin):
 
     name = "Color Correction"
@@ -56,7 +57,7 @@ class Plugin(BasePlugin):
         if not self.get_setting("manual_camera_parameters"):
             self.exposure_stage = self.create_stage(AutoExposureStage)
         else:
-            self.exposure_stage = self.create_stage(ManualExposureStage) # pylint: disable=redefined-variable-type
+            self.exposure_stage = self.create_stage(ManualExposureStage)  # pylint: disable=redefined-variable-type # noqa
 
     def on_pipeline_created(self):
         self.load_lut()
@@ -88,4 +89,3 @@ class Plugin(BasePlugin):
     def update_color_lut(self):
         self.debug("Updating color lut ..")
         self.load_lut()
-

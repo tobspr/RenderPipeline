@@ -31,6 +31,7 @@ from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 from rpcore.util.generic import snap_shadow_map
 
+
 class PSSMSceneShadowStage(RenderStage):
 
     """ This stage creates the shadow map which covers the whole important part

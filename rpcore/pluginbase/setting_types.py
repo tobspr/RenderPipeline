@@ -31,6 +31,7 @@ from rpcore.rpobject import RPObject
 
 __all__ = ["make_setting_from_data"]
 
+
 def make_setting_from_factory(data, factory):
     """ Constructs a new setting from a given dataset, alongst with a factory
     to resolve the setting type to """
@@ -45,6 +46,7 @@ def make_setting_from_factory(data, factory):
         raise Exception("Unparsed data left in plugin setting: {}".format(data))
     return instance
 
+
 def make_setting_from_data(data):
     """ Constructs a new setting from a given dataset. This method will automatically
     instantiate a new class matching the type of the given dataset. It will fill
@@ -57,6 +59,7 @@ def make_setting_from_data(data):
         "path": PathType
     }
     return make_setting_from_factory(data, factory)
+
 
 class BaseType(RPObject):
 
@@ -90,6 +93,7 @@ class BaseType(RPObject):
                 return False
         return True
 
+
 class TemplatedType(BaseType):
 
     """ This setting stores a single type including a minimum and maximum value.
@@ -112,17 +116,20 @@ class TemplatedType(BaseType):
         else:
             self.error("Invalid value: {}".format(value))
 
+
 class IntType(TemplatedType):
     """ Template instantiation of TemplatedType using int """
 
     def __init__(self, data):
         TemplatedType.__init__(self, int, data)
 
+
 class FloatType(TemplatedType):
     """ Template instantiation of TemplatedType using float """
 
     def __init__(self, data):
         TemplatedType.__init__(self, float, data)
+
 
 class BoolType(BaseType):
     """ Boolean setting type """
@@ -137,6 +144,7 @@ class BoolType(BaseType):
             self.value = str(value.lower()) in ("true", "1")
         else:
             self.value = bool(value)
+
 
 class EnumType(BaseType):
     """ Enumeration setting type """
@@ -159,6 +167,7 @@ class EnumType(BaseType):
 
         for i, val in enumerate(self.values):
             defines["enum_{}_{}_{}".format(plugin_id, setting_id, val)] = 1000 + i
+
 
 class PathType(BaseType):
     """ Path type to specify paths to files """

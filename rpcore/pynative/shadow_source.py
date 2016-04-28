@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import Mat4, PerspectiveLens, LVector3, LVecBase2i, LVecBase2f
 from panda3d.core import BoundingSphere
 
+
 class ShadowSource(object):
 
     """ Please refer to the native C++ implementation for docstrings and comments.

@@ -34,6 +34,7 @@ from panda3d.core import Camera, OrthographicLens, NodePath, CullFaceAttrib
 from panda3d.core import DepthTestAttrib, Vec4, PTALVecBase3, Vec3, SamplerState
 from panda3d.core import ColorWriteAttrib
 
+
 class VoxelizationStage(RenderStage):
 
     """ This stage voxelizes the whole scene """

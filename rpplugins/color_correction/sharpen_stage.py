@@ -31,6 +31,7 @@ from rplibs.six import itervalues
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 
+
 class SharpenStage(RenderStage):
 
     required_inputs = []

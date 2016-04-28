@@ -27,6 +27,7 @@ THE SOFTWARE.
 from rplibs.yaml import load_yaml_file
 from rpcore.rpobject import RPObject
 
+
 class TaskScheduler(RPObject):
 
     """ This class manages the scheduled tasks and splits them over multiple
@@ -44,7 +45,7 @@ class TaskScheduler(RPObject):
     def _load_config(self):
         """ Loads the tasks distribution configuration """
         config = load_yaml_file("/$$rpconfig/task-scheduler.yaml")["frame_cycles"]
-        for frame_name, tasks in config: # pylint: disable=unused-variable
+        for frame_name, tasks in config:  # pylint: disable=unused-variable
             self._tasks.append(tasks)
 
     def _check_missing_schedule(self, task_name):
@@ -74,5 +75,3 @@ class TaskScheduler(RPObject):
     def num_scheduled_tasks(self):
         """ Returns the amount of scheduled tasks this frame """
         return len(self._tasks[self._frame_index])
-
-

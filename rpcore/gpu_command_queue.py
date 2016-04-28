@@ -33,6 +33,7 @@ from rpcore.render_target import RenderTarget
 
 from rpcore.native import GPUCommand, GPUCommandList
 
+
 class GPUCommandQueue(RPObject):
 
     """ This class offers an interface to the gpu, allowing commands to be

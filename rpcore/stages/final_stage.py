@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class FinalStage(RenderStage):
 
     """ This stage is the final stage and outputs the shaded scene to the
@@ -59,4 +60,3 @@ class FinalStage(RenderStage):
     def reload_shaders(self):
         self.target.shader = self.load_shader("final_stage.frag.glsl")
         self.present_target.shader = self.load_shader("final_present_stage.frag.glsl")
-

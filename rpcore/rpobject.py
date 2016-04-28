@@ -38,6 +38,7 @@ from rplibs.colorama import init as init_colorama
 from rplibs.colorama import Fore, Style
 init_colorama()
 
+
 class RPObject(object):
 
     """ This is the base class for every object in the render pipeline. It
@@ -57,15 +58,15 @@ class RPObject(object):
         RPObject._OUTPUT_LEVEL = RPObject._OUTPUT_LEVELS.index(level)
 
     @staticmethod
-    def global_debug(context, *args):
+    def global_debug(context, *args, **kwargs):
         """ This method can be used from a static context to print a debug
         message. The first argument should be the name of the object / context,
         all other arguments should be the message. """
         if RPObject._OUTPUT_LEVEL > 0:
             return
-        print(Fore.GREEN + "[>] " + \
-            context.ljust(25) + " " + Style.RESET_ALL + Fore.WHITE +\
-            ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL)
+        print(kwargs.get("color", Fore.GREEN) + "[>] " +
+              context.ljust(25) + " " + Style.RESET_ALL + Fore.WHITE +
+              ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL)
 
     @staticmethod
     def global_warn(context, *args):
@@ -74,9 +75,9 @@ class RPObject(object):
         other arguments should be the message. """
         if RPObject._OUTPUT_LEVEL > 1:
             return
-        print(Fore.YELLOW + Style.BRIGHT + "[!] " + context.ljust(25) + \
-            Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args]) + \
-            Fore.RESET + Style.RESET_ALL)
+        print(Fore.YELLOW + Style.BRIGHT + "[!] " + context.ljust(25) +
+              Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args]) +
+              Fore.RESET + Style.RESET_ALL)
 
     @staticmethod
     def global_error(context, *args):
@@ -85,9 +86,9 @@ class RPObject(object):
         other arguments should be the message. """
         if RPObject._OUTPUT_LEVEL > 2:
             return
-        print(Fore.RED + Style.BRIGHT + "\n[!!!] " + \
-            context.ljust(23) + " " + ' '.join([str(i) for i in args]) + \
-            "\n" + Fore.RESET + Style.RESET_ALL)
+        print(Fore.RED + Style.BRIGHT + "\n[!!!] " +
+              context.ljust(23) + " " + ' '.join([str(i) for i in args]) +
+              "\n" + Fore.RESET + Style.RESET_ALL)
 
     def __init__(self, name=None):
         """ Initiates the RPObject with a given name. The name should be
@@ -117,29 +118,17 @@ class RPObject(object):
     def debug(self, *args):
         """ Outputs a debug message, something that is not necessarry
         but provides useful information for the developer """
-        if RPObject._OUTPUT_LEVEL > 0:
-            return
-        print(self._debug_color + "[>] " + \
-            self._debug_name.ljust(25) + " " + Style.RESET_ALL + Fore.WHITE +\
-            ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL)
+        self.global_debug(self._debug_name, *args, color=self._debug_color)
 
     def warn(self, *args):
         """ Outputs a warning message, something that failed or does
         not work, but does not prevent the program from running """
-        if RPObject._OUTPUT_LEVEL > 1:
-            return
-        print(Fore.YELLOW + Style.BRIGHT + "[!] " + (self._debug_name).ljust(25) + \
-            Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args]) + \
-            Fore.RESET + Style.RESET_ALL)
+        self.global_warn(self._debug_name, *args)
 
     def error(self, *args):
         """ Outputs an error message, something really serious.
         Hopefully this never get's called! """
-        if RPObject._OUTPUT_LEVEL > 2:
-            return
-        print(Fore.RED + Style.BRIGHT + "\n\n\n[!!!] " + \
-            (self._debug_name).ljust(23) + " " + ' '.join([str(i) for i in args]) + \
-            "\n\n\n" + Fore.RESET + Style.RESET_ALL)
+        self.global_error(self._debug_name, *args)
 
     def fatal(self, *args):
         """ Outputs a fatal error message, printing out the errors and then

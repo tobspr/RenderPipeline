@@ -28,6 +28,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .skin_shading_stage import SkinShadingStage
 
+
 class Plugin(BasePlugin):
 
     name = "Skin Shading"

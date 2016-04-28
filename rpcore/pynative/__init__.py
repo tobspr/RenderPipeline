@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+# flake8: noqa
+
 from rpcore.pynative.gpu_command import GPUCommand
 from rpcore.pynative.gpu_command_list import GPUCommandList
 from rpcore.pynative.ies_dataset import IESDataset

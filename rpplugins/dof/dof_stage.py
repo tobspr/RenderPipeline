@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from rpcore.render_stage import RenderStage
 
+
 class DoFStage(RenderStage):
 
     """ This stage does the DoF pass """

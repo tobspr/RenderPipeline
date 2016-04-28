@@ -25,6 +25,7 @@ THE SOFTWARE.
 """
 
 # pylint: skip-file
+# flake8: noqa
 
 # Jitters from
 # https://github.com/playdeadgames/temporal/blob/master/Assets/Scripts/FrustumJitter.cs

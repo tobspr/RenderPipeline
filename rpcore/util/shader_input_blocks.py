@@ -30,6 +30,7 @@ from panda3d.core import PTALVecBase4f, PTALMatrix3f, PTAInt, TypeRegistry, PTAL
 
 from rpcore.rpobject import RPObject
 
+
 class SimpleInputBlock(RPObject):
 
     """ Simplest possible uniform buffer which just stores a set of values.
@@ -50,6 +51,7 @@ class SimpleInputBlock(RPObject):
         """ Binds the UBO to a target """
         for key, val in iteritems(self.inputs):
             target.set_shader_input(self.name + "." + key, val)
+
 
 class GroupedInputBlock(RPObject):
 
@@ -124,7 +126,7 @@ class GroupedInputBlock(RPObject):
         """ Returns the value of an existing input """
         return self.ptas[name][0]
 
-    def generate_shader_code(self): # pylint: disable=too-many-branches
+    def generate_shader_code(self):  # pylint: disable=too-many-branches
         """ Generates the GLSL shader code to use the UBO """
 
         content = "#pragma once\n\n"

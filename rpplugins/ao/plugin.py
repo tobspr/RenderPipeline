@@ -29,6 +29,7 @@ from rpcore.stages.ambient_stage import AmbientStage
 
 from .ao_stage import AOStage
 
+
 class Plugin(BasePlugin):
 
     name = "Ambient Occlusion"

@@ -26,8 +26,9 @@ THE SOFTWARE.
 
 from panda3d.core import LVecBase2i
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 from rpcore.render_stage import RenderStage
+
 
 class SkinShadingStage(RenderStage):
 

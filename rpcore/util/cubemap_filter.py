@@ -31,6 +31,7 @@ from panda3d.core import SamplerState, Vec4
 from rpcore.rpobject import RPObject
 from rpcore.image import Image
 
+
 class CubemapFilter(RPObject):
 
     """ Util class for filtering cubemaps, provides funcionality to generate

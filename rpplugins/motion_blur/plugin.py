@@ -28,6 +28,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .motion_blur_stage import MotionBlurStage
 
+
 class Plugin(BasePlugin):
 
     name = "Motion blur"
@@ -39,4 +40,3 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         self.stage = self.create_stage(MotionBlurStage)
         self.stage.tile_size = self.get_setting("tile_size")
-

@@ -28,6 +28,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .ssr_stage import SSRStage
 
+
 class Plugin(BasePlugin):
 
     name = "Screen Space Reflections"

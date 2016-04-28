@@ -31,7 +31,7 @@ THE SOFTWARE.
 if __name__ == "__main__":
     import os
     import sys
-    from os.path import dirname, realpath, join, isfile
+    from os.path import dirname, realpath, isfile
 
     # Files which are skipped from the downloaded zip
     files_to_ignore = "__init__.py LICENSE README.md config.ini config_module".split()
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # Make an init script so we can import the code
     with open("scripts/__init__.py", "w") as handle:
-        handle.write("# empty file to be able to import the scripts")
+        handle.write("")
 
     # Update the gitignore using the suggested version from the module builder
     if isfile(".gitignore"):

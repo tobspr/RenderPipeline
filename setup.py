@@ -27,6 +27,7 @@ THE SOFTWARE.
 # Setup script to install everything required to run the pipeline.
 
 # pylint: skip-file
+# flake8: noqa
 
 from __future__ import print_function
 import os

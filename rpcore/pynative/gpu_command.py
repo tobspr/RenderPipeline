@@ -25,9 +25,10 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 import struct
+
 
 class GPUCommand(object):
 
@@ -75,10 +76,10 @@ class GPUCommand(object):
         return False
 
     def write_to(self, dest, command_index):
-        data = struct.pack("f"*32, *self._data)
+        data = struct.pack("f" * 32, *self._data)
         offset = command_index * 32 * 4
         dest.set_subdata(offset, 32 * 4, data)
 
-    def write(self, out=None): # pylint: disable=unused-argument
+    def write(self, out=None):  # pylint: disable=unused-argument
         print("GPUCommand(type=", self._command_type, "size=", self._current_index, ")")
         print("Data:", ', '.join([str(i) for i in self._data]))

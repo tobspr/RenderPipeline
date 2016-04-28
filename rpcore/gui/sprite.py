@@ -30,6 +30,7 @@ from direct.gui.OnscreenImage import OnscreenImage
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
+
 class Sprite(RPObject):
 
     """ Simple wrapper arround OnscreenImage, providing a simpler interface """

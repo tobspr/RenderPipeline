@@ -31,6 +31,7 @@ import direct.gui.DirectGuiGlobals as DGG
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
+
 class Checkbox(RPObject):
 
     """ This is a wrapper around DirectCheckBox, providing a simpler interface

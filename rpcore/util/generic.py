@@ -33,6 +33,7 @@ import hashlib
 from panda3d.core import PStatCollector, Mat4, Point4, Vec3
 from rpcore.globals import Globals
 
+
 def rgb_from_string(text, min_brightness=0.6):
     """ Creates a rgb color from a given string """
     ohash = hashlib.md5(text[::-1].encode("ascii")).hexdigest()
@@ -41,6 +42,7 @@ def rgb_from_string(text, min_brightness=0.6):
     return (min_brightness + r / 255.0 * neg_inf,
             min_brightness + g / 255.0 * neg_inf,
             min_brightness + b / 255.0 * neg_inf)
+
 
 def profile(func):
     """ Handy decorator which can be used to profile a function with pstats """
@@ -72,7 +74,8 @@ def profile(func):
     do_pstat.__doc__ = func.__doc__
     return do_pstat
 
-class profile_cpu(object): # pylint: disable=invalid-name,too-few-public-methods
+
+class profile_cpu(object):  # pylint: disable=invalid-name,too-few-public-methods # noqa
     """
     Context manager for profiling CPU duration. This is useful for timing
     loading of files or other CPU-heavy operations. Example usage:
@@ -92,6 +95,7 @@ class profile_cpu(object): # pylint: disable=invalid-name,too-few-public-methods
     def __exit__(self, *args):
         duration = (time.clock() - self.start_time) * 1000.0
         print(self.name, "took", round(duration, 2), "ms ")
+
 
 def snap_shadow_map(mvp, cam_node, resolution):
     """ 'Snaps' a shadow map to make sure it always is on full texel centers.

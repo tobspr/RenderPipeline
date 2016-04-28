@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 from __future__ import print_function
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 from panda3d.core import Vec3
 

@@ -36,6 +36,7 @@ from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.labeled_checkbox import LabeledCheckbox
 from rpcore.gui.checkbox_collection import CheckboxCollection
 
+
 class RenderModeSelector(DraggableWindow):
 
     """ Window which offers the user to select a render mode to apply """

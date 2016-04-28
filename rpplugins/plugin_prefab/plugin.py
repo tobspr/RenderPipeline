@@ -29,6 +29,7 @@ from rpcore.pluginbase.base_plugin import BasePlugin
 # Load your additional plugin classes here, if required
 from .demo_stage import DemoStage
 
+
 class Plugin(BasePlugin):
 
     name = "Plugin Prefab"

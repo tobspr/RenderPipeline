@@ -36,6 +36,7 @@ from rpcore.loader import RPLoader
 
 from rpcore.util.shader_input_blocks import GroupedInputBlock
 
+
 class CommonResources(RPObject):
 
     """ This class manages the loading and binding of commonly used resources,
@@ -197,7 +198,7 @@ class CommonResources(RPObject):
         # Remove jitter and set the new view projection mat
         proj_mat.set_cell(1, 0, 0.0)
         proj_mat.set_cell(1, 1, 0.0)
-        update("view_proj_mat_no_jitter", view_mat  * proj_mat)
+        update("view_proj_mat_no_jitter", view_mat * proj_mat)
 
         # Store the frame delta
         update("frame_delta", Globals.clock.get_dt())

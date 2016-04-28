@@ -32,7 +32,6 @@ from __future__ import print_function, division
 import os
 import sys
 import time
-from functools import partial
 from threading import Thread
 
 # Change to the current directory
@@ -41,7 +40,7 @@ os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__))))
 # Add the render pipeline to the path
 sys.path.insert(0, "../../")
 
-from rplibs.six import iteritems
+from rplibs.six import iteritems  # noqa
 
 # Load all PyQt classes
 try:
@@ -52,14 +51,14 @@ except ImportError as msg:
     print("Please make sure you installed PyQt!")
     sys.exit(1)
 
-from curve_widget import CurveWidget
+from curve_widget import CurveWidget  # noqa
 
-from rpcore.pluginbase.manager import PluginManager
-from rpcore.mount_manager import MountManager
-from rpcore.util.network_communication import NetworkCommunication
+from rpcore.pluginbase.manager import PluginManager  # noqa
+from rpcore.mount_manager import MountManager  # noqa
+from rpcore.util.network_communication import NetworkCommunication  # noqa
 
-from ui.main_window_generated import Ui_MainWindow
-from ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog
+from ui.main_window_generated import Ui_MainWindow  # noqa
+from ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog  # noqa
 
 connect = QtCore.QObject.connect
 
@@ -75,6 +74,7 @@ class PointDialog(QtGui.QDialog, Ui_PointDialog):
         time = self.ipt_time.time()
         val = self.ipt_value.value()
         return time, val
+
 
 class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
@@ -114,12 +114,12 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             self.frame_current_setting.show()
             self.lbl_select_setting.hide()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event):  # noqa
         event.accept()
         import os
         os._exit(1)
 
-    def updateThread(self):
+    def updateThread(self):  # noqa
         """ Seperate update thread """
 
         while True:
@@ -138,7 +138,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
             time.sleep(0.1)
 
-    def setupUi(self):
+    def setupUi(self):  # noqa
         """ Setups the UI Components """
         Ui_MainWindow.setupUi(self, self)
         self.settings_tree.setColumnWidth(0, 160)
@@ -148,8 +148,9 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.edit_widget.set_change_handler(self._on_curve_edited)
         self.prefab_edit_widget.addWidget(self.edit_widget)
 
-        connect(self.time_slider,QtCore.SIGNAL("valueChanged(int)"), self._on_time_changed)
-        connect(self.settings_tree, QtCore.SIGNAL("itemSelectionChanged()"), self._on_setting_selected)
+        connect(self.time_slider, QtCore.SIGNAL("valueChanged(int)"), self._on_time_changed)
+        connect(self.settings_tree,
+                QtCore.SIGNAL("itemSelectionChanged()"), self._on_setting_selected)
         connect(self.btn_insert_point, QtCore.SIGNAL("clicked()"), self._insert_point)
         connect(self.btn_reset, QtCore.SIGNAL("clicked()"), self._reset_settings)
 
@@ -161,10 +162,11 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         #     QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
 
         # Ask the user if he's really sure about it
-        msg = "Are you sure you want to reset the control points of '" + self._selected_setting_handle.label + "'?\n"
-        msg+= "!! This cannot be undone !! They will be lost forever (a long time!)."
-        reply = QtGui.QMessageBox.question(self, "Warning",
-                         msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        msg = "Are you sure you want to reset the control points of '" +\
+              self._selected_setting_handle.label + "'?\n"
+        msg += "!! This cannot be undone !! They will be lost forever (a long time!)."
+        reply = QtGui.QMessageBox.question(
+            self, "Warning", msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
 
             QtGui.QMessageBox.information(self, "Success", "Control points have been reset!")
@@ -180,8 +182,10 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             time, val = dialog.get_value()
             minutes = (time.hour() * 60 + time.minute()) / (24 * 60)
 
-            if val < self._selected_setting_handle.minvalue or val > self._selected_setting_handle.maxvalue:
-                QtGui.QMessageBox.information(self, "Invalid Value", "Value is out of setting range!", QtGui.QMessageBox.Ok)
+            if (val < self._selected_setting_handle.minvalue or
+               val > self._selected_setting_handle.maxvalue):
+                QtGui.QMessageBox.information(
+                    self, "Invalid Value", "Value is out of setting range!", QtGui.QMessageBox.Ok)
                 return
 
             val_linear = self._selected_setting_handle.get_linear_value(val)
@@ -228,7 +232,9 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
                 self.edit_widget.set_unit_processor(lambda x: str(int(x * 255)))
                 self.btn_insert_point.hide()
             else:
-                self.edit_widget.set_unit_processor(lambda x:self._selected_setting_handle.format(self._selected_setting_handle.get_scaled_value(x)))
+                self.edit_widget.set_unit_processor(
+                    lambda x: self._selected_setting_handle.format(
+                        self._selected_setting_handle.get_scaled_value(x)))
                 self.btn_insert_point.show()
 
             self.set_settings_visible(True)

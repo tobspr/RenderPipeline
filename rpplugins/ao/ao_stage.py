@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import LVecBase2i, Vec2
 from rpcore.render_stage import RenderStage
 
+
 class AOStage(RenderStage):
 
     required_inputs = []

@@ -29,6 +29,7 @@ from panda3d.core import SamplerState
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
 
+
 class SSRStage(RenderStage):
 
     """ This stage does the SSR pass """

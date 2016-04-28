@@ -29,6 +29,7 @@ from direct.gui.DirectSlider import DirectSlider
 
 from rpcore.rpobject import RPObject
 
+
 class Slider(RPObject):
 
     """ This is a simple wrapper around DirectSlider, providing a simpler

@@ -32,6 +32,7 @@ from rpcore.util.cubemap_filter import CubemapFilter
 from rpcore.stages.ambient_stage import AmbientStage
 from rpcore.stages.gbuffer_stage import GBufferStage
 
+
 class ScatteringEnvmapStage(RenderStage):
 
     """ This stage uses the precomputed data to make a cubemap containing the

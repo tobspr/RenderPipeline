@@ -25,11 +25,12 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 from rpcore.gui.sprite import Sprite
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
+
 
 class LoadingScreen(RPObject):
 
@@ -56,8 +57,8 @@ class LoadingScreen(RPObject):
         scale = max(scale_w, scale_h)
 
         self.fullscreen_bg = Sprite(
-            image=self.image_source, x=(screen_w-1920.0*scale)//2,
-            y=(screen_h-1080.0*scale)//2, w=int(1920 * scale),
+            image=self.image_source, x=(screen_w - 1920.0 * scale) // 2,
+            y=(screen_h - 1080.0 * scale) // 2, w=int(1920 * scale),
             h=int(1080 * scale), parent=self.fullscreen_node, near_filter=False)
 
         for _ in range(2):

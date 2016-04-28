@@ -13,12 +13,13 @@ import pickle
 
 from threading import Thread
 
-from panda3d.core import load_prc_file_data, Vec4, Filename, Mat4, Notify
-from panda3d.core import CS_zup_right, CS_yup_right, PNMImage, BamCache
+from panda3d.core import load_prc_file_data, Filename, Mat4
+from panda3d.core import CS_zup_right, CS_yup_right, BamCache
 from direct.showbase.ShowBase import ShowBase
 
 sys.path.insert(0, "../../")
-from rpcore import RenderPipeline, PointLight
+from rpcore import RenderPipeline, PointLight  # noqa
+
 
 class Application(ShowBase):
 
@@ -54,9 +55,6 @@ class Application(ShowBase):
         last_update = 0.0
         self.scene_node = None
 
-        current_lights = []
-        current_envprobes = []
-
         # Wait for updates
         while True:
 
@@ -74,7 +72,7 @@ class Application(ShowBase):
                 payload = self.update_queue.pop(0)
                 print("RENDERING:", payload)
 
-                scene = loader.loadModel(Filename.from_os_specific(payload["scene"]))
+                scene = self.loader.loadModel(Filename.from_os_specific(payload["scene"]))
 
                 for light in scene.find_all_matches("**/+PointLight"):
                     light.remove_node()
@@ -84,18 +82,18 @@ class Application(ShowBase):
                 # Find camera
                 main_cam = scene.find("**/Camera")
                 if main_cam:
-                    transform_mat = main_cam.get_transform(render).get_mat()
+                    transform_mat = main_cam.get_transform(self.render).get_mat()
                     transform_mat = Mat4.convert_mat(CS_zup_right, CS_yup_right) * transform_mat
-                    base.camera.set_mat(transform_mat)
+                    self.camera.set_mat(transform_mat)
                 else:
                     print("WARNING: No camera found")
-                    base.camera.set_pos(0, -3.5, 0)
-                    base.camera.look_at(0, -2.5, 0)
+                    self.camera.set_pos(0, -3.5, 0)
+                    self.camera.look_at(0, -2.5, 0)
 
-                base.camLens.set_fov(64.0)
+                self.camLens.set_fov(64.0)
 
                 self.scene_node = scene
-                scene.reparent_to(render)
+                scene.reparent_to(self.render)
 
                 # Render scene
                 for i in range(8):
@@ -175,4 +173,3 @@ class Application(ShowBase):
         # envprobe.parallax_correction = False
 
 Application()
-

@@ -28,6 +28,7 @@ from __future__ import division
 
 from rpcore.render_stage import RenderStage
 
+
 class ManualExposureStage(RenderStage):
 
     required_pipes = ["ShadedScene"]

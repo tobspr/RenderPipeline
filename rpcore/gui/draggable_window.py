@@ -33,6 +33,7 @@ from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.gui.text import Text
 
+
 class DraggableWindow(RPObject):
 
     """ This is a simple draggable but not resizeable window """
@@ -55,7 +56,7 @@ class DraggableWindow(RPObject):
         self._context_width = Globals.native_resolution.x * self._context_scale
         self._context_height = Globals.native_resolution.y * self._context_scale
         self._set_pos(Vec2((self._context_width - self._width) / 2,
-                          (self._context_height - self._height) / 2))
+                           (self._context_height - self._height) / 2))
 
     def set_title(self, title):
         """ Sets the window title """
@@ -117,7 +118,7 @@ class DraggableWindow(RPObject):
         self._title_bar.bind(DGG.B1PRESS, self._start_drag)
         self._title_bar.bind(DGG.B1RELEASE, self._stop_drag)
 
-    def _start_drag(self, evt=None): # pylint: disable=unused-argument
+    def _start_drag(self, evt=None):  # pylint: disable=unused-argument
         """ Gets called when the user starts dragging the window """
         self._dragging = True
         self._node.detach_node()
@@ -126,19 +127,19 @@ class DraggableWindow(RPObject):
                                  uponDeath=self._stop_drag)
         self._drag_offset = self._pos - self._get_mouse_pos()
 
-    def _on_close_btn_hover(self, evt=None): # pylint: disable=unused-argument
+    def _on_close_btn_hover(self, evt=None):  # pylint: disable=unused-argument
         """ Internal method when the close button got hovered """
         self._btn_close["image"] = "/$$rp/data/gui/close_window_hover.png"
 
-    def _on_close_btn_out(self, evt=None): # pylint: disable=unused-argument
+    def _on_close_btn_out(self, evt=None):  # pylint: disable=unused-argument
         """ Internal method when the close button is no longer hovered """
         self._btn_close["image"] = "/$$rp/data/gui/close_window.png"
 
-    def _request_close(self, evt=None): # pylint: disable=unused-argument
+    def _request_close(self, evt=None):  # pylint: disable=unused-argument
         """ This method gets called when the close button gets clicked """
         self.hide()
 
-    def _stop_drag(self, evt=None): # pylint: disable=unused-argument
+    def _stop_drag(self, evt=None):  # pylint: disable=unused-argument
         """ Gets called when the user stops dragging the window """
         Globals.base.taskMgr.remove("UIWindowDrag")
         self._dragging = False

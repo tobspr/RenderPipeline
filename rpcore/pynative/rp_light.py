@@ -27,9 +27,10 @@ from __future__ import print_function
 
 from panda3d.core import Vec3, Mat3
 
+
 def color_from_temperature(temperature):
     # Thanks to rdb for this conversion script
-    mm = 1000.0 / temperature # pylint: disable=invalid-name
+    mm = 1000.0 / temperature  # pylint: disable=invalid-name
     mm2 = mm**2
     mm3 = mm2 * mm
     x, y = 0, 0
@@ -39,8 +40,8 @@ def color_from_temperature(temperature):
     else:
         x = -3.0258469 * mm3 + 2.1070379 * mm2 + 0.2226347 * mm + 0.240390
 
-    x2 = x**2 # pylint: disable=invalid-name
-    x3 = x2 * x # pylint: disable=invalid-name
+    x2 = x**2  # pylint: disable=invalid-name
+    x3 = x2 * x  # pylint: disable=invalid-name
     if temperature < 2222:
         y = -1.1063814 * x3 - 1.34811020 * x2 + 2.18555832 * x - 0.20219683
     elif temperature < 4000:
@@ -57,6 +58,7 @@ def color_from_temperature(temperature):
     return xyz_to_rgb.xform(xyz)
 
 __all__ = ["RPLight"]
+
 
 class RPLight(object):
 
@@ -176,7 +178,6 @@ class RPLight(object):
     def get_ies_profile(self):
         return self._ies_profile
 
-
     def has_ies_profile(self):
         return self._ies_profile >= 0
 
@@ -193,7 +194,6 @@ class RPLight(object):
         return self._near_plane
 
     near_plane = property(get_near_plane, set_near_plane)
-
 
     def write_to_command(self, cmd):
         cmd.push_int(self._light_type)

@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+# flake8: noqa
+
 # This file includes all classes from the pipeline which are exposed
 from rpcore.render_pipeline import RenderPipeline
 from rpcore.native import SpotLight, PointLight

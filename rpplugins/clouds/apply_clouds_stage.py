@@ -28,6 +28,7 @@ from panda3d.core import Vec2
 
 from rpcore.render_stage import RenderStage
 
+
 class ApplyCloudsStage(RenderStage):
 
     """ This stage raymarchs the cloud voxel grid """

@@ -30,6 +30,7 @@ from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
 from rpcore.loader import RPLoader
 
+
 class RenderStage(RPObject):
 
     """ This class is the abstract class for all stages used in the pipeline.

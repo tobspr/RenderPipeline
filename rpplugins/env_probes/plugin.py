@@ -36,6 +36,7 @@ from .environment_capture_stage import EnvironmentCaptureStage
 from .apply_envprobes_stage import ApplyEnvprobesStage
 from .cull_probes_stage import CullProbesStage
 
+
 class Plugin(BasePlugin):
 
     name = "Environment Probes"

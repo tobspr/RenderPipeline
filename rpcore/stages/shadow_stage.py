@@ -29,6 +29,7 @@ from panda3d.core import SamplerState
 from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
 
+
 class ShadowStage(RenderStage):
 
     """ This is the stage which renders all shadows """

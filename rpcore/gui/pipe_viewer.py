@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
+
 from rplibs.six import iteritems
 
 from panda3d.core import Texture, Vec3
@@ -38,6 +39,7 @@ from rpcore.util.shader_input_blocks import SimpleInputBlock, GroupedInputBlock
 from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.text import Text
 from rpcore.gui.sprite import Sprite
+
 
 class PipeViewer(DraggableWindow):
 
@@ -81,7 +83,7 @@ class PipeViewer(DraggableWindow):
         self._pipe_descriptions.set_x(scroll_value * 2759.0)
         return task.cont
 
-    def _populate_content(self): # pylint: disable=too-many-branches,too-many-statements
+    def _populate_content(self):  # pylint: disable=too-many-branches,too-many-statements
         """ Reads the pipes and stages from the stage manager and renders those
         into the window """
         self._created = True
@@ -161,7 +163,7 @@ class PipeViewer(DraggableWindow):
                         tex_desc = pipe_tex.format_texture_type(pipe_tex.get_texture_type())
                         tex_desc += " - " + pipe_tex.format_format(pipe_tex.get_format()).upper()
 
-                    Text(text=tex_desc, parent=node, x=55 + 48/2,
+                    Text(text=tex_desc, parent=node, x=55 + 48 / 2,
                          y=130 + pipe_idx * pipe_height, color=Vec3(0.2),
                          size=12, align="center")
 

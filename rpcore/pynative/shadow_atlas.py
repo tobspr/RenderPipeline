@@ -25,9 +25,10 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function, division
-from rplibs.six.moves import range # pylint: disable=import-error
+from rplibs.six.moves import range  # pylint: disable=import-error
 
 from panda3d.core import LVecBase4i, LVecBase4
+
 
 class ShadowAtlas(object):
 
@@ -42,8 +43,10 @@ class ShadowAtlas(object):
 
     def init_tiles(self):
         self._num_tiles = self._size // self._tile_size
-        row = lambda: [False for i in range(self._num_tiles)] # pylint: disable=unused-variable
-        self._flags = [row() for j in range(self._num_tiles)] # pylint: disable=unused-variable
+
+        def row():
+            return [False for i in range(self._num_tiles)]  # pylint: disable=unused-variable
+        self._flags = [row() for j in range(self._num_tiles)]  # pylint: disable=unused-variable
 
     def get_num_used_tiles(self):
         return self._num_used_tiles

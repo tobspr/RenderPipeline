@@ -29,6 +29,7 @@ from direct.stdpy.file import open
 from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
 
+
 class UpdatePreviousPipesStage(RenderStage):
 
     """ This stage is constructed by the StageManager and stores all the
@@ -56,13 +57,13 @@ class UpdatePreviousPipesStage(RenderStage):
         self._target.prepare_buffer()
 
         # Set inputs
-        for i, (from_tex, to_tex) in enumerate(self._transfers): # pylint: disable=unused-variable
+        for i, (from_tex, to_tex) in enumerate(self._transfers):  # pylint: disable=unused-variable
             self._target.set_shader_input("SrcTex" + str(i), from_tex)
             self._target.set_shader_input("DestTex" + str(i), to_tex)
 
     def set_dimensions(self):
         """ Sets the dimensions on all targets. See RenderTarget::set_dimensions """
-        for from_tex, to_tex in self._transfers: # pylint: disable=unused-variable
+        for from_tex, to_tex in self._transfers:  # pylint: disable=unused-variable
             to_tex.set_x_size(Globals.resolution.x)
             to_tex.set_y_size(Globals.resolution.y)
 
@@ -103,8 +104,7 @@ class UpdatePreviousPipesStage(RenderStage):
         # Load it back again
         self._target.shader = self.load_shader(shader_dest)
 
-
-    def get_sampler_type(self, tex, can_write=False): # pylint: disable=unused-argument
+    def get_sampler_type(self, tex, can_write=False):  # pylint: disable=unused-argument
         """ Returns the matching GLSL sampler type for a Texture, or image type
         in case write access is required """
         # TODO: Add more sampler types based on texture type
@@ -113,13 +113,13 @@ class UpdatePreviousPipesStage(RenderStage):
         else:
             return "writeonly image2D"
 
-    def get_sampler_lookup(self, tex, dest_name, sampler_name, coord_var): # pylint: disable=unused-argument
+    def get_sampler_lookup(self, tex, dest_name, sampler_name, coord_var):  # pylint: disable=unused-argument # noqa
         """ Returns the matching GLSL sampler lookup for a texture, storing the
         result in the given glsl variable """
         # TODO: Add more lookups based on texture type
         return "vec4 " + dest_name + " = texelFetch(" + sampler_name + ", " + coord_var + ", 0);"
 
-    def get_store_code(self, tex, sampler_name, coord_var, data_var): # pylint: disable=unused-argument
+    def get_store_code(self, tex, sampler_name, coord_var, data_var):  # pylint: disable=unused-argument # noqa
         """ Returns the matching GLSL code to store the given data in a given
         texture """
         # TODO: Add more stores based on texture type

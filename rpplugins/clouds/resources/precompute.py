@@ -27,10 +27,8 @@ THE SOFTWARE.
 from __future__ import print_function, division
 
 import os
-import shutil
 from os.path import dirname, realpath
-from panda3d.core import *
-from direct.stdpy.file import isdir, isfile, join
+from panda3d.core import *  # noqa
 from direct.showbase.ShowBase import ShowBase
 
 
@@ -61,7 +59,8 @@ class Application(ShowBase):
         node.set_shader(cshader)
         node.set_shader_input("DestTex", voxel_grid)
         attr = node.get_attrib(ShaderAttrib)
-        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.gsg)
+        self.graphicsEngine.dispatch_compute(
+            ((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.gsg)
         self.graphicsEngine.extract_texture_data(voxel_grid, self.win.gsg)
 
         print("Writing data ..")
@@ -77,7 +76,8 @@ class Application(ShowBase):
         node.set_shader(cshader)
         node.set_shader_input("DestTex", voxel_grid)
         attr = node.get_attrib(ShaderAttrib)
-        self.graphicsEngine.dispatch_compute(((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.gsg)
+        self.graphicsEngine.dispatch_compute(
+            ((w + 7) // 8, (h + 7) // 8, (d + 3) // 4), attr, self.win.gsg)
         self.graphicsEngine.extract_texture_data(voxel_grid, self.win.gsg)
 
         print("Writing data ..")

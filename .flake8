@@ -1,0 +1,4 @@
+[flake8]
+max-line-length=100
+exclude=rplibs/*,data/*,hosek_wilkie_scattering,bake_gi,_DEV,*_generated.py,resources_rc.py
+

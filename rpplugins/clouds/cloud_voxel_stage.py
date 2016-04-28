@@ -29,6 +29,7 @@ from panda3d.core import SamplerState, Vec4
 from rpcore.render_stage import RenderStage
 from rpcore.image import Image
 
+
 class CloudVoxelStage(RenderStage):
 
     """ This stage generates the volumetric cloud voxel grid """
