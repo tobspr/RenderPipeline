@@ -97,7 +97,7 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
         return built
 
     @classmethod
-    def _generate_sampling_code(cls, texture, view_width, view_height):  # pylint: disable=unused-argument,too-many-branches # noqa
+    def _generate_sampling_code(cls, texture, view_width, view_height):  # noqa # pylint: disable=unused-argument,too-many-branches
         """ Generates the GLSL code to sample a texture and also returns the
         GLSL sampler type """
 
@@ -129,8 +129,8 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
         # Buffer Textures
         elif texture_type == Image.TT_buffer_texture:
 
-            def range_check():
-                return "if (int_index < textureSize(p3d_Texture0)) {" + s + "} else { result = vec3(1.0, 0.6, 0.2);};"  # noqa
+            def range_check(code):
+                return "if (int_index < textureSize(p3d_Texture0)) {" + code + "} else { result = vec3(1.0, 0.6, 0.2);};"  # noqa
 
             if comp_type in float_types:
                 result = range_check("result = texelFetch(p3d_Texture0, int_index).xyz;"), "samplerBuffer"  # noqa

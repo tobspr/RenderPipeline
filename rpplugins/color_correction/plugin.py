@@ -57,7 +57,7 @@ class Plugin(BasePlugin):
         if not self.get_setting("manual_camera_parameters"):
             self.exposure_stage = self.create_stage(AutoExposureStage)
         else:
-            self.exposure_stage = self.create_stage(ManualExposureStage)  # pylint: disable=redefined-variable-type # noqa
+            self.exposure_stage = self.create_stage(ManualExposureStage)  # noqa # pylint: disable=redefined-variable-type
 
     def on_pipeline_created(self):
         self.load_lut()

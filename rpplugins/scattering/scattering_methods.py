@@ -112,7 +112,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
         self.textures = {
             "transmittance": img_2d("scat-trans", self.trans_w, self.trans_h, tex_format),
             "irradiance": img_2d("scat-irrad", self.sky_w, self.sky_h, tex_format),
-            "inscatter": img_3d("scat-inscat", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),  # pylint: disable=line-too-long # noqa
+            "inscatter": img_3d("scat-inscat", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),  # noqa # pylint: disable=line-too-long
             "delta_e": img_2d("scat-dx-e", self.sky_w, self.sky_h, tex_format),
             "delta_sr": img_3d("scat-dx-sr", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),
             "delta_sm": img_3d("scat-dx-sm", self.res_mu_s_nu, self.res_mu, self.res_r, tex_format),

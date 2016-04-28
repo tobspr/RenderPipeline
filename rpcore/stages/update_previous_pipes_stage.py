@@ -113,13 +113,13 @@ class UpdatePreviousPipesStage(RenderStage):
         else:
             return "writeonly image2D"
 
-    def get_sampler_lookup(self, tex, dest_name, sampler_name, coord_var):  # pylint: disable=unused-argument # noqa
+    def get_sampler_lookup(self, tex, dest_name, sampler_name, coord_var):  # noqa # pylint: disable=unused-argument
         """ Returns the matching GLSL sampler lookup for a texture, storing the
         result in the given glsl variable """
         # TODO: Add more lookups based on texture type
         return "vec4 " + dest_name + " = texelFetch(" + sampler_name + ", " + coord_var + ", 0);"
 
-    def get_store_code(self, tex, sampler_name, coord_var, data_var):  # pylint: disable=unused-argument # noqa
+    def get_store_code(self, tex, sampler_name, coord_var, data_var):   # noqa# pylint: disable=unused-argument
         """ Returns the matching GLSL code to store the given data in a given
         texture """
         # TODO: Add more stores based on texture type

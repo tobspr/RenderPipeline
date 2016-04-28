@@ -75,7 +75,7 @@ def profile(func):
     return do_pstat
 
 
-class profile_cpu(object):  # pylint: disable=invalid-name,too-few-public-methods # noqa
+class profile_cpu(object):  # noqa # pylint: disable=invalid-name,too-few-public-methods
     """
     Context manager for profiling CPU duration. This is useful for timing
     loading of files or other CPU-heavy operations. Example usage:

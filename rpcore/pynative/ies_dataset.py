@@ -65,7 +65,7 @@ class IESDataset(object):
 
         dest_tex.load(dest, layer_index, 0)
 
-    def get_candela_value(self, vertical_angle, horizontal_angle):  # pylint: disable=unused-argument # noqa
+    def get_candela_value(self, vertical_angle, horizontal_angle):  # noqa # pylint: disable=unused-argument
         # NOTICE: Since python is slower, we always only assume a dataset without
         # horizontal angles. This still produces convincing results, but does
         # generate much faster.

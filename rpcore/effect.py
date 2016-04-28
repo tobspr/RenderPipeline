@@ -181,7 +181,7 @@ class Effect(RPObject):
         shader_path = self._construct_shader_from_data(pass_id, stage, template_src, data)
         self._generated_shader_paths[stage + "-" + pass_id] = shader_path
 
-    def _construct_shader_from_data(self, pass_id, stage, template_src, data):  # pylint: disable=too-many-branches # noqa
+    def _construct_shader_from_data(self, pass_id, stage, template_src, data):  # noqa # pylint: disable=too-many-branches
         """ Constructs a shader from a given dataset """
         injects = {"defines": []}
 
@@ -219,7 +219,7 @@ class Effect(RPObject):
         cache_key = self.effect_name + "@" + stage + "-" + pass_id + "@" + self.effect_hash
         return self._process_shader_template(template_src, cache_key, injects)
 
-    def _process_shader_template(self, template_src, cache_key, injections):
+    def _process_shader_template(self, template_src, cache_key, injections):  # noqa # pylint: disable=too-many-branches
         """ Generates a compiled shader object from a given shader
         source location and code injection definitions. """
         with open(template_src, "r") as handle:
@@ -264,7 +264,7 @@ class Effect(RPObject):
                         # When we are in the main function, we have to make sure we
                         # use a seperate scope, so there are no conflicts with variable
                         # declarations
-                        header = indent + "/* Hook: " + hook_name + " */" + (" {" if in_main else "")  # noqa
+                        header = indent + "/* Hook: " + hook_name + " */" + (" {" if in_main else "")  # noqa # pylint: disable=line-too-long
                         parsed_lines.append(header)
 
                         for line_to_insert in insertions:

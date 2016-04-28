@@ -12,7 +12,7 @@ rp_dir = realpath(join(base_dir, "../../"))
 os.chdir(base_dir)
 
 sys.path.insert(0, rp_dir)
-from rplibs.six.moves import input  # pylint: disable=import-error # noqa
+from rplibs.six.moves import input  # noqa # pylint: disable=import-error
 
 # TODO: Add option to skip gui folders if debugger is disabled
 

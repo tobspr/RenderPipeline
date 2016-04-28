@@ -64,7 +64,7 @@ class Plugin(BasePlugin):
             self.scattering_model = ScatteringMethodEricBruneton(self)
         elif method == "hosek_wilkie":
             from .scattering_methods import ScatteringMethodHosekWilkie
-            self.scattering_model = ScatteringMethodHosekWilkie(self)  # pylint: disable=redefined-variable-type # noqa
+            self.scattering_model = ScatteringMethodHosekWilkie(self)  # noqa # pylint: disable=redefined-variable-type
         else:
             self.error("Unrecognized scattering method!")
 

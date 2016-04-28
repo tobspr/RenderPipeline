@@ -42,7 +42,7 @@ __all__ = "RenderTarget",
 __version__ = "2.0"
 
 
-class setter(object):  # pylint: disable=invalid-name,too-few-public-methods # noqa
+class setter(object):  # noqa # pylint: disable=invalid-name,too-few-public-methods
     """ Setter only property """
     def __init__(self, func):
         self.__func = func
