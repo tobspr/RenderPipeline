@@ -232,7 +232,7 @@ class StageManager(RPObject):
 
         for stage in self.stages:
             stage.create()
-            stage.set_dimensions()
+            stage.handle_window_resize()
 
             # Rely on the methods to print an appropriate error message
             if not self._bind_pipes_to_stage(stage):

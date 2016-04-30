@@ -29,6 +29,8 @@
 // This shader collects the list of all lights for a given cell, sorts them
 // and then writes them out as a list.
 
+layout(early_fragment_tests) in;
+
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
@@ -36,8 +38,9 @@
 #pragma include "includes/light_classification.inc.glsl"
 
 uniform isamplerBuffer CellListBuffer;
-uniform isamplerBuffer PerCellLightsBuffer;
-uniform writeonly iimageBuffer RESTRICT GroupedCellLightsBuffer;
+uniform usamplerBuffer PerCellLightsBuffer;
+layout(r32i) uniform iimageBuffer PerCellLightCountsBuffer;
+uniform writeonly uimageBuffer RESTRICT GroupedCellLightsBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
@@ -56,12 +59,15 @@ void main() {
     }
 
     // Get the offset in the per-cell culled light list
-    int data_offset = (LC_MAX_LIGHTS_PER_CELL + 1) * idx;
+    int data_offset = LC_MAX_LIGHTS_PER_CELL * idx;
     int dest_offset = (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT) * idx;
     int light_dest_offset = dest_offset + LIGHT_CLS_COUNT;
 
-    // Get the amount of (unsorted) lights for this cell
-    int num_culled_lights = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsBuffer, data_offset).x);
+    // Get the amount of (unsorted) lights for this cell, and while we are on
+    // it, also reset the count
+    int num_culled_lights = imageAtomicExchange(PerCellLightCountsBuffer, idx, 0).x;
+    // int num_culled_lights = imageLoad(PerCellLightCountsBuffer, idx).x;
+    num_culled_lights = min(LC_MAX_LIGHTS_PER_CELL, num_culled_lights);
     int num_processed_lights = 0;
 
     // Fetch the data of all light classes
@@ -71,7 +77,7 @@ void main() {
         // Iterate over the list of culled lights, and store all lights which
         // belong to this class
         for (int i = 0; i < num_culled_lights; ++i) {
-            int light_index = texelFetch(PerCellLightsBuffer, data_offset + 1 + i).x;
+            int light_index = int(texelFetch(PerCellLightsBuffer, data_offset + 1 + i).x);
             int light_type = read_light_type(AllLightsData, light_index);
             bool casts_shadows = read_casts_shadows(AllLightsData, light_index);
 
@@ -83,9 +89,8 @@ void main() {
             }
         }
 
-
         // Finally store the light class count
-        imageStore(GroupedCellLightsBuffer, dest_offset + light_class, ivec4(light_count));
+        imageStore(GroupedCellLightsBuffer, dest_offset + light_class, uvec4(light_count));
     }
-
 }
+

@@ -72,6 +72,7 @@ class Image(RPObject, Texture, ImageFormatTypes):
         "RGBA32": (Texture.T_float, Texture.F_rgba32),
         "R8": (Texture.T_unsigned_byte, Texture.F_red),
         "R16": (Texture.T_float, Texture.F_r16),
+        "R16UI": (Texture.T_unsigned_short, Texture.F_r16i),
         "R32": (Texture.T_float, Texture.F_r32),
         "R32I": (Texture.T_int, Texture.F_r32i),
     }
@@ -83,6 +84,11 @@ class Image(RPObject, Texture, ImageFormatTypes):
         comp_type, comp_format = cls.convert_texture_format(component_format)
         img.setup_buffer_texture(size, comp_type, comp_format, GeomEnums.UH_static)
         return img
+
+    @classmethod
+    def create_counter(cls, name):
+        """ Creates a new 1x1 R32I texture to be used as an atomic counter """
+        return cls.create_buffer(name, 1, "R32I")
 
     @classmethod
     def create_2d(cls, name, w, h, component_format):
@@ -135,6 +141,7 @@ class Image(RPObject, Texture, ImageFormatTypes):
         Texture.__init__(self, name)
         Image.REGISTERED_IMAGES.append(self)
         self.set_clear_color(0)
+        self.clear_image()
         self.sort = RenderTarget.CURRENT_SORT
 
     def __del__(self):

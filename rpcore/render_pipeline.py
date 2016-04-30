@@ -567,8 +567,8 @@ class RenderPipeline(RPObject):
     def _check_version(self):
         """ Internal method to check if the required Panda3D version is met. Returns
         True if the version is new enough, and False if the version is outdated. """
-        from panda3d.core import PointLight as Panda3DPointLight
-        if not hasattr(Panda3DPointLight(""), "shadow_caster"):
+        from panda3d.core import Texture
+        if not hasattr(Texture, "F_r16i"):
             return False
         return True
 

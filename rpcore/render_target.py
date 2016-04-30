@@ -292,6 +292,9 @@ class RenderTarget(RPObject):
         window_props = WindowProperties.size(self._size.x, self._size.y)
         buffer_props = FrameBufferProperties()
 
+        if self._size_constraint.x == 0 or self._size_constraint.y == 0:
+            window_props = WindowProperties.size(1, 1)
+
         if self._color_bits == (16, 16, 16, 0):
             if RenderTarget.USE_R11G11B10:
                 buffer_props.set_rgba_bits(11, 11, 10, 0)

@@ -119,7 +119,9 @@ class RPLoader(RPObject):
         num_tiles = tile_size_x if num_tiles is None else num_tiles
 
         # Load sliced image from disk
-        source = PNMImage(fname)
+        tex_handle = cls.load_texture(fname)
+        source = PNMImage()
+        tex_handle.store(source)
         width = source.get_x_size()
 
         # Find slice properties

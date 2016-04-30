@@ -2,6 +2,7 @@
 
 #include "ArHosekSkyModel.h"
 #include "PNMImage.h"
+#include "Texture.h"
 
 #include <iostream>
 using namespace std;
@@ -89,7 +90,12 @@ INLINE void generate_table()
 	}
 
 	cout << "Writing data ..." << endl;
-	img.write("scattering_lut.png");
+	// img.write("scattering_lut.png");
+
+	Texture t;
+	t.setup_2d_texture(img.get_x_size(), img.get_y_size(), Texture::T_float, Texture::F_rgb16);
+	t.load(img);
+	t.write("scattering_lut.txo.pz");
 }
 
 END_PUBLISH

@@ -36,7 +36,9 @@
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
 
-uniform layout(r32i) iimageBuffer FrustumLights;
+uniform writeonly uimageBuffer FrustumLights;
+layout(r32i) uniform iimageBuffer FrustumLightsCount;
+
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
 
@@ -71,12 +73,8 @@ void main() {
             visible = false;
 
         if (visible) {
-            int index = imageAtomicAdd(FrustumLights, 0, 1) + 1;
-            // Increment by one since first entry contains the amount of lights
-            imageStore(FrustumLights, index, ivec4(i));
+            int index = imageAtomicAdd(FrustumLightsCount, 0, 1);
+            imageStore(FrustumLights, index, uvec4(i));
         }
     }
-
-    // Finally write out the light count
-    // imageStore(FrustumLights, 0, ivec4(light_count));
 }

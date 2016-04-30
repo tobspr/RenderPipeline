@@ -205,4 +205,4 @@ class RPLight(object):
             cmd.push_int(-1)
 
         cmd.push_vec3(self._position)
-        cmd.push_vec3(self._color * self._energy)
+        cmd.push_vec3(self._color * self._energy / 100.0)

@@ -30,6 +30,11 @@
 
 in vec4 p3d_Vertex;
 uniform isamplerBuffer CellListBuffer;
+uniform int threadCount;
+
+uint get_slice_count(uint cell_count) {
+    return uint(ceil(float(cell_count * threadCount) / LC_CULLING_SLICE_WIDTH));
+}
 
 void main() {
 
@@ -44,14 +49,16 @@ void main() {
     int num_total_cells = texelFetch(CellListBuffer, 0).x;
 
     // Compute the amount of pixel lines required to shade all cells
-    uint num_used_slices = uint(ceil(float(num_total_cells) / LC_CULLING_SLICE_WIDTH));
+    uint num_used_slices = get_slice_count(num_total_cells);
 
     // Compute the percentage factor of the used slices
-    uint max_tiles = MainSceneData.lc_tile_count.x * MainSceneData.lc_tile_count.y *
+    uint max_tiles = MainSceneData.lc_tile_count.x *
+                     MainSceneData.lc_tile_count.y *
                      LC_TILE_SLICES;
-    uint max_slices = uint(ceil(float(max_tiles) / LC_CULLING_SLICE_WIDTH));
+    uint max_slices = get_slice_count(max_tiles);
 
-    float percentage_height = num_used_slices / float(max_slices);
+    float percentage_height = saturate(num_used_slices / float(max_slices));
+    // percentage_height = 1;
 
     // Store the vertex position.
     gl_Position = vec4(p3d_Vertex.x, fma(fma(p3d_Vertex.z, 0.5, 0.5) * percentage_height, 2.0, -1.0) , 0, 1);

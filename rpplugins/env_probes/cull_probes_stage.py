@@ -60,6 +60,7 @@ class CullProbesStage(RenderStage):
         self.per_cell_probes = Image.create_buffer("PerCellProbes", 0, "R32I")
         self.per_cell_probes.clear_image()
         self.target.set_shader_input("PerCellProbes", self.per_cell_probes)
+        self.target.set_shader_input("threadCount", 1)
 
     def set_dimensions(self):
         max_cells = self._pipeline.light_mgr.total_tiles

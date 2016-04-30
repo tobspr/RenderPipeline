@@ -94,8 +94,8 @@ bool intersect_atmosphere(vec3 cam_pos, vec3 d, out float offset, out float max_
 // This is required because we use different coordinate systems for normal
 // rendering and atmospheric scattering.
 vec3 worldspace_to_atmosphere(vec3 pos) {
-    pos.z += 1000.0;
-    pos /= TimeOfDay.scattering.fog_scale;
+    pos.z += GET_SETTING(scattering, atmosphere_start);
+    pos /= 1000.0;
     pos.z = max(0, pos.z);
     pos.z += Rg;
     return pos;
@@ -202,13 +202,8 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
 
             phaseR *= GET_SETTING(scattering, rayleigh_factor);
 
-
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
 
-            // inscattered_light = srgb_to_rgb(inscattered_light);
-            // inscattered_light *= 1.0;
-
-            // inscattered_light *= 1 - 0.9 * abs(view_dir.z);
         }
     }
 
@@ -228,24 +223,7 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float sky_clip)
 {
     vec3 attenuation = vec3(0);
     float irradiance_factor = 0.0;
-
-    // float fog_ramp = TimeOfDay.scattering.fog_ramp_size / 3.0;
-    // fog_factor = saturate(1.0 - exp( -distance(surface_pos, MainSceneData.camera_pos) / fog_ramp ));
-
-    // // Exponential height fog
-    // float ground_fog_factor = 500.0;
-    // fog_factor *= 1.0 - saturate( max(0, surface_pos.z) / ground_fog_factor);
-
     vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
-
-    // if (is_skybox(surface_pos)) {
-    //     fog_factor = 1;
-    // } else {
-    //     scattering = vec3(1, 1.3, 2.0) * fog_factor * 1.5;
-    //     scattering *= 0;
-    //     // scattering *= 1.5;
-    // }
-
 
     sky_clip = is_skybox(surface_pos) ? 1.0 : 0.0;
 

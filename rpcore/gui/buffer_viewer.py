@@ -203,7 +203,7 @@ class BufferViewer(DraggableWindow):
 
             r, g, b = 0.2, 0.2, 0.2
             if isinstance(stage_tex, Image):
-                r, g, b = 0.2, 0.2, 0.4
+                r, g, b = 0.2, 0.4, 0.6
 
             stage_name = stage_name.replace("render_pipeline_internal:", "")
             parts = stage_name.split(":")

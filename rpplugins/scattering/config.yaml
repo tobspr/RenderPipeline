@@ -79,6 +79,17 @@ settings: !!omap
         description: >
             This enables the experimental support for godrays.
 
+    - atmosphere_start:
+        type: float
+        range: [25.0, 2000.0]
+        default: 100
+        label: Atmosphere Start
+        shader_runtime: true
+        description: >
+            Start of the the atmosphere, this controls where
+            z = 0 lies inside the atmosphere. A value of 0 would mean
+            sea level for example.
+
 
 daytime_settings: !!omap
 
@@ -120,7 +131,7 @@ daytime_settings: !!omap
     - extinction:
         type: scalar
         unit: meter
-        range: [0.5, 20000.0]
+        range: [0.5, 50000.0]
         default: 2000
         label: Extinction
         logarithmic_factor: 2.0
@@ -128,13 +139,4 @@ daytime_settings: !!omap
             Extinction factor, this controls how much the fog darkens the
             objects in the distance.
 
-    - fog_scale:
-        type: scalar
-        unit: meter
-        range: [25.0, 2000.0]
-        default: 200
-        label: Atmosphere Fog scale
-        logarithmic_factor: 1.5
-        description: >
-            Controls the relative height of the atmosphere. If you raise this
-            value, the atmosphere will be more dense.
+

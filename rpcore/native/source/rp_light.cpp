@@ -74,9 +74,10 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 
     cmd.push_vec3(_position);
 
-    // Get the lights color by multiplying color with energy, I hope thats
-    // physically correct.
-    cmd.push_vec3(_color * _energy);
+    // Get the lights color by multiplying color with energy. Divide by
+    // 100, since 16bit floating point buffers only go up to 65000.0, which
+    // prevents very bright lights 
+    cmd.push_vec3(_color * _energy / 100.0);
 }
 
 /**
