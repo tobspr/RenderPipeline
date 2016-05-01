@@ -38,34 +38,34 @@ out vec2 result;
 
 void main() {
 
-  ivec2 tile = ivec2(gl_FragCoord.xy);
-  ivec2 screen_coord = tile * tile_size;
-  ivec2 max_tiles = textureSize(TileMinMax, 0) - 1;
+    ivec2 tile = ivec2(gl_FragCoord.xy);
+    ivec2 screen_coord = tile * tile_size;
+    ivec2 max_tiles = textureSize(TileMinMax, 0) - 1;
 
-  vec2 max_velocity = vec2(0.0);
-  float largest_magnitude = -1.0;
+    vec2 max_velocity = vec2(0.0);
+    float largest_magnitude = -1.0;
 
-  const int filter_size = 2;
+    const int filter_size = 2;
 
-  for (int x = -filter_size; x <= filter_size; ++x) {
-    for (int y = -filter_size; y <= filter_size; ++y) {
-      ivec2 neighbor_coord = clamp(tile + ivec2(x, y), ivec2(0), ivec2(max_tiles));
-      vec2 vmax_neighbor = texelFetch(TileMinMax, neighbor_coord, 0).xy;
+    for (int x = -filter_size; x <= filter_size; ++x) {
+        for (int y = -filter_size; y <= filter_size; ++y) {
+            ivec2 neighbor_coord = clamp(tile + ivec2(x, y), ivec2(0), ivec2(max_tiles));
+            vec2 vmax_neighbor = texelFetch(TileMinMax, neighbor_coord, 0).xy;
 
-      float magnitude_neighbor = dot(vmax_neighbor, vmax_neighbor);
+            float magnitude_neighbor = dot(vmax_neighbor, vmax_neighbor);
 
-      if (magnitude_neighbor > largest_magnitude) {
-        vec2 direction_of_velocity = vmax_neighbor;
-        int displacement = abs(x) + abs(y);
-        ivec2 point = ivec2(sign(vec2(x, y) * direction_of_velocity));
-        float dist = point.x + point.y;
-        if (abs(dist) == displacement) {
-          max_velocity = vmax_neighbor;
-          largest_magnitude = magnitude_neighbor;
+            if (magnitude_neighbor > largest_magnitude) {
+                vec2 direction_of_velocity = vmax_neighbor;
+                int displacement = abs(x) + abs(y);
+                ivec2 point = ivec2(sign(vec2(x, y) * direction_of_velocity));
+                float dist = point.x + point.y;
+                if (abs(dist) == displacement) {
+                    max_velocity = vmax_neighbor;
+                    largest_magnitude = magnitude_neighbor;
+                }
+            }
         }
-      }
     }
-  }
 
-  result = max_velocity;
+    result = max_velocity;
 }

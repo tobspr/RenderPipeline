@@ -65,10 +65,10 @@ void main() {
     // Get destination voxel
     const int resolution = GET_SETTING(vxgi, grid_resolution);
     const float ws_size = GET_SETTING(vxgi, grid_ws_size);
-    vec3 vs_coord = (vOutput.position + vOutput.normal * 0.0 - voxelGridPosition + ws_size) / (2.0 * ws_size);
+    vec3 vs_coord = (vOutput.position +
+        vOutput.normal * 0.0 - voxelGridPosition + ws_size) / (2.0 * ws_size);
     ivec3 vs_icoord = ivec3(vs_coord * resolution + 1e-5);
 
     // Write voxel
     imageStore(VoxelGridDest, vs_icoord, vec4(combined_lighting, 1.0));
 }
-

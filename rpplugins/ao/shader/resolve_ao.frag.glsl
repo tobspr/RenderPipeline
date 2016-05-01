@@ -44,12 +44,13 @@ void main() {
     vec2 texcoord = get_texcoord();
 
     #if GET_SETTING(ao, clip_length) < 1
-      // No reprojection needed without temporal ao
-      result = texture(CurrentTex, texcoord).xyz;
+        // No reprojection needed without temporal ao
+        result = texture(CurrentTex, texcoord).xyz;
     #else
-      vec2 velocity = texture(CombinedVelocity, texcoord).xy;
-      vec2 last_coord = texcoord + velocity;
+        vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+        vec2 last_coord = texcoord + velocity;
 
-      result = resolve_temporal(CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
+        result = resolve_temporal(
+            CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
     #endif
 }

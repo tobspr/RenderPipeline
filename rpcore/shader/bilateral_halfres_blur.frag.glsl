@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 // This shader provides a bilateral blur at half-resolution
 
@@ -67,8 +67,10 @@ void main() {
         float depth = get_lin_z(offcoord);
 
         float weight = gaussian_weights_4[abs(i)];
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) / 0.01);
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(depth - pixel_depth) / 0.001);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) *
+            distance(nrm, pixel_nrm) / 0.01);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) *
+            abs(depth - pixel_depth) / 0.001);
 
         accum += sampled * weight;
         accum_w += weight;

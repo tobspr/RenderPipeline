@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma optionNV (unroll all)
 

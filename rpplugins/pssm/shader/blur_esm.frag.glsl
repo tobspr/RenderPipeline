@@ -39,19 +39,19 @@ uniform ivec2 direction;
 out float result;
 
 void main() {
-  vec2 texsize = textureSize(SourceTex, 0).xy;
-  vec2 texcoord = gl_FragCoord.xy / texsize;
+    vec2 texsize = textureSize(SourceTex, 0).xy;
+    vec2 texcoord = gl_FragCoord.xy / texsize;
 
-  float accum = 0;
+    float accum = 0;
 
-  // Make sure you also adjust the offsets and weight arrays when you change the
-  // amount of samples
-  const int num_steps = 2;
+    // Make sure you also adjust the offsets and weight arrays when you change the
+    // amount of samples
+    const int num_steps = 2;
 
-  for (int i = 0; i < num_steps; ++i) {
-      vec2 offcoord = texcoord + vec2(opt_gaussian_offsets_2[i]) * direction / texsize;
-      accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_2[i];
-  }
+    for (int i = 0; i < num_steps; ++i) {
+            vec2 offcoord = texcoord + vec2(opt_gaussian_offsets_2[i]) * direction / texsize;
+            accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_2[i];
+    }
 
-  result = accum;
+    result = accum;
 }

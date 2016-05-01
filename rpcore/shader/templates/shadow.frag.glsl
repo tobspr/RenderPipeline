@@ -34,7 +34,7 @@
 %includes%
 %inout%
 
-layout(location=0) in VertexOutput vOutput;
+layout(location = 0) in VertexOutput vOutput;
 
 #if OPT_ALPHA_TESTING
 uniform sampler2D p3d_Texture0;

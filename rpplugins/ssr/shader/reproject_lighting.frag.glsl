@@ -40,54 +40,54 @@ uniform sampler2D Previous_PostAmbientScene;
 uniform sampler2D Previous_SceneDepth;
 
 #if HAVE_PLUGIN(color_correction)
-  uniform samplerBuffer Exposure;
+    uniform samplerBuffer Exposure;
 #endif
 
 out vec4 result;
 
 void main() {
-  vec2 texcoord = get_texcoord();
-  vec2 velocity = texture(CombinedVelocity, texcoord).xy;
-  vec2 last_coord = texcoord + velocity;
+    vec2 texcoord = get_texcoord();
+    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+    vec2 last_coord = texcoord + velocity;
 
-  // Out of screen, can early out
-  if (out_of_screen(last_coord)) {
-    result = vec4(0);
-    return;
-  }
-
-  float fade = 1.0;
-
-  // Check if reprojected position matches
-  float curr_depth = get_depth_at(texcoord);
-
-  #if GET_SETTING(ssr, skip_invalid_samples)
-    // Skip samples which are invalid due to a position change or due to being
-    // occluded in the last frame.
-
-    // TODO: Should probably use the 3x3 AABB for this, but might be too
-    // performance heavy. I think this should work out well.
-    vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
-    float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
-
-    vec3 last_pos = calculate_surface_pos(last_depth, last_coord,
-      MainSceneData.last_inv_view_proj_mat_no_jitter);
-
-    if (distance(curr_pos, last_pos) > 0.9) {
-      // fade = 0.0;
+    // Out of screen, can early out
+    if (out_of_screen(last_coord)) {
+        result = vec4(0);
+        return;
     }
-  #endif
 
-  vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
+    float fade = 1.0;
 
-  // Prevent super bright spots by clamping to a reasonable high color.
-  // Otherwise very bright highlights lead to artifacts.
-  // Since this heavily depends on the scene brightness, we base this on
-  // the exposure. Basically the color is only allowed to be twice as bright
-  // as the average screen brightness.
-  float current_ev = 1.0 / texelFetch(Exposure, 0).x;
-  intersected_color = clamp(intersected_color, 0.0, 2 * current_ev);
+    // Check if reprojected position matches
+    float curr_depth = get_depth_at(texcoord);
 
-  // Finally store the result in the mip-chian
-  result = vec4(intersected_color, 1) * fade;
+    #if GET_SETTING(ssr, skip_invalid_samples)
+        // Skip samples which are invalid due to a position change or due to being
+        // occluded in the last frame.
+
+        // TODO: Should probably use the 3x3 AABB for this, but might be too
+        // performance heavy. I think this should work out well.
+        vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
+        float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
+
+        vec3 last_pos = calculate_surface_pos(last_depth, last_coord,
+            MainSceneData.last_inv_view_proj_mat_no_jitter);
+
+        if (distance(curr_pos, last_pos) > 0.9) {
+            // fade = 0.0;
+        }
+    #endif
+
+    vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
+
+    // Prevent super bright spots by clamping to a reasonable high color.
+    // Otherwise very bright highlights lead to artifacts.
+    // Since this heavily depends on the scene brightness, we base this on
+    // the exposure. Basically the color is only allowed to be twice as bright
+    // as the average screen brightness.
+    float current_ev = 1.0 / texelFetch(Exposure, 0).x;
+    intersected_color = clamp(intersected_color, 0.0, 2 * current_ev);
+
+    // Finally store the result in the mip-chian
+    result = vec4(intersected_color, 1) * fade;
 }

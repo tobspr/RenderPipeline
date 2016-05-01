@@ -39,7 +39,7 @@
 
 uniform Panda3DMaterial p3d_Material;
 
-layout(location=0) in VertexOutput vOutput;
+layout(location = 0) in VertexOutput vOutput;
 
 #pragma include "includes/normal_mapping.inc.glsl"
 #pragma include "includes/forward_shading.inc.glsl"

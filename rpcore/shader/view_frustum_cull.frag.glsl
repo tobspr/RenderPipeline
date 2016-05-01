@@ -52,7 +52,7 @@ void main() {
     int start_offset = coord.y * tile_size + coord.x;
 
     // Iterate over all lights
-    for (int i = start_offset; i < maxLightIndex + 1; i += tile_size*tile_size) {
+    for (int i = start_offset; i < maxLightIndex + 1; i += tile_size * tile_size) {
 
         // Fetch data of current light
         LightData light_data = read_light_data(AllLightsData, i);
@@ -66,7 +66,7 @@ void main() {
         bool visible = true;
 
         Sphere sphere = get_representative_sphere(light_data);
-        
+
         // XXX: Do actual culling here
 
         if (length_squared(sphere.pos) - square(sphere.radius) > max_light_dist_sq)

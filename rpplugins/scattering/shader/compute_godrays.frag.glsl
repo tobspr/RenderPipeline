@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #define USE_TIME_OF_DAY 1
 #define USE_GBUFFER_EXTENSIONS

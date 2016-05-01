@@ -45,7 +45,8 @@ float attenuation_curve(float dist_sq, float radius) {
 
 
 // Computes the attenuation for a spot light
-float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius, float dist_sq, int ies_profile) {
+float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
+        float dist_sq, int ies_profile) {
     float dist_attenuation = attenuation_curve(dist_sq, radius);
     float cos_angle = dot(l, -light_dir);
 
@@ -62,7 +63,8 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float radius) {
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
-    vec3 closest_point = l_unscaled + center_to_ray * saturate(radius / max(1e-3, length(center_to_ray)));
+    vec3 closest_point = l_unscaled + center_to_ray *
+        saturate(radius / max(1e-3, length(center_to_ray)));
     return closest_point;
 }
 
@@ -105,14 +107,15 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     // Diffuse contribution
     vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness)
-                          * m.basecolor * (1 - m.metallic);
+                            * m.basecolor * (1 - m.metallic);
 
     // Specular contribution:
     // We add some roughness for clearcoat - this is due to the reason that
     // light gets scattered and thus a wider highlight is shown.
     // This approximates the reference in mitsuba very well.
     // float distribution = brdf_distribution(NxH, m.roughness);
-    float distribution = brdf_distribution(NxH, m.roughness * (m.shading_model == SHADING_MODEL_CLEARCOAT ? 1.4 : 1.0)); // xxx
+    float distribution = brdf_distribution(NxH, m.roughness *
+        (m.shading_model == SHADING_MODEL_CLEARCOAT ? 1.4 : 1.0)); // xxx
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
 
@@ -134,9 +137,12 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         shading_result += coat_spec;
     }
 
-    return max(vec3(0), (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance);
+    return max(vec3(0),
+        (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance);
 }
 
-vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow, vec3 transmittance) {
-    return apply_light(m, v, l, light_color, attenuation, shadow, transmittance, 1.0, 1.0, l);
+vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
+        float shadow, vec3 transmittance) {
+    return apply_light(
+        m, v, l, light_color, attenuation, shadow, transmittance, 1.0, 1.0, l);
 }

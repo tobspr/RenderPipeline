@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 uniform sampler2D SourceTex;
 out vec4 result;
@@ -41,5 +41,5 @@ void main() {
     lum += textureLod(SourceTex, local_coord + vec2(0, pixel_offset.y), 0).x;
     lum += textureLod(SourceTex, local_coord + pixel_offset.xy, 0).x;
 
-    result = vec4( lum * 0.25 );
+    result = vec4(lum * 0.25);
 }

@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
@@ -71,16 +71,18 @@ void main() {
         inscattered_light *= 5.0;
 
         // Sun disk
-        vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) * inscattered_light * sky_clip;
+        vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) *
+            inscattered_light * sky_clip;
         silhouette_col *= 2.0;
         float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.000069), 23.0 * 1e5);
         float upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.045) * 1.0);
-        inscattered_light += vec3(1,0.3,0.1) * disk_factor * upper_disk_factor * 2.0 * silhouette_col * 1.5 * 1e4;
+        inscattered_light += vec3(1, 0.3, 0.1) * disk_factor * upper_disk_factor *
+            silhouette_col * 3.0 * 1e4;
 
     } else {
-        inscattered_light *= 140.0;
+        inscattered_light *= 70.0;
         float dist = distance(m.position, MainSceneData.camera_pos);
-        float extinction = exp(- dist / TimeOfDay.scattering.extinction); inscattered_light *= 0.5;
+        float extinction = exp(- dist / TimeOfDay.scattering.extinction);
 
         #if !DEBUG_MODE
             result.xyz *= extinction;

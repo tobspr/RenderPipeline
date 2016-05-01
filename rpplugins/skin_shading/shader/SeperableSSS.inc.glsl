@@ -119,7 +119,7 @@ vec4 kernel[] = {
     vec4(0.00471691, 0.000184771, 5.07565e-005, 2),
 };
 #else
-#error Quality must be one of {0,1,2}
+#error Quality must be one of {0, 1, 2}
 #endif
 
 
@@ -161,7 +161,7 @@ vec4 SSSSBlurPS(
         // If the difference in depth is huge, we lerp color back to "colorM":
         float depth = textureLod(depthTex, offset, 0).r;
         float s = saturate(1000.0f * distanceToProjectionWindow *
-                               sssWidth * abs(depthM - depth));
+                            sssWidth * abs(depthM - depth));
         color.rgb = mix(color.rgb, colorM.rgb, s);
         #endif
 

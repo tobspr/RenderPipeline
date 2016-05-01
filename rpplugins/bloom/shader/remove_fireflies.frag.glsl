@@ -53,8 +53,10 @@ void main() {
         // Find all surrounding pixels and weight them
         for (int i = -filter_size; i <= filter_size; ++i) {
             for (int j = -filter_size; j <= filter_size; ++j) {
-                vec3 color_sample = textureLod(ShadedScene, texcoord + vec2(i, j) * texel_offs, 0).xyz;
-                float weight = get_weight(color_sample, gaussian_weights_3[abs(i)] * gaussian_weights_3[abs(j)]);
+                vec3 color_sample = textureLod(
+                    ShadedScene, texcoord + vec2(i, j) * texel_offs, 0).xyz;
+                float weight = get_weight(
+                    color_sample, gaussian_weights_3[abs(i)] * gaussian_weights_3[abs(j)]);
                 accum += color_sample * weight;
                 weights += weight;
             }

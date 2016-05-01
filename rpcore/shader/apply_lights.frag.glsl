@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 // This shader performs the screen space shading of all lights
 

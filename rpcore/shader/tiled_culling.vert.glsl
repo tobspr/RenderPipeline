@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 
@@ -53,14 +53,15 @@ void main() {
 
     // Compute the percentage factor of the used slices
     uint max_tiles = MainSceneData.lc_tile_count.x *
-                     MainSceneData.lc_tile_count.y *
-                     LC_TILE_SLICES;
+                        MainSceneData.lc_tile_count.y *
+                        LC_TILE_SLICES;
     uint max_slices = get_slice_count(max_tiles);
 
     float percentage_height = saturate(num_used_slices / float(max_slices));
     // percentage_height = 1;
 
     // Store the vertex position.
-    gl_Position = vec4(p3d_Vertex.x, fma(fma(p3d_Vertex.z, 0.5, 0.5) * percentage_height, 2.0, -1.0) , 0, 1);
-
+    gl_Position = vec4(
+        p3d_Vertex.x,
+        fma(fma(p3d_Vertex.z, 0.5, 0.5) * percentage_height, 2.0, -1.0) , 0, 1);
 }

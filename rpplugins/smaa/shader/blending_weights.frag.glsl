@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "smaa_wrapper.inc.glsl"
@@ -55,6 +55,6 @@ void main() {
         // subsampleIndices = vec4(2, 2, 2, 0);
 
     // Actual Fragment shader
-    result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, EdgeTex, AreaTex, SearchTex, subsampleIndices);
-
+    result = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset,
+        EdgeTex, AreaTex, SearchTex, subsampleIndices);
 }

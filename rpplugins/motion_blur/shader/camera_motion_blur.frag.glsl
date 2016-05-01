@@ -43,61 +43,61 @@ const float min_velocity = 0.5 / WINDOW_WIDTH;
 
 void main() {
 
-  vec2 texcoord = get_texcoord();
-  ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec2 texcoord = get_texcoord();
+    ivec2 coord = ivec2(gl_FragCoord.xy);
 
-  #if DEBUG_MODE
-    result = texture(SourceTex, texcoord).xyz;
-    return;
-  #endif
+    #if DEBUG_MODE
+        result = texture(SourceTex, texcoord).xyz;
+        return;
+    #endif
 
-  // Reconstruct last frame texcoord
-  vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
-  vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
-  vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
-  vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
+    // Reconstruct last frame texcoord
+    vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
+    vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
+    vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
+    vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
 
-  // Compute velocity in screen space
-  vec2 velocity = last_coord - texcoord;
+    // Compute velocity in screen space
+    vec2 velocity = last_coord - texcoord;
 
-  // Make sure that when we have low-fps, we reduce motion blur, and when we
-  // have higher fps, we increase it - this way it perceptually always stays
-  // the same (otherwise it feels really laggy at low FPS)
-  const float target_fps = 60.0;
-  velocity *= (1.0 / target_fps) / MainSceneData.frame_delta;
-  velocity *= GET_SETTING(motion_blur, camera_blur_factor);
+    // Make sure that when we have low-fps, we reduce motion blur, and when we
+    // have higher fps, we increase it - this way it perceptually always stays
+    // the same (otherwise it feels really laggy at low FPS)
+    const float target_fps = 60.0;
+    velocity *= (1.0 / target_fps) / MainSceneData.frame_delta;
+    velocity *= GET_SETTING(motion_blur, camera_blur_factor);
 
-  float velocity_len = length(velocity);
+    float velocity_len = length(velocity);
 
-  // We can abort early when no velocity is present
-  if (velocity_len < min_velocity) {
-    result = texture(SourceTex, texcoord, 0).xyz;
-    return;
-  }
+    // We can abort early when no velocity is present
+    if (velocity_len < min_velocity) {
+        result = texture(SourceTex, texcoord, 0).xyz;
+        return;
+    }
 
-  if (velocity_len > max_velocity) {
-    float scale_factor = max_velocity / velocity_len;
-    velocity *= scale_factor;
-    velocity_len *= scale_factor;
-  }
+    if (velocity_len > max_velocity) {
+        float scale_factor = max_velocity / velocity_len;
+        velocity *= scale_factor;
+        velocity_len *= scale_factor;
+    }
 
-  // Weight the center sample by a small bit to make sure we always have a weight.
-  // However, we don't weight it too much to make the blur not look weird.
-  float weights = 1e-3;
-  vec3 accum = texture(SourceTex, texcoord).xyz * weights;
-  float jitter = rand(texcoord);
+    // Weight the center sample by a small bit to make sure we always have a weight.
+    // However, we don't weight it too much to make the blur not look weird.
+    float weights = 1e-3;
+    vec3 accum = texture(SourceTex, texcoord).xyz * weights;
+    float jitter = rand(texcoord);
 
-  // Blur in both directions
-  for (int i = -num_samples + 1; i < num_samples; ++i) {
-    vec2 offs = (i + 0.5 * jitter) / float(num_samples) * velocity;
+    // Blur in both directions
+    for (int i = -num_samples + 1; i < num_samples; ++i) {
+        vec2 offs = (i + 0.5 * jitter) / float(num_samples) * velocity;
 
-    // Prevent bleeding when rotating - that is, objects moving into different directions
-    vec2 sample_velocity = texture(CombinedVelocity, texcoord + offs).xy;
-    float weight = saturate(dot(sample_velocity, velocity) * WINDOW_WIDTH * 3);
-    accum += texture(SourceTex, texcoord + offs).xyz * weight;
-    weights += weight;
-  }
+        // Prevent bleeding when rotating - that is, objects moving into different directions
+        vec2 sample_velocity = texture(CombinedVelocity, texcoord + offs).xy;
+        float weight = saturate(dot(sample_velocity, velocity) * WINDOW_WIDTH * 3);
+        accum += texture(SourceTex, texcoord + offs).xyz * weight;
+        weights += weight;
+    }
 
-  accum /= weights;
-  result = max(vec3(0.0), accum);
+    accum /= weights;
+    result = max(vec3(0.0), accum);
 }

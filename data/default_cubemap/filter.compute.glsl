@@ -13,7 +13,7 @@ vec3 get_transformed_coord(vec2 coord, uint face) {
         case 1: return vec3(-f, coord);
         case 2: return vec3(coord, -f);
         case 0: return vec3(f, -coord.x, coord.y);
-        case 3: return vec3(coord.xy * vec2(1,-1), f);
+        case 3: return vec3(coord.xy * vec2(1, -1), f);
         case 4: return vec3(coord.x, f, coord.y);
         case 5: return vec3(-coord.x, -f, coord.y);
     }
@@ -24,7 +24,7 @@ vec3 get_transformed_coord(vec2 coord, uint face) {
 // http://www.trentreed.net/blog/physically-based-shading-and-image-based-lighting/
 vec2 hammersley(uint i, uint N)
 {
-  return vec2(float(i) / float(N), float(bitfieldReverse(i)) * 2.3283064365386963e-10);
+    return vec2(float(i) / float(N), float(bitfieldReverse(i)) * 2.3283064365386963e-10);
 }
 
 // From:
@@ -33,7 +33,7 @@ vec3 importance_sample_ggx(vec2 xi, float roughness)
 {
     float r_square = roughness * roughness;
     float phi = 2 * M_PI * xi.x;
-    float cos_theta = sqrt((1 - xi.y) / (1 + (r_square*r_square - 1) * xi.y));
+    float cos_theta = sqrt((1 - xi.y) / (1 + (r_square * r_square - 1) * xi.y));
     float sin_theta = sqrt(1 - cos_theta * cos_theta);
 
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
@@ -52,7 +52,7 @@ vec3 spherical_to_vector(float theta, float phi) {
 float brdf_distribution_ggx(float NxH, float roughness) {
     float nxh_sq = NxH * NxH;
     float tan_sq = (1 - nxh_sq) / nxh_sq;
-    float f = roughness / max(1e-10, nxh_sq * (roughness * roughness + tan_sq) );
+    float f = roughness / max(1e-10, nxh_sq * (roughness * roughness + tan_sq));
     return f * f / M_PI;
 }
 
@@ -64,8 +64,7 @@ void find_arbitrary_tangent(vec3 normal, out vec3 tangent, out vec3 bitangent) {
 }
 
 vec3 transform_cubemap_coordinates(vec3 coord) {
-    //return normalize(coord.xzy * vec3(1,-1,1));
-    return normalize(coord.xyz * vec3(1,-1,1));
+    return normalize(coord.xyz * vec3(1, -1, 1));
 }
 
 uniform samplerCube SourceTex;

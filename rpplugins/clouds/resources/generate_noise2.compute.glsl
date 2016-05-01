@@ -36,13 +36,13 @@ const int tex_size = 32;
 #pragma include "noise.inc.glsl"
 
 void main() {
-  ivec3 coord = ivec3(gl_GlobalInvocationID.xyz);
-  vec3 flt_coord = coord / float(tex_size);
+    ivec3 coord = ivec3(gl_GlobalInvocationID.xyz);
+    vec3 flt_coord = coord / float(tex_size);
 
-  float worley1 = sqrt(fbm_worley(flt_coord, 8, 0.6, 3, 0.76632)) * 1.0;
-  float worley2 = sqrt(fbm_worley(flt_coord, 8, 0.4, 3, 0.26386)) * 1.0;
-  float worley3 = sqrt(fbm_worley(flt_coord, 16, 0.4, 2, 0.64243)) * 1.0;
+    float worley1 = sqrt(fbm_worley(flt_coord, 8, 0.6, 3, 0.76632)) * 1.0;
+    float worley2 = sqrt(fbm_worley(flt_coord, 8, 0.4, 3, 0.26386)) * 1.0;
+    float worley3 = sqrt(fbm_worley(flt_coord, 16, 0.4, 2, 0.64243)) * 1.0;
 
-  // imageStore(DestTex, coord, vec4(worley1, worley2, worley3, 1));
-  imageStore(DestTex, coord, vec4(worley1, worley2, worley3, 1));
+    // imageStore(DestTex, coord, vec4(worley1, worley2, worley3, 1));
+    imageStore(DestTex, coord, vec4(worley1, worley2, worley3, 1));
 }

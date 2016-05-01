@@ -56,7 +56,7 @@ for (int i = 0; i < num_samples; ++i) {
     vec2 offcoord_b = texcoord - offc;
 
     // Compute the sphere height at the sample location
-    float sphere_height = sqrt( 1 - dot(offset, offset) );
+    float sphere_height = sqrt(1 - dot(offset, offset));
 
     // Get the depth at the sample locations, also
     // make the depth linear, this enables us to compare them better
@@ -99,4 +99,3 @@ for (int i = 0; i < num_samples; ++i) {
 // Normalize occlusion factor
 accum /= num_samples;
 result = accum;
-

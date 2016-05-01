@@ -37,7 +37,7 @@
 #define LIGHT_CLS_COUNT 4
 
 #if LIGHT_CLS_COUNT != LC_LIGHT_CLASS_COUNT
-    #error GLSL and Python lighting system does not match up! Make sure you updated the number of light classes.
+    #error GLSL and Python lighting system class count do not match up!
 #endif
 
 int classify_light(int light_type, bool casts_shadows) {

@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma optionNV (unroll all)
 
@@ -67,7 +67,8 @@ void main() {
     // vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = pixel_distance;
 
-    vec3 noise_vec = rand_rgb(coord % 8 + 0.05 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
+    vec3 noise_vec = rand_rgb(coord % 8 +
+        0.05 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
@@ -94,7 +95,3 @@ void main() {
     result = pow(saturate(result), GET_SETTING(ao, occlusion_strength));
     result = pow(result, 3.0);
 }
-
-
-
-

@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
@@ -63,8 +63,9 @@ void main() {
     float jitter = 0.0;
 
     for (int i = 0; i < 8; ++i) {
-        vec3 direction = rand_rgb(vec2(texcoord + i * 0.001 + 0.134 * (MainSceneData.frame_index % 1024)));
-        // direction = mix(direction, noise_vec, 0.3);
+        vec3 direction = rand_rgb(vec2(texcoord + i * 0.001 +
+            0.134 * (MainSceneData.frame_index % 1024)));
+
         direction = normalize(direction);
         direction = face_forward(direction, m.normal);
         float weight = max(0.0, dot(m.normal, direction)); // Guaranteed to be > 0

@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 

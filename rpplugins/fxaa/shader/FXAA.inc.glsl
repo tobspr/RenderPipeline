@@ -914,9 +914,9 @@ FxaaFloat4 FxaaPixelShader(
         #else
             #define lumaM rgbyM.y
         #endif
-        FxaaFloat lumaS = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2( 0, 1), fxaaQualityRcpFrame.xy));
-        FxaaFloat lumaE = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2( 1, 0), fxaaQualityRcpFrame.xy));
-        FxaaFloat lumaN = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2( 0,-1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaS = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(0, 1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaE = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(1, 0), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaN = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(0, -1), fxaaQualityRcpFrame.xy));
         FxaaFloat lumaW = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(-1, 0), fxaaQualityRcpFrame.xy));
     #endif
 /*--------------------------------------------------------------------------*/
@@ -941,18 +941,24 @@ FxaaFloat4 FxaaPixelShader(
         #endif
 /*--------------------------------------------------------------------------*/
     #if (FXAA_GATHER4_ALPHA == 0)
-        FxaaFloat lumaNW = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(-1,-1), fxaaQualityRcpFrame.xy));
-        FxaaFloat lumaSE = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2( 1, 1), fxaaQualityRcpFrame.xy));
-        FxaaFloat lumaNE = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2( 1,-1), fxaaQualityRcpFrame.xy));
-        FxaaFloat lumaSW = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(-1, 1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaNW = FxaaLuma(
+            FxaaTexOff(tex, posM, FxaaInt2(-1, -1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaSE = FxaaLuma(
+            FxaaTexOff(tex, posM, FxaaInt2(1, 1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaNE = FxaaLuma(
+            FxaaTexOff(tex, posM, FxaaInt2(1, -1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaSW = FxaaLuma(
+            FxaaTexOff(tex, posM, FxaaInt2(-1, 1), fxaaQualityRcpFrame.xy));
     #else
-        FxaaFloat lumaNE = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(1, -1), fxaaQualityRcpFrame.xy));
-        FxaaFloat lumaSW = FxaaLuma(FxaaTexOff(tex, posM, FxaaInt2(-1, 1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaNE = FxaaLuma(
+            FxaaTexOff(tex, posM, FxaaInt2(1, -1), fxaaQualityRcpFrame.xy));
+        FxaaFloat lumaSW = FxaaLuma(
+            FxaaTexOff(tex, posM, FxaaInt2(-1, 1), fxaaQualityRcpFrame.xy));
     #endif
 /*--------------------------------------------------------------------------*/
     FxaaFloat lumaNS = lumaN + lumaS;
     FxaaFloat lumaWE = lumaW + lumaE;
-    FxaaFloat subpixRcpRange = 1.0/range;
+    FxaaFloat subpixRcpRange = 1.0 / range;
     FxaaFloat subpixNSWE = lumaNS + lumaWE;
     FxaaFloat edgeHorz1 = (-2.0 * lumaM) + lumaNS;
     FxaaFloat edgeVert1 = (-2.0 * lumaM) + lumaWE;
@@ -976,10 +982,10 @@ FxaaFloat4 FxaaPixelShader(
     FxaaBool horzSpan = edgeHorz >= edgeVert;
     FxaaFloat subpixA = subpixNSWE * 2.0 + subpixNWSWNESE;
 /*--------------------------------------------------------------------------*/
-    if(!horzSpan) lumaN = lumaW;
-    if(!horzSpan) lumaS = lumaE;
-    if(horzSpan) lengthSign = fxaaQualityRcpFrame.y;
-    FxaaFloat subpixB = (subpixA * (1.0/12.0)) - lumaM;
+    if (!horzSpan) lumaN = lumaW;
+    if (!horzSpan) lumaS = lumaE;
+    if (horzSpan) lengthSign = fxaaQualityRcpFrame.y;
+    FxaaFloat subpixB = (subpixA * (1.0 / 12.0)) - lumaM;
 /*--------------------------------------------------------------------------*/
     FxaaFloat gradientN = lumaN - lumaM;
     FxaaFloat gradientS = lumaS - lumaM;
@@ -987,7 +993,7 @@ FxaaFloat4 FxaaPixelShader(
     FxaaFloat lumaSS = lumaS + lumaM;
     FxaaBool pairN = abs(gradientN) >= abs(gradientS);
     FxaaFloat gradient = max(abs(gradientN), abs(gradientS));
-    if(pairN) lengthSign = -lengthSign;
+    if (pairN) lengthSign = -lengthSign;
     FxaaFloat subpixC = FxaaSat(abs(subpixB) * subpixRcpRange);
 /*--------------------------------------------------------------------------*/
     FxaaFloat2 posB;
@@ -995,9 +1001,9 @@ FxaaFloat4 FxaaPixelShader(
     posB.y = posM.y;
     FxaaFloat2 offNP;
     offNP.x = (!horzSpan) ? 0.0 : fxaaQualityRcpFrame.x;
-    offNP.y = ( horzSpan) ? 0.0 : fxaaQualityRcpFrame.y;
-    if(!horzSpan) posB.x += lengthSign * 0.5;
-    if( horzSpan) posB.y += lengthSign * 0.5;
+    offNP.y = (horzSpan) ? 0.0 : fxaaQualityRcpFrame.y;
+    if (!horzSpan) posB.x += lengthSign * 0.5;
+    if (horzSpan) posB.y += lengthSign * 0.5;
 /*--------------------------------------------------------------------------*/
     FxaaFloat2 posN;
     posN.x = posB.x - offNP.x * FXAA_QUALITY__P0;
@@ -1005,13 +1011,13 @@ FxaaFloat4 FxaaPixelShader(
     FxaaFloat2 posP;
     posP.x = posB.x + offNP.x * FXAA_QUALITY__P0;
     posP.y = posB.y + offNP.y * FXAA_QUALITY__P0;
-    FxaaFloat subpixD = ((-2.0)*subpixC) + 3.0;
+    FxaaFloat subpixD = (-2.0 * subpixC) + 3.0;
     FxaaFloat lumaEndN = FxaaLuma(FxaaTexTop(tex, posN));
     FxaaFloat subpixE = subpixC * subpixC;
     FxaaFloat lumaEndP = FxaaLuma(FxaaTexTop(tex, posP));
 /*--------------------------------------------------------------------------*/
     if(!pairN) lumaNN = lumaSS;
-    FxaaFloat gradientScaled = gradient * 1.0/4.0;
+    FxaaFloat gradientScaled = gradient * 1.0 / 4.0;
     FxaaFloat lumaMM = lumaM - lumaNN * 0.5;
     FxaaFloat subpixF = subpixD * subpixE;
     FxaaBool lumaMLTZero = lumaMM < 0.0;
@@ -1219,7 +1225,7 @@ FxaaFloat4 FxaaPixelShader(
     FxaaBool goodSpanN = (lumaEndN < 0.0) != lumaMLTZero;
     FxaaFloat spanLength = (dstP + dstN);
     FxaaBool goodSpanP = (lumaEndP < 0.0) != lumaMLTZero;
-    FxaaFloat spanLengthRcp = 1.0/spanLength;
+    FxaaFloat spanLengthRcp = 1.0 / spanLength;
 /*--------------------------------------------------------------------------*/
     FxaaBool directionN = dstN < dstP;
     FxaaFloat dst = min(dstN, dstP);
@@ -1231,7 +1237,7 @@ FxaaFloat4 FxaaPixelShader(
     FxaaFloat pixelOffsetGood = goodSpan ? pixelOffset : 0.0;
     FxaaFloat pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
     if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
-    if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
+    if(horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
     #if (FXAA_DISCARD == 1)
         return FxaaTexTop(tex, posM);
     #else

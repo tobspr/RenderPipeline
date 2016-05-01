@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "dof.inc.glsl"
@@ -45,80 +45,80 @@ This code is code in progress and such not formatted very nicely nor commented!
 */
 
 float intersect_circle(vec2 d, float radius) {
-  float latt = saturate(length(d * vec2(1, 1)) / radius);
-  latt = pow(latt, 10.0);
-  latt = 1 - latt;
-  return latt;
+    float latt = saturate(length(d * vec2(1, 1)) / radius);
+    latt = pow(latt, 10.0);
+    latt = 1 - latt;
+    return latt;
 
-  if (length(d) <= radius) {
-    return 1.0;
-  }
-  return 0.0;
+    if (length(d) <= radius) {
+        return 1.0;
+    }
+    return 0.0;
 }
 
 void main() {
 
-  vec2 texcoord = get_texcoord();
-  ivec2 tile_coord = ivec2(ivec2(gl_FragCoord.xy) / vec2(tile_size));
-  vec2 tile_data = texelFetch(TileMinMax, tile_coord, 0).xy;
-  float tile_max_depth = tile_data.x;
-  float tile_max_coc = tile_data.y;
+    vec2 texcoord = get_texcoord();
+    ivec2 tile_coord = ivec2(ivec2(gl_FragCoord.xy) / vec2(tile_size));
+    vec2 tile_data = texelFetch(TileMinMax, tile_coord, 0).xy;
+    float tile_max_depth = tile_data.x;
+    float tile_max_coc = tile_data.y;
 
-  vec3 presort_result = texture(PresortResult, texcoord).xyz;
-  float mid_coc = presort_result.x;
+    vec3 presort_result = texture(PresortResult, texcoord).xyz;
+    float mid_coc = presort_result.x;
 
-  if (tile_max_coc <= 1e-4) {
-    result = texture(ShadedScene, texcoord);
-    result.w = 0;
-  }
-
-  vec2 max_radius = 16.0 / SCREEN_SIZE;
-
-  vec3 jitter = rand_rgb(texcoord);
-
-  const int num_ring_samples = 4;
-  float max_length = length(max_radius * vec2(1, 1));
-
-  int num_samples = 0;
-
-  vec3 scene_color = texture(ShadedScene, texcoord).xyz;
-
-  float alpha = 0.0;
-  vec4 foreground = vec4(scene_color, 1) * 1e-4;
-  vec4 background = vec4(scene_color, 1) * 1e-4;
-
-  for (int ring = 0; ring <= num_ring_samples; ++ring) {
-    int n_samples = max(1, 8 * ring);
-    vec2 r = max_radius * ring / float(num_ring_samples) * (tile_max_coc);
-    // vec2 r = max_radius * ring / float(num_ring_samples);
-
-    for (int i = 0; i < n_samples; ++i) {
-      ++num_samples;
-      float phi = i / float(n_samples) * TWO_PI;
-      float x_offs = sin(phi);
-      float y_offs = cos(phi);
-
-      vec2 tcoord = texcoord + vec2(x_offs, y_offs) * r;
-      // tcoord += jitter.xy * 0.1 * r;
-
-      // XXX: Instead of manual clamping, use a near filtered texture
-      tcoord = truncate_coordinate(tcoord);
-
-      vec3 sample_data = texture(PresortResult, tcoord).xyz;
-      vec3 color_data = texture(PrecomputedCoC, tcoord).xyz;
-
-      float coc_weight = intersect_circle(r, sample_data.x * max_length);
-      coc_weight *= 1.0 / max(1e-9, sample_data.x * sample_data.x);
-      foreground += vec4(color_data, 1) * coc_weight;
-      // foreground += vec4(color_data, 1) * coc_weight * sample_data.y;
-      // background += vec4(color_data, 1) * coc_weight * sample_data.z;
+    if (tile_max_coc <= 1e-4) {
+        result = texture(ShadedScene, texcoord);
+        result.w = 0;
     }
-  }
 
-  foreground.xyz /= max(1e-5, foreground.w);
-  // background.xyz /= max(1e-5, background.w);
+    vec2 max_radius = 16.0 / SCREEN_SIZE;
 
-  // result = mix(background, foreground, saturate(2 * foreground.w / num_samples));
-  result = foreground;
-  result.w = mid_coc;
+    vec3 jitter = rand_rgb(texcoord);
+
+    const int num_ring_samples = 4;
+    float max_length = length(max_radius * vec2(1, 1));
+
+    int num_samples = 0;
+
+    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+
+    float alpha = 0.0;
+    vec4 foreground = vec4(scene_color, 1) * 1e-4;
+    vec4 background = vec4(scene_color, 1) * 1e-4;
+
+    for (int ring = 0; ring <= num_ring_samples; ++ring) {
+        int n_samples = max(1, 8 * ring);
+        vec2 r = max_radius * ring / float(num_ring_samples) * (tile_max_coc);
+        // vec2 r = max_radius * ring / float(num_ring_samples);
+
+        for (int i = 0; i < n_samples; ++i) {
+            ++num_samples;
+            float phi = i / float(n_samples) * TWO_PI;
+            float x_offs = sin(phi);
+            float y_offs = cos(phi);
+
+            vec2 tcoord = texcoord + vec2(x_offs, y_offs) * r;
+            // tcoord += jitter.xy * 0.1 * r;
+
+            // XXX: Instead of manual clamping, use a near filtered texture
+            tcoord = truncate_coordinate(tcoord);
+
+            vec3 sample_data = texture(PresortResult, tcoord).xyz;
+            vec3 color_data = texture(PrecomputedCoC, tcoord).xyz;
+
+            float coc_weight = intersect_circle(r, sample_data.x * max_length);
+            coc_weight *= 1.0 / max(1e-9, sample_data.x * sample_data.x);
+            foreground += vec4(color_data, 1) * coc_weight;
+            // foreground += vec4(color_data, 1) * coc_weight * sample_data.y;
+            // background += vec4(color_data, 1) * coc_weight * sample_data.z;
+        }
+    }
+
+    foreground.xyz /= max(1e-5, foreground.w);
+    // background.xyz /= max(1e-5, background.w);
+
+    // result = mix(background, foreground, saturate(2 * foreground.w / num_samples));
+    result = foreground;
+    result.w = mid_coc;
 }

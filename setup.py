@@ -187,9 +187,9 @@ def check_panda_version():
     """ Checks whether the Panda3D version used is up to date. This is important
     when using the C++ modules """
 
-    from panda3d.core import PointLight
+    from panda3d.core import Texture
 
-    if not hasattr(PointLight(""), "shadow_caster"):
+    if not hasattr(Texture, "F_r16i"):
         print("\n")
         print("It seems your Panda3D version is outdated. Please get the newest version ")
         print("from", color("https://github.com/panda3d/panda3d", Fore.MAGENTA + Style.BRIGHT),

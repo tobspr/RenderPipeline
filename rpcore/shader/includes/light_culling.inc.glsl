@@ -44,16 +44,17 @@ const float cull_bias = 1 + 0.01;
 vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
 
 CONST_ARRAY vec2 ray_dirs[num_raydirs] = vec2[](
-    vec2( 0  ,  0),
-    vec2( 1.0,  1.0) * cull_bias,
-    vec2(-1.0,  1.0) * cull_bias,
-    vec2( 1.0, -1.0) * cull_bias,
+    vec2(0, 0),
+    vec2(1.0, 1.0) * cull_bias,
+    vec2(-1.0, 1.0) * cull_bias,
+    vec2(1.0, -1.0) * cull_bias,
     vec2(-1.0, -1.0) * cull_bias
 );
 
 int get_slice_from_distance(float dist) {
     float flt_dist = dist / LC_MAX_DISTANCE;
-    return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) / log(1.0 + SLICE_EXP_FACTOR) * LC_TILE_SLICES);
+    return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) /
+                log(1.0 + SLICE_EXP_FACTOR) * LC_TILE_SLICES);
 }
 
 float get_distance_from_slice(int slice) {
@@ -77,8 +78,10 @@ void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int c
 vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size) {
     vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / precompute_size;
     return normalize(mix(
-        mix(MainSceneData.vs_frustum_directions[0].xyz, MainSceneData.vs_frustum_directions[1].xyz, cell_pos.x),
-        mix(MainSceneData.vs_frustum_directions[2].xyz, MainSceneData.vs_frustum_directions[3].xyz, cell_pos.x),
+        mix(MainSceneData.vs_frustum_directions[0].xyz,
+            MainSceneData.vs_frustum_directions[1].xyz, cell_pos.x),
+        mix(MainSceneData.vs_frustum_directions[2].xyz,
+            MainSceneData.vs_frustum_directions[3].xyz, cell_pos.x),
         cell_pos.y
     ));
 }
@@ -100,10 +103,10 @@ struct Sphere {
     float radius;
 };
 
-
 // Interesects a sphere with a ray
 // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
-bool ray_sphere_intersection(Sphere sphere, vec3 ray_start, vec3 ray_dir, out float min_dist, out float max_dist) {
+bool ray_sphere_intersection(Sphere sphere, vec3 ray_start, vec3 ray_dir,
+        out float min_dist, out float max_dist) {
     // Get vector from ray to sphere
     vec3 o_minus_c = ray_start - sphere.pos;
 
@@ -111,7 +114,8 @@ bool ray_sphere_intersection(Sphere sphere, vec3 ray_start, vec3 ray_dir, out fl
     float l_dot_o_minus_c = dot(ray_dir, o_minus_c);
 
     // Compute the distance
-    float root = l_dot_o_minus_c * l_dot_o_minus_c - dot(o_minus_c, o_minus_c) + sphere.radius * sphere.radius;
+    float root = l_dot_o_minus_c * l_dot_o_minus_c - dot(o_minus_c, o_minus_c) +
+        sphere.radius * sphere.radius;
     float sqr_root = sqrt(abs(root));
 
     min_dist = -l_dot_o_minus_c + sqr_root;
@@ -121,12 +125,14 @@ bool ray_sphere_intersection(Sphere sphere, vec3 ray_start, vec3 ray_dir, out fl
 }
 
 // Intersect a sphere with a ray
-bool viewspace_ray_sphere_intersection(Sphere sphere, vec3 ray_dir, out float min_dist, out float max_dist) {
+bool viewspace_ray_sphere_intersection(Sphere sphere, vec3 ray_dir,
+        out float min_dist, out float max_dist) {
     return ray_sphere_intersection(sphere, vec3(0), ray_dir, min_dist, max_dist);
 }
 
 // Intersect a sphere with a ray, given a minimum and maximum ray distance
-bool viewspace_ray_sphere_distance_intersection(Sphere sphere, vec3 ray_dir, float tile_start, float tile_end) {
+bool viewspace_ray_sphere_distance_intersection(Sphere sphere, vec3 ray_dir,
+        float tile_start, float tile_end) {
     float r_min, r_max;
     bool visible = viewspace_ray_sphere_intersection(sphere, ray_dir, r_min, r_max);
     return visible && r_max < tile_end && r_min > tile_start;
@@ -136,13 +142,14 @@ bool viewspace_ray_sphere_distance_intersection(Sphere sphere, vec3 ray_dir, flo
 Sphere get_representative_sphere(LightData data) {
     Sphere ret;
 
-    vec3 light_pos = (MainSceneData.view_mat_z_up * vec4(get_light_position(data), 1)).xyz;
+    vec3 light_pos = (MainSceneData.view_mat_z_up *
+        vec4(get_light_position(data), 1)).xyz;
 
     switch (get_light_type(data)) {
         case LT_POINT_LIGHT: {
             ret.pos = light_pos;
-            ret.radius = get_pointlight_radius(data) 
-                         + get_pointlight_inner_radius(data);
+            ret.radius = get_pointlight_radius(data)
+                        + get_pointlight_inner_radius(data);
             break;
         }
 
@@ -165,9 +172,10 @@ Sphere get_representative_sphere(LightData data) {
             #if 0
                 // Unoptimized version
                 float opposite_side = sqrt(1.0 - cone_fov * cone_fov) * hypotenuse;
-                ret.radius = sqrt(opposite_side * opposite_side + half_cone_radius * half_cone_radius);
+                ret.radius = sqrt(opposite_side * opposite_side +
+                    half_cone_radius * half_cone_radius);
             #else
-                // Now to optimize this, we don't need the square root any longer:
+                // To optimize this, we don't need the square root any longer:
                 float opposite_side_sqr = (1.0 - cone_fov * cone_fov) * hypotenuse * hypotenuse;
                 ret.radius = sqrt(opposite_side_sqr + half_cone_radius * half_cone_radius);
             #endif

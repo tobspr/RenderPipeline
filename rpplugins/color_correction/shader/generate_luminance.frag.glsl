@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
@@ -48,10 +48,14 @@ void main() {
     float weight = 1 - 0.5 * distance(local_coord, vec2(0.5, 0.5));
 
     vec4 luminances = vec4(
-        get_log_luminance(weight * textureLod(ShadedScene, local_coord, 0).xyz),
-        get_log_luminance(weight * textureLod(ShadedScene, local_coord + vec2(pixel_offset.x, 0), 0).xyz),
-        get_log_luminance(weight * textureLod(ShadedScene, local_coord + vec2(0, pixel_offset.y), 0).xyz),
-        get_log_luminance(weight * textureLod(ShadedScene, local_coord + pixel_offset.xy, 0).xyz)
+        get_log_luminance(weight *
+            textureLod(ShadedScene, local_coord, 0).xyz),
+        get_log_luminance(weight *
+            textureLod(ShadedScene, local_coord + vec2(pixel_offset.x, 0), 0).xyz),
+        get_log_luminance(weight *
+            textureLod(ShadedScene, local_coord + vec2(0, pixel_offset.y), 0).xyz),
+        get_log_luminance(weight *
+            textureLod(ShadedScene, local_coord + pixel_offset.xy, 0).xyz)
     );
 
     result = dot(luminances, vec4(0.25));

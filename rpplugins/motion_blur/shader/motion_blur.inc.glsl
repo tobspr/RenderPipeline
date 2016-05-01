@@ -28,27 +28,28 @@
 
 const int tile_size = GET_SETTING(motion_blur, tile_size);
 const float blur_factor = GET_SETTING(motion_blur, blur_factor) * 0.5;
-const float max_velocity_len = GET_SETTING(motion_blur, max_blur_radius) * tile_size / WINDOW_WIDTH * 0.2;
+const float max_velocity_len = GET_SETTING(motion_blur, max_blur_radius) *
+                                tile_size / WINDOW_WIDTH * 0.2;
 const vec2 soft_depth_factor = vec2(10.0);
 
 vec2 adjust_velocity(vec2 velocity) {
-  velocity *= blur_factor;
+    velocity *= blur_factor;
 
-  // Make sure the velocity does not exceed the maximum length
-  float vel_len = length(velocity);
-  if (vel_len > max_velocity_len) {
-    velocity *= max_velocity_len / vel_len;
-  }
-  return velocity;
+    // Make sure the velocity does not exceed the maximum length
+    float vel_len = length(velocity);
+    if (vel_len > max_velocity_len) {
+        velocity *= max_velocity_len / vel_len;
+    }
+    return velocity;
 }
 
 
 vec2 soft_depth_cmp(vec2 z0, vec2 z1)
 {
-  return saturate(fma(z0, soft_depth_factor, vec2(1.0)) - z1 * soft_depth_factor);
+    return saturate(fma(z0, soft_depth_factor, vec2(1.0)) - z1 * soft_depth_factor);
 }
 
 vec4 batch_cmp(float len_xy_sq, vec2 velocities)
 {
-  return saturate(vec4((1 - len_xy_sq / (velocities.xyxy)) + vec4(0.0, 0.0, 0.95, 0.95)));
+    return saturate(vec4((1 - len_xy_sq / (velocities.xyxy)) + vec4(0.0, 0.0, 0.95, 0.95)));
 }

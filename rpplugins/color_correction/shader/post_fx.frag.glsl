@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
@@ -46,8 +46,10 @@ void main() {
 
         // Physically correct vignette, using the cos4 law.
         // Get the angle between the camera direction and the view direction
-        vec3 material_dir = normalize(MainSceneData.camera_pos - calculate_surface_pos(1, texcoord));
-        vec3 cam_dir = normalize(MainSceneData.camera_pos - calculate_surface_pos(1, vec2(0.5)));
+        vec3 material_dir = normalize(MainSceneData.camera_pos -
+            calculate_surface_pos(1, texcoord));
+        vec3 cam_dir = normalize(MainSceneData.camera_pos -
+            calculate_surface_pos(1, vec2(0.5)));
 
         // According to the cos4 law, the brightness at angle alpha is cos^4(alpha).
         // Since dot() returns the cosine, we can just pow it to get a physically

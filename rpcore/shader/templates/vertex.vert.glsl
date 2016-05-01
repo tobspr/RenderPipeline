@@ -46,7 +46,7 @@ uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 p3d_ModelMatrix;
 uniform mat3 tpose_world_to_model;
 
-layout(location=0) out VertexOutput vOutput;
+layout(location = 0) out VertexOutput vOutput;
 
 %includes%
 %inout%
@@ -61,9 +61,11 @@ void main() {
     // TODO: We have to account for skinning, we can maybe use hardware skinning for this.
     #if IN_GBUFFER_SHADER
         #if EXPERIMENTAL_PREV_TRANSFORM
-            vOutput.last_proj_position = p3d_ViewProjectionMatrix * (p3d_PrevModelMatrix * p3d_Vertex);
+            vOutput.last_proj_position = p3d_ViewProjectionMatrix *
+                (p3d_PrevModelMatrix * p3d_Vertex);
         #else
-            vOutput.last_proj_position = p3d_ViewProjectionMatrix * vec4(vOutput.position, 1);
+            vOutput.last_proj_position = p3d_ViewProjectionMatrix *
+                vec4(vOutput.position, 1);
         #endif
     #endif
 

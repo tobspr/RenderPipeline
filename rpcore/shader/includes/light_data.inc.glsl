@@ -124,4 +124,3 @@ mat4 get_source_mvp(SourceData data) {
 vec4 get_source_uv(SourceData data) {
     return data.Data4;
 }
-

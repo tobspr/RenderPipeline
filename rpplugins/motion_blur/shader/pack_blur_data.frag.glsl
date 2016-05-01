@@ -26,6 +26,8 @@
 
 #version 430
 
+// Packs the velocity length and scene depth into a RG16 target
+
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
@@ -33,12 +35,10 @@
 
 out vec2 result;
 
-// Packs the velocity length and scene depth into a RG16 target
-
 void main() {
-  vec2 texcoord = get_texcoord();
-  float depth = get_depth_at(texcoord);
-  vec2 velocity = get_object_velocity_at(texcoord);
-  velocity = adjust_velocity(velocity);
-  result = vec2(length(velocity), depth);
+    vec2 texcoord = get_texcoord();
+    float depth = get_depth_at(texcoord);
+    vec2 velocity = get_object_velocity_at(texcoord);
+    velocity = adjust_velocity(velocity);
+    result = vec2(length(velocity), depth);
 }

@@ -105,14 +105,13 @@ void inscatter(float r, float mu, float muS, float nu, out vec3 raymie) {
             // light coming from direction w and scattered in direction v
             // = light arriving at x from direction w (raymie1) * SUM(scattering coefficient * phaseFunction)
             // see Eq (7)
-            raymie += raymie1 * (betaR * exp(-(r - Rg) / HR) * pr2 + betaMSca * exp(-(r - Rg) / HM) * pm2) * dw;
+            raymie += raymie1 * (betaR * exp(-(r - Rg) / HR) * pr2 + betaMSca *
+                exp(-(r - Rg) / HM) * pm2) * dw;
         }
     }
 
     // output raymie = J[T.alpha/PI.deltaE + deltaS] (line 7 in algorithm 4.1)
 }
-
-
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
@@ -128,5 +127,4 @@ void main() {
     inscatter(r, mu, muS, nu, raymie);
 
     imageStore(dest, ivec3(coord, layer), vec4(raymie, SCAT_DEBUG_ALPHA));
-
 }

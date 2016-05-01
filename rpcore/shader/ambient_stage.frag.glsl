@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 // This shader applies the ambient term to the shaded scene
 
@@ -94,7 +94,9 @@ void main() {
                 result = textureLod(ShadedScene, texcoord, 0);
 
                 #if !HAVE_PLUGIN(scattering)
-                    result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 1) * DEFAULT_ENVMAP_BRIGHTNESS;
+                    result = textureLod(
+                        DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 1) *
+                        DEFAULT_ENVMAP_BRIGHTNESS;
                 #endif
             #else
 
@@ -120,11 +122,13 @@ void main() {
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
 
         // Sample default environment map
-        vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+        vec3 ibl_specular = textureLod(DefaultEnvmap,
+            fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
         // Get cheap irradiance by sampling low levels of the environment map
         float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
-        vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+        vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal),
+            ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
         // Scattering specific code
         #if HAVE_PLUGIN(scattering)
@@ -187,14 +191,18 @@ void main() {
         fresnel = mix(fresnel, metallic_fresnel, m.metallic);
 
         if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
-            vec3 env_brdf_coat = get_brdf_from_lut(PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.333);
+            vec3 env_brdf_coat = get_brdf_from_lut(
+                PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.333);
 
             #if HAVE_PLUGIN(scattering)
-                vec3 ibl_specular_base = textureLod(ScatteringIBLSpecular, reflected_dir,
+                vec3 ibl_specular_base = textureLod(
+                    ScatteringIBLSpecular, reflected_dir,
                     get_specular_mipmap(m)).xyz;
             #else
-                vec3 ibl_specular_base = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir),
-                    get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV)).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+                vec3 ibl_specular_base = textureLod(
+                    DefaultEnvmap, fix_cubemap_coord(reflected_dir),
+                    get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV)).xyz *
+                        DEFAULT_ENVMAP_BRIGHTNESS;
             #endif
 
             #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
@@ -236,12 +244,12 @@ void main() {
         #endif
 
         #if MODE_ACTIVE(DIFFUSE_AMBIENT)
-            result = vec4( (diffuse_ambient / (1 + diffuse_ambient)) * occlusion, 1);
+            result = vec4((diffuse_ambient / (1 + diffuse_ambient)) * occlusion, 1);
             return;
         #endif
 
         #if MODE_ACTIVE(SPECULAR_AMBIENT)
-            result = vec4( (specular_ambient / (1 + specular_ambient)) * specular_occlusion, 1);
+            result = vec4((specular_ambient / (1 + specular_ambient)) * specular_occlusion, 1);
             return;
         #endif
     #endif

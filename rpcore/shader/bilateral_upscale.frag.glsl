@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 // Shader which upscales a half resolution image to full resolution,
 // respecting the normals and depth

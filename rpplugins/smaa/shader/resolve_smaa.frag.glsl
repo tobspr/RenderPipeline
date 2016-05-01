@@ -24,11 +24,10 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-// #define RS_MAX_CLIP_DIST 0.5
 #define RS_MAX_CLIP_DIST 0.4
 #define RS_DISTANCE_SCALE 1.5
 #define RS_KEEP_GOOD_DURATION float(GET_SETTING(smaa, history_length))

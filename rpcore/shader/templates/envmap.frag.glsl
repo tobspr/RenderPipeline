@@ -38,7 +38,7 @@
 
 #pragma include "includes/nonviewspace_shading_pipeline.inc.glsl"
 
-layout(location=0) out vec4 result;
+layout(location = 0) out vec4 result;
 
 void main() {
     vec2 texcoord = vOutput.texcoord;

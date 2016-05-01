@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 // This shader provides a generic blur respecting depth and normals
 
@@ -76,8 +76,10 @@ void main() {
         float weight = gaussian_weights_7[abs(i)];
 
         // Weight by normal and depth
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) * distance(nrm, pixel_nrm) * 1.0);
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) * abs(depth - pixel_depth) * 3);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) *
+                distance(nrm, pixel_nrm) * 1.0);
+        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) *
+                abs(depth - pixel_depth) * 3);
 
         accum += sampled * weight;
         accum_w += weight;

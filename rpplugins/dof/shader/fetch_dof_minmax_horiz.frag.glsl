@@ -38,20 +38,20 @@ uniform sampler2D SourceTex;
 out vec2 result;
 
 void main() {
-  ivec2 coord = ivec2(gl_FragCoord.xy);
-  ivec2 source_coord = ivec2(coord.x * tile_size, coord.y);
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 source_coord = ivec2(coord.x * tile_size, coord.y);
 
-  float max_depth = 0;
-  float max_coc = 0;
+    float max_depth = 0;
+    float max_coc = 0;
 
-  for (int x = 0; x <= tile_size; x += 1) {
-    int x_coord = clamp(source_coord.x + x, 0, WINDOW_WIDTH - 1);
-    vec2 data = texelFetch(SourceTex, ivec2(x_coord, source_coord.y), 0).xy;
+    for (int x = 0; x <= tile_size; x += 1) {
+        int x_coord = clamp(source_coord.x + x, 0, WINDOW_WIDTH - 1);
+        vec2 data = texelFetch(SourceTex, ivec2(x_coord, source_coord.y), 0).xy;
 
-    max_depth = max(max_depth, data.x);
-    max_coc = max(max_coc, data.y);
+        max_depth = max(max_depth, data.x);
+        max_coc = max(max_coc, data.y);
 
-  }
+    }
 
-  result = vec2(max_depth, max_coc);
+    result = vec2(max_depth, max_coc);
 }

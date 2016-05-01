@@ -32,17 +32,17 @@ const int tile_size = 32;
 
 vec2 compare_depth(float depth, float tile_max_depth)
 {
-  float d = DOF_DEPTH_SCALE_FOREGROUND * (tile_max_depth - depth);
-  d -= 0.7;
-  vec2 depth_cmp = vec2(0);
-  depth_cmp.x = smoothstep(0.0, 1.0, saturate(d));
-  // depth_cmp.x = step(0.01, d);
-  depth_cmp.y = 1.0 - depth_cmp.x;
-  return depth_cmp;
+    float d = DOF_DEPTH_SCALE_FOREGROUND * (tile_max_depth - depth);
+    d -= 0.7;
+    vec2 depth_cmp = vec2(0);
+    depth_cmp.x = smoothstep(0.0, 1.0, saturate(d));
+    // depth_cmp.x = step(0.01, d);
+    depth_cmp.y = 1.0 - depth_cmp.x;
+    return depth_cmp;
 }
 
 float sample_alpha(float sampleCoc)
 {
-  return min(1.0 / (M_PI * sampleCoc * sampleCoc), M_PI *
-  DOF_SINGLE_PIXEL_RADIUS * DOF_SINGLE_PIXEL_RADIUS );
+    return min(1.0 / (M_PI * sampleCoc * sampleCoc), M_PI *
+        DOF_SINGLE_PIXEL_RADIUS * DOF_SINGLE_PIXEL_RADIUS);
 }

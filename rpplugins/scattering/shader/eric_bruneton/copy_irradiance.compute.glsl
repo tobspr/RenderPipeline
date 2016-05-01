@@ -38,5 +38,5 @@ uniform writeonly image2D RESTRICT dest;
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
     vec4 delta_e_val = texelFetch(deltaESampler, coord, 0);
-    imageStore(dest, coord, vec4( k * delta_e_val));
+    imageStore(dest, coord, vec4(k * delta_e_val));
 }

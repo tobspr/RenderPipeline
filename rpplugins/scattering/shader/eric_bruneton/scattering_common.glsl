@@ -68,8 +68,8 @@ const float Rt = 6420.0;
 const float RL = 6421.0;
 const int TRANSMITTANCE_W = 256 * 4;
 const int TRANSMITTANCE_H = 64 * 4;
-const int SKY_W = 64*4;
-const int SKY_H = 16*4;
+const int SKY_W = 64 * 4;
+const int SKY_H = 16 * 4;
 
 const int RES_R = 32;
 const int RES_MU = 128;
@@ -133,7 +133,8 @@ uniform sampler2D transmittanceSampler;
 void get_r_dhdh(int layer, out float r, out vec4 dhdh) {
     r = float(layer) / float(RES_R - 1.0);
     r = r * r;
-    r = sqrt(Rg * Rg + r * (Rt * Rt - Rg * Rg)) + (layer == 0 ? 0.01 : (layer == RES_R - 1 ? -0.001 : 0.0));
+    r = sqrt(Rg * Rg + r * (Rt * Rt - Rg * Rg)) +
+        (layer == 0 ? 0.01 : (layer == RES_R - 1 ? -0.001 : 0.0));
     float dmin = Rt - r;
     float dmax = sqrt(r * r - Rg * Rg) + sqrt(Rt * Rt - Rg * Rg);
     float dminp = r - Rg;
@@ -188,13 +189,17 @@ vec4 texture4D(sampler3D table, float r, float mu, float muS, float nu)
 #ifdef INSCATTER_NON_LINEAR
     float rmu = r * mu;
     float delta = rmu * rmu - r * r + Rg_sq;
-    vec4 cst = rmu < 0.0 && delta > 0.0 ? vec4(1.0, 0.0, 0.0, 0.5 - 0.5 / float(RES_MU)) : vec4(-1.0, H * H, H, 0.5 + 0.5 / float(RES_MU));
+    vec4 cst = rmu < 0.0 && delta > 0.0 ?
+        vec4(1.0, 0.0, 0.0, 0.5 - 0.5 / float(RES_MU)) :
+        vec4(-1.0, H * H, H, 0.5 + 0.5 / float(RES_MU));
     float uR = 0.5 / float(RES_R) + rho / H * (1.0 - 1.0 / float(RES_R));
-    float uMu = cst.w + (rmu * cst.x + sqrt(delta + cst.y)) / (rho + cst.z) * (0.5 - 1.0 / float(RES_MU));
+    float uMu = cst.w + (rmu * cst.x + sqrt(delta + cst.y)) / (rho + cst.z) *
+        (0.5 - 1.0 / float(RES_MU));
     // paper formula
     // float uMuS = 0.5 / float(RES_MU_S) + max((1.0 - exp(-3.0 * muS - 0.6)) / (1.0 - exp(-3.6)), 0.0) * (1.0 - 1.0 / float(RES_MU_S));
     // better formula
-    float uMuS = 0.5 / float(RES_MU_S) + (atan(max(muS, -0.1975) * tan(1.26 * 1.1)) / 1.1 + (1.0 - 0.26)) * 0.5 * (1.0 - 1.0 / float(RES_MU_S));
+    float uMuS = 0.5 / float(RES_MU_S) + (atan(max(muS, -0.1975) * tan(1.26 * 1.1)) / 1.1 +
+        (1.0 - 0.26)) * 0.5 * (1.0 - 1.0 / float(RES_MU_S));
 #else
     float uR = 0.5 / float(RES_R) + rho / H * (1.0 - 1.0 / float(RES_R));
     float uMu = 0.5 / float(RES_MU) + (mu + 1.0) / 2.0 * (1.0 - 1.0 / float(RES_MU));
@@ -204,7 +209,7 @@ vec4 texture4D(sampler3D table, float r, float mu, float muS, float nu)
     float uNu = floor(lerp);
     lerp = lerp - uNu;
     return textureLod(table, vec3((uNu + uMuS) / float(RES_NU), uMu, uR), 0) * (1.0 - lerp) +
-           textureLod(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR), 0) * lerp;
+            textureLod(table, vec3((uNu + uMuS + 1.0) / float(RES_NU), uMu, uR), 0) * lerp;
 }
 
 void getMuMuSNu(float r, vec4 dhdH, out float mu, out float muS, out float nu) {
@@ -285,13 +290,14 @@ vec3 transmittance(float r, float mu, vec3 v, vec3 x0) {
 // (mu=cos(view zenith angle)), intersections with ground ignored
 // H=height scale of exponential density function
 float opticalDepth(float H, float r, float mu, float d) {
-    float a = sqrt((0.5/H)*r);
-    vec2 a01 = a*vec2(mu, mu + d / r);
+    float a = sqrt((0.5 / H) * r);
+    vec2 a01 = a * vec2(mu, mu + d / r);
     vec2 a01s = sign(a01);
-    vec2 a01sq = a01*a01;
+    vec2 a01sq = a01 * a01;
     float x = a01s.y > a01s.x ? exp(a01sq.x) : 0.0;
-    vec2 y = a01s / (2.3193*abs(a01) + sqrt(1.52*a01sq + 4.0)) * vec2(1.0, exp(-d/H*(d/(2.0*r)+mu)));
-    return sqrt((6.2831*H)*r) * exp((Rg-r)/H) * (x + dot(y, vec2(1.0, -1.0)));
+    vec2 y = a01s / (2.3193 * abs(a01) + sqrt(1.52 * a01sq + 4.0)) *
+        vec2(1.0, exp(-d / H * (d / (2.0 * r) + mu)));
+    return sqrt((6.2831 * H) * r) * exp((Rg - r) / H) * (x + dot(y, vec2(1.0, -1.0)));
 }
 
 // transmittance(=transparency) of atmosphere for ray (r,mu) of length d
@@ -328,7 +334,9 @@ float phaseFunctionR(float mu) {
 
 // Mie phase function
 float phaseFunctionM(float mu) {
-    return 1.5 * 1.0 / (4.0 * M_PI) * (1.0 - mieG*mieG) * pow(1.0 + (mieG*mieG) - 2.0*mieG*mu, -3.0/2.0) * (1.0 + mu * mu) / (2.0 + mieG*mieG);
+    return 1.5 * 1.0 / (4.0 * M_PI) * (1.0 - mieG * mieG) *
+        pow(1.0 + (mieG * mieG) - 2.0 * mieG * mu, -3.0 / 2.0) *
+        (1.0 + mu * mu) / (2.0 + mieG * mieG);
 }
 
 // approximated single Mie scattering (cf. approximate Cm in paragraph "Angular precision")

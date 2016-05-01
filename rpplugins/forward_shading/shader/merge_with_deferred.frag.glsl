@@ -43,6 +43,7 @@ void main() {
 
     float deferred_depth = textureLod(ForwardDepth, texcoord, 0).x;
     float forward_depth = textureLod(SceneDepth, texcoord, 0).x;
-    forward_result.xyz = forward_result.xyz * forward_result.w + deferred_result * (1 - forward_result.w);
+    forward_result.xyz = forward_result.xyz * forward_result.w +
+                            deferred_result * (1 - forward_result.w);
     result = deferred_depth > forward_depth ? deferred_result : forward_result.xyz;
 }

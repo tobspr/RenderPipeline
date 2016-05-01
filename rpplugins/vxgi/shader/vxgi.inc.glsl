@@ -46,7 +46,8 @@ float get_mipmap_from_cone_radius(float cone_radius) {
     return log2(cone_radius * GET_SETTING(vxgi, grid_resolution) * 0.6) - 1;
 }
 
-vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps, bool is_specular, float cone_grow_factor, float seed) {
+vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps,
+        bool is_specular, float cone_grow_factor, float seed) {
 
     // Find initial cone radius
     float cone_radius = (1.0 + 5.0 * cone_grow_factor) / GET_SETTING(vxgi, grid_resolution);

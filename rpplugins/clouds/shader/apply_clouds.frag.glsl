@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 
@@ -36,10 +36,12 @@ void main() {
     vec2 texcoord = get_texcoord();
     vec4 scene_color = textureLod(ShadedScene, texcoord, 0);
     vec4 cloud_color = textureLod(CloudsTex, texcoord, 0);
+
     #if !DEBUG_MODE
-      result = scene_color * (1 - cloud_color.w) + cloud_color;
+        result = scene_color * (1 - cloud_color.w) + cloud_color;
     #else
-      result = scene_color;
+        result = scene_color;
     #endif
+
     result.w = scene_color.w;
 }

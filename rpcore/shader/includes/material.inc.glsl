@@ -44,7 +44,7 @@ struct Panda3DMaterial {
 
 // Structure passed from the vertex to the fragment shader
 struct MaterialBaseInput {
-    vec3  color;
+    vec3 color;
     int shading_model;
     float specular_ior;
     float metallic;
@@ -57,13 +57,13 @@ struct MaterialBaseInput {
 // Converts from a Panda3D Material to a render pipeline material
 MaterialBaseInput get_input_from_p3d(Panda3DMaterial m) {
     MaterialBaseInput mi;
-    mi.color          = m.baseColor.xyz;
-    mi.specular_ior   = m.refractiveIndex;
-    mi.metallic       = m.metallic;
-    mi.roughness      = m.roughness;
-    mi.shading_model  = int(m.emission.x);
-    mi.normalfactor   = m.emission.y;
-    mi.arbitrary0     = m.emission.z;
+    mi.color = m.baseColor.xyz;
+    mi.specular_ior = m.refractiveIndex;
+    mi.metallic = m.metallic;
+    mi.roughness = m.roughness;
+    mi.shading_model = int(m.emission.x);
+    mi.normalfactor = m.emission.y;
+    mi.arbitrary0 = m.emission.z;
     // mi.arbitrary1     = m.emission.w;
     return mi;
 }
@@ -96,7 +96,8 @@ struct Material {
 
 // Merges two materials, by doing (per component):
 // result = current + to_add * factor;
-void merge_material_output(inout MaterialShaderOutput current, MaterialShaderOutput to_add, float factor) {
+void merge_material_output(inout MaterialShaderOutput current,
+        MaterialShaderOutput to_add, float factor) {
     current.basecolor += to_add.basecolor * factor;
     current.roughness += to_add.roughness * factor;
     current.specular_ior += to_add.specular_ior * factor;

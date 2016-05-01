@@ -53,11 +53,11 @@
 #define SMAA_DECODE_VELOCITY(_sample) error, custom resolve pass
 
 vec3 SMAA_GET_COLOR(vec3 _color) {
-  return _color;
+    return _color;
 }
 
 vec4 SMAA_GET_COLOR(vec4 _color) {
-  return _color;
+    return _color;
 }
 
 // Optionally enable smaa predication
@@ -72,4 +72,3 @@ vec4 SMAA_GET_COLOR(vec4 _color) {
 
 // Include the actual smaa header
 #pragma include "SMAA.inc.glsl"
-

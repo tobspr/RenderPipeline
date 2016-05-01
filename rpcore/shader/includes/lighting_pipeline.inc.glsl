@@ -60,20 +60,20 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, float
 
     // Get the lights data
     int ies_profile = get_ies_profile(light_data);
-    vec3 position   = get_light_position(light_data);
-    float radius    = get_spotlight_radius(light_data);
-    float fov       = get_spotlight_fov(light_data);
-    vec3 direction  = get_spotlight_direction(light_data);
-    vec3 l          = position - m.position;
-    vec3 l_norm     = normalize(l);
+    vec3 position = get_light_position(light_data);
+    float radius = get_spotlight_radius(light_data);
+    float fov = get_spotlight_fov(light_data);
+    vec3 direction = get_spotlight_direction(light_data);
+    vec3 l = position - m.position;
+    vec3 l_norm = normalize(l);
 
     // Compute the spot lights attenuation
     float attenuation = get_spotlight_attenuation(l_norm, direction, fov, radius,
-                                                  dot(l, l), ies_profile);
+                                                    dot(l, l), ies_profile);
 
     // Compute the lights influence
-    return apply_light(m, view_vector, l_norm, get_light_color(light_data), attenuation,
-                       shadow_factor, transmittance);
+    return apply_light(m, view_vector, l_norm,
+        get_light_color(light_data), attenuation, shadow_factor, transmittance);
 }
 
 // Processes a point light
@@ -81,12 +81,12 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     const vec3 transmittance = vec3(1); // <-- TODO
 
     // Get the lights data
-    float radius        = get_pointlight_radius(light_data);
-    float inner_radius  = get_pointlight_inner_radius(light_data);
-    vec3 position       = get_light_position(light_data);
-    int ies_profile     = get_ies_profile(light_data);
-    vec3 l              = position - m.position;
-    float l_len_square  = length_squared(l);
+    float radius = get_pointlight_radius(light_data);
+    float inner_radius = get_pointlight_inner_radius(light_data);
+    vec3 position = get_light_position(light_data);
+    int ies_profile = get_ies_profile(light_data);
+    vec3 l = position - m.position;
+    float l_len_square = length_squared(l);
 
     vec3 l_diff = get_spherical_area_light_horizon(l, m.normal, inner_radius);
 
@@ -95,14 +95,15 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     float dist_sq = max(square(inner_radius) + 0.01, l_len_square - square(inner_radius));
 
     float energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
-    float clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
+    float clearcoat_energy = get_spherical_area_light_energy(
+        CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
 
     // Get the point light attenuation
     float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, normalize(l), get_light_color(light_data),
-                       attenuation, shadow_factor, transmittance, energy, clearcoat_energy, l_diff);
+        attenuation, shadow_factor, transmittance, energy, clearcoat_energy, l_diff);
 }
 
 // Filters a shadow map
@@ -114,7 +115,8 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
 
-    float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 32);
+    float rotation = interleaved_gradient_noise(
+        gl_FragCoord.xy + MainSceneData.frame_index % 32);
     mat2 rotation_mat = make_rotation_mat(rotation);
 
     // TODO: make this configurable
@@ -137,7 +139,8 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
         #if SUPPORT_PCF
             accum += textureLod(ShadowAtlasPCF, vec3(offs, projected.z - const_bias), 0).x;
         #else
-            accum += textureLod(ShadowAtlas, vec2(offs), 0).x > projected.z - const_bias ? 1.0 : 0.0;
+            accum += textureLod(ShadowAtlas, vec2(offs), 0).x >
+                projected.z - const_bias ? 1.0 : 0.0;
         #endif
     }
 
@@ -171,7 +174,8 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     uint num_point_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_SHADOW).x;
 
     #if MODE_ACTIVE(LIGHT_COUNT)
-        int total_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
+        int total_lights = num_spot_noshadow + num_spot_shadow +
+                            num_point_noshadow + num_point_shadow;
         float factor = total_lights / float(LC_MAX_LIGHTS_PER_CELL);
         return vec3(factor, 1 - factor, 0);
     #endif
@@ -180,12 +184,14 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     #if SPECIAL_MODE_ACTIVE(LIGHT_TILES)
         // Show tiles
         #if IS_SCREEN_SPACE
-            if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 || int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
+            if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 ||
+                int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
                 shading_result += 1.0;
             }
-            int num_lights = num_spot_noshadow + num_spot_shadow + num_point_noshadow + num_point_shadow;
+            int num_lights = num_spot_noshadow + num_spot_shadow +
+                                num_point_noshadow + num_point_shadow;
             float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
-            shading_result += ( (tile.z + 1) % 2) * 0.2;
+            shading_result += ((tile.z + 1) % 2) * 0.2;
             shading_result += light_factor;
         #endif
     #endif

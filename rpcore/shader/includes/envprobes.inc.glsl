@@ -97,7 +97,7 @@ float correct_parallax(Cubemap map, Material m, vec3 vector, out float factor) {
     }
 
     // Intersect with unit box
-    vec3 first_plane  = (1.0 - position_ls) / ray_ls;
+    vec3 first_plane = (1.0 - position_ls) / ray_ls;
     vec3 second_plane = (-1.0 - position_ls) / ray_ls;
     vec3 furthest_plane = max(first_plane, second_plane);
     return min(furthest_plane.x, min(furthest_plane.y, furthest_plane.z));
@@ -108,7 +108,10 @@ vec3 get_cubemap_vector(Cubemap map, Material m, vec3 vector, out float factor, 
 
     // Use distance in world space directly to recover intersection.
     // Mix parallax corrected and original vector based on roughness
-    vec3 intersection_pos = mix(m.position + vector * dist, map.bounding_sphere_center + vector, m.roughness);
+    vec3 intersection_pos = mix(
+        m.position + vector * dist,
+        map.bounding_sphere_center + vector,
+        m.roughness);
     return (map.transform * vec4(intersection_pos, 1)).xyz;
 }
 
@@ -126,7 +129,8 @@ vec3 get_diffuse_vector(Cubemap map, Material m) {
         return tpose_inverse * (m.normal);
     #else
         // This is mathematically wrong, but it works fast and reasonable
-        vec4 transformed = map.transform * vec4(fma(m.normal, vec3(1e5), map.bounding_sphere_center), 1);
+        vec4 transformed = map.transform * vec4(fma(m.normal, vec3(1e5),
+            map.bounding_sphere_center), 1);
         return transformed.xyz;
     #endif
 }
@@ -164,17 +168,15 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
             mipmap *= 0.1;
         }
     #endif
-    
+
     mipmap *= 0.1;
 
-
     specular = textureLod(EnvProbes.cubemaps,
-        vec4(direction, map.index), clamp(mipmap, 0.0, max_mip) );
+        vec4(direction, map.index), clamp(mipmap, 0.0, max_mip));
     diffuse = textureLod(EnvProbes.diffuse_cubemaps,
         vec4(diffuse_direction, map.index), 0);
 
-
-    // Optional: Correct specular based on diffuse color intensity
+    // Optional: Correct specular based on diffuse scolor intensity
     // specular.xyz = mix(specular.xyz, specular.xyz * get_luminance(diffuse.xyz), diffuse.w);
 
     // Make sure small probes contribute much more than large ones

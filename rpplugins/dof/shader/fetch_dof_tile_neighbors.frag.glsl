@@ -35,23 +35,23 @@ out vec2 result;
 
 void main() {
 
-  ivec2 tile = ivec2(gl_FragCoord.xy);
-  ivec2 screen_coord = tile * tile_size;
-  ivec2 max_tiles = textureSize(TileMinMax, 0) - 1;
+    ivec2 tile = ivec2(gl_FragCoord.xy);
+    ivec2 screen_coord = tile * tile_size;
+    ivec2 max_tiles = textureSize(TileMinMax, 0) - 1;
 
-  float max_depth = 0;
-  float max_coc = 0;
+    float max_depth = 0;
+    float max_coc = 0;
 
-  const int filter_size = 1;
+    const int filter_size = 1;
 
-  for (int x = -filter_size; x <= filter_size; ++x) {
-    for (int y = -filter_size; y <= filter_size; ++y) {
-      ivec2 neighbor_coord = clamp(tile + ivec2(x, y), ivec2(0), ivec2(max_tiles));
-      vec2 neighbor_data = texelFetch(TileMinMax, neighbor_coord, 0).xy;
-      max_depth = max(max_depth, neighbor_data.x);
-      max_coc = max(max_coc, neighbor_data.y);
+    for (int x = -filter_size; x <= filter_size; ++x) {
+        for (int y = -filter_size; y <= filter_size; ++y) {
+            ivec2 neighbor_coord = clamp(tile + ivec2(x, y), ivec2(0), ivec2(max_tiles));
+            vec2 neighbor_data = texelFetch(TileMinMax, neighbor_coord, 0).xy;
+            max_depth = max(max_depth, neighbor_data.x);
+            max_coc = max(max_coc, neighbor_data.y);
+        }
     }
-  }
 
-  result = vec2(max_depth, max_coc);
+    result = vec2(max_depth, max_coc);
 }

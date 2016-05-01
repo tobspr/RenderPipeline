@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
@@ -45,10 +45,10 @@ void main() {
 
     // Blur arround the current pixel
     vec3 blur_sum = vec3(0);
-    blur_sum += textureLod(ShadedScene, texcoord + vec2(  r, -r ) * pixel_size, 0).rgb;
-    blur_sum += textureLod(ShadedScene, texcoord + vec2( -r, -r ) * pixel_size, 0).rgb;
-    blur_sum += textureLod(ShadedScene, texcoord + vec2(  r, r  ) * pixel_size, 0).rgb;
-    blur_sum += textureLod(ShadedScene, texcoord + vec2( -r, r  ) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(r, -r) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(-r, -r) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(r, r) * pixel_size, 0).rgb;
+    blur_sum += textureLod(ShadedScene, texcoord + vec2(-r, r) * pixel_size, 0).rgb;
 
     vec3 pixel_diff = scene_color - blur_sum * 0.25;
 

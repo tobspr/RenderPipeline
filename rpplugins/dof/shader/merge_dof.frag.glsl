@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
@@ -34,23 +34,23 @@ uniform sampler2D SourceTex;
 out vec3 result;
 
 void main() {
-  const float sharpness = 0.5;
+    const float sharpness = 0.5;
 
-  vec2 texcoord = get_texcoord();
-  vec4 dof_result = texture(SourceTex, texcoord);
-  vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+    vec2 texcoord = get_texcoord();
+    vec4 dof_result = texture(SourceTex, texcoord);
+    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
 
-  // Reconstruct original color
-  // dof_result.xyz = dof_result.xyz / (1 - (1 - sharpness) * get_luminance(dof_result.xyz));
-  float dof_weight = saturate(dof_result.w * 10.0);
+    // Reconstruct original color
+    // dof_result.xyz = dof_result.xyz / (1 - (1 - sharpness) * get_luminance(dof_result.xyz));
+    float dof_weight = saturate(dof_result.w * 10.0);
 
-  #if DEBUG_MODE
-    dof_weight = 0;
-  #endif
+    #if DEBUG_MODE
+        dof_weight = 0;
+    #endif
 
-  // result = mix(scene_color * 0, dof_result.xyz, dof_weight);
-  // result = mix(vec3(1, 0, 0), dof_result.xyz, dof_weight);
-  // result.xyz = vec3(dof_result.w);
-  result.xyz = dof_result.xyz;
-  // result.xyz = scene_color;
+    // result = mix(scene_color * 0, dof_result.xyz, dof_weight);
+    // result = mix(vec3(1, 0, 0), dof_result.xyz, dof_weight);
+    // result.xyz = vec3(dof_result.w);
+    result.xyz = dof_result.xyz;
+    // result.xyz = scene_color;
 }

@@ -42,7 +42,7 @@
 
 %includes%
 
-layout(location=0) in VertexOutput vOutput;
+layout(location = 0) in VertexOutput vOutput;
 
 uniform Panda3DMaterial p3d_Material;
 
@@ -68,7 +68,7 @@ uniform sampler2D ShadedScene;
 
 %inout%
 
-layout(location=0) out vec4 color_result;
+layout(location = 0) out vec4 color_result;
 
 void main() {
 
@@ -88,7 +88,7 @@ void main() {
         float sampled_ior = 0.0;
         float sampled_roughness = 0.0;
     #else
-        float sampled_ior  = texture(p3d_Texture2, texcoord).x;
+        float sampled_ior = texture(p3d_Texture2, texcoord).x;
         float sampled_roughness = texture(p3d_Texture3, texcoord).x;
     #endif
 
@@ -102,7 +102,7 @@ void main() {
             // TODO: Might want to make the alpha testing distance configurable
             vec4 sampled_diffuse = texture(p3d_Texture0, texcoord);
             float dist_to_camera = distance(MainSceneData.camera_pos, vOutput.position);
-            float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 15.0) );
+            float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 15.0));
             if (sampled_diffuse.w < alpha_factor) discard;
         #endif
     #else
@@ -187,4 +187,3 @@ void main() {
         color_result = vec4(color, alpha);
     #endif
 }
-

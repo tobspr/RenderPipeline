@@ -33,9 +33,8 @@
 #define APPLY_ENVPROBES_PASS 1
 #pragma include "includes/envprobes.inc.glsl"
 
-layout(location=0) out vec4 result_spec;
-layout(location=1) out vec4 result_diff;
-
+layout(location = 0) out vec4 result_spec;
+layout(location = 1) out vec4 result_diff;
 
 void main() {
     vec2 texcoord = get_texcoord();

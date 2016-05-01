@@ -33,11 +33,9 @@ uniform sampler2D SourceTex;
 out float result;
 
 void main() {
-  ivec2 coord = ivec2(gl_FragCoord.xy);
-  float depth = texelFetch(SourceTex, coord, 0).x;
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    float depth = texelFetch(SourceTex, coord, 0).x;
 
-  const float esm_factor = 5.0;
-
-  result = exp(esm_factor * depth);
-  // result = depth;
+    const float esm_factor = 5.0;
+    result = exp(esm_factor * depth);
 }

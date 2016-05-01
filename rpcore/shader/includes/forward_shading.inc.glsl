@@ -83,11 +83,13 @@ uniform int maxLightIndex;
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
 
         // Sample default environment map
-        vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+        vec3 ibl_specular = textureLod(DefaultEnvmap, fix_cubemap_coord(reflected_dir),
+            env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
         // Get cheap irradiance by sampling low levels of the environment map
         float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
-        vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal), ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+        vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal),
+            ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
         // Scattering specific code
         #if HAVE_PLUGIN(scattering)
@@ -142,7 +144,8 @@ uniform int maxLightIndex;
             vec3 diff_env = textureLod(ScatteringIBLDiffuse, m.normal, 0).rgb;
         #else
             int ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 5;
-            vec3 diff_env = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).rgb * DEFAULT_ENVMAP_BRIGHTNESS;
+            vec3 diff_env = textureLod(DefaultEnvmap, m.normal, ibl_diffuse_mip).rgb *
+                DEFAULT_ENVMAP_BRIGHTNESS;
         #endif
 
         shading_result += (0.15 + 0.85 * m.basecolor) * diff_env;
@@ -167,9 +170,9 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
         vec3 biased_position = position;
 
         // XXX: make this configurable
-        const float slope_bias =  0.3 * 0.02;
+        const float slope_bias = 0.3 * 0.02;
         const float normal_bias = 0.0 * 0.005;
-        const float fixed_bias =  0.5 * 0.001;
+        const float fixed_bias = 0.5 * 0.001;
         vec3 biased_pos = get_biased_position(
             position, slope_bias, normal_bias, vOutput.normal, sun_vector);
 
@@ -230,7 +233,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
     // Applies the sun shading, and if the pssm plugin is activated, also the
     // sun shadows
     vec3 get_sun_shading(Material m) {
-         #if HAVE_PLUGIN(scattering)
+        #if HAVE_PLUGIN(scattering)
             vec3 shading_result = vec3(0);
             vec3 sun_vector = get_sun_vector();
             vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
@@ -279,9 +282,9 @@ vec3 get_forward_light_shading(Material m) {
             }
 
             case LT_SPOT_LIGHT: {
-                float radius    = get_spotlight_radius(light_data);
-                float fov       = get_spotlight_fov(light_data);
-                vec3 direction  = get_spotlight_direction(light_data);
+                float radius = get_spotlight_radius(light_data);
+                float fov = get_spotlight_fov(light_data);
+                vec3 direction = get_spotlight_direction(light_data);
 
                 float att = get_spotlight_attenuation(l / l_len, direction,
                     fov, radius, dot(l, l), -1);

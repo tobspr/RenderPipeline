@@ -102,14 +102,14 @@ vec3 tonemap_optimized(vec3 color)
 // Exponential tonemapping
 vec3 tonemap_exponential(vec3 color) {
     color *= exposure_adjustment;
-    color = 1.0 - exp( -GET_SETTING(color_correction, exponential_factor) * color);
+    color = 1.0 - exp(-GET_SETTING(color_correction, exponential_factor) * color);
     return color;
 }
 
 // Alternative exponential tonemapping
 vec3 tonemap_exponential_2(vec3 color) {
     color *= exposure_adjustment;
-    color = exp( -1.0 / ( 2.72 * color + 0.15 ) );
+    color = exp(-1.0 / (2.72 * color + 0.15));
     return color;
 }
 
@@ -118,13 +118,13 @@ vec3 tonemap_exponential_2(vec3 color) {
 // See: http://de.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting
 vec3 uncharted_2_tonemap_formula(vec3 x)
 {
-    const float A     = GET_SETTING(color_correction, uc2t_shoulder_strength);
-    const float B     = GET_SETTING(color_correction, uc2t_linear_strength);
-    const float C     = GET_SETTING(color_correction, uc2t_linear_angle);
-    const float D     = GET_SETTING(color_correction, uc2t_toe_strength);
-    const float E     = GET_SETTING(color_correction, uc2t_toe_numerator);
-    const float F     = GET_SETTING(color_correction, uc2t_toe_denumerator);
-    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+    const float A = GET_SETTING(color_correction, uc2t_shoulder_strength);
+    const float B = GET_SETTING(color_correction, uc2t_linear_strength);
+    const float C = GET_SETTING(color_correction, uc2t_linear_angle);
+    const float D = GET_SETTING(color_correction, uc2t_toe_strength);
+    const float E = GET_SETTING(color_correction, uc2t_toe_numerator);
+    const float F = GET_SETTING(color_correction, uc2t_toe_denumerator);
+    return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
 }
 
 // Uncharted 2 tonemap operator

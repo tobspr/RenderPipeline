@@ -46,63 +46,63 @@ out vec4 result;
 
 void main() {
 
-  #if DEBUG_MODE
-    result = vec4(0);
-    return;
-  #endif
+    #if DEBUG_MODE
+        result = vec4(0);
+        return;
+    #endif
 
-  vec2 texcoord = get_half_texcoord();
+    vec2 texcoord = get_half_texcoord();
 
-  vec3 start_pos = MainSceneData.camera_pos;
-  vec3 end_pos = get_gbuffer_position(GBuffer, texcoord);
+    vec3 start_pos = MainSceneData.camera_pos;
+    vec3 end_pos = get_gbuffer_position(GBuffer, texcoord);
 
-  float max_distance = 50.0;
+    float max_distance = 50.0;
 
-  vec3 step_vector = (end_pos - start_pos);
-  if (length(step_vector) > max_distance) {
-    step_vector = normalize(step_vector) * max_distance;
-  }
-
-  end_pos = start_pos + step_vector;
-
-  float jitter = rand(ivec2(gl_FragCoord.xy) % 2);
-
-  const int num_steps = 16;
-  vec3 step_offs = step_vector / num_steps;
-
-  vec4 volumetrics = vec4(0);
-  float volume_density = 0.001 * GET_SETTING(volumetrics, volumetric_shadow_intensity);
-  // float volume_density = 0.0003;
-
-  vec3 sun_vector = get_sun_vector();
-  vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
-
-  const float slope_bias =  0.0 * 0.02;
-  const float normal_bias = 0.0;
-  const float fixed_bias =  0.01 * 0.001;
-
-  for (int i = 0; i < num_steps; ++i) {
-    vec3 pos = start_pos + (i + jitter) * step_offs;
-    pos = get_biased_position(pos, slope_bias, normal_bias, vec3(0), sun_vector);
-
-    vec3 projected = project(PSSMSceneSunShadowMVP, pos);
-    projected.z -= fixed_bias;
-
-    float shadow_term = texture(PSSMSceneSunShadowMapPCF, projected).x;
-    if (out_of_unit_box(projected)) {
-      // break;
-      shadow_term = 1;
+    vec3 step_vector = (end_pos - start_pos);
+    if (length(step_vector) > max_distance) {
+        step_vector = normalize(step_vector) * max_distance;
     }
 
-    vec4 color = vec4(1) * volume_density * shadow_term;
-    volumetrics += color * (1 - volumetrics.w);
-  }
+    end_pos = start_pos + step_vector;
 
-  volumetrics.xyz = pow(volumetrics.xyz, vec3(2.0));
-  volumetrics.xyz *= sun_color;
-  // volumetrics.w *= 10.0;
-  volumetrics.w = saturate(volumetrics.w);
+    float jitter = rand(ivec2(gl_FragCoord.xy) % 2);
 
-  vec3 scene_color = texture(ShadedScene, texcoord).xyz;
-  result = volumetrics;
+    const int num_steps = 16;
+    vec3 step_offs = step_vector / num_steps;
+
+    vec4 volumetrics = vec4(0);
+    float volume_density = 0.001 * GET_SETTING(volumetrics, volumetric_shadow_intensity);
+    // float volume_density = 0.0003;
+
+    vec3 sun_vector = get_sun_vector();
+    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
+
+    const float slope_bias = 0.0 * 0.02;
+    const float normal_bias = 0.0;
+    const float fixed_bias = 0.01 * 0.001;
+
+    for (int i = 0; i < num_steps; ++i) {
+        vec3 pos = start_pos + (i + jitter) * step_offs;
+        pos = get_biased_position(pos, slope_bias, normal_bias, vec3(0), sun_vector);
+
+        vec3 projected = project(PSSMSceneSunShadowMVP, pos);
+        projected.z -= fixed_bias;
+
+        float shadow_term = texture(PSSMSceneSunShadowMapPCF, projected).x;
+        if (out_of_unit_box(projected)) {
+            // break;
+            shadow_term = 1;
+        }
+
+        vec4 color = vec4(1) * volume_density * shadow_term;
+        volumetrics += color * (1 - volumetrics.w);
+    }
+
+    volumetrics.xyz = pow(volumetrics.xyz, vec3(2.0));
+    volumetrics.xyz *= sun_color;
+    // volumetrics.w *= 10.0;
+    volumetrics.w = saturate(volumetrics.w);
+
+    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+    result = volumetrics;
 }

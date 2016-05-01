@@ -113,16 +113,13 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float fog_factor)
 
         // Exponential fog
         float fog_ramp = TimeOfDay.scattering.fog_ramp_size;
-        fog_factor = saturate(1.0 - exp( -path_length / (0.6*fog_ramp) ));
+        fog_factor = saturate(1.0 - exp(-path_length / (0.6 * fog_ramp)));
 
         // Exponential height fog
-        fog_factor *= exp(- pow( max(0,surface_pos.z), 1.2) / (5.0 * 4000.0));
+        fog_factor *= exp(-pow(max(0, surface_pos.z), 1.2) / (5.0 * 4000.0));
         inscatter = accum * 0.8;
-        fog_factor = saturate(1.1*fog_factor);
+        fog_factor = saturate(1.1 * fog_factor);
     }
-
-    // return get_scattering(surfacePos);
-
 
     return inscatter;
 }

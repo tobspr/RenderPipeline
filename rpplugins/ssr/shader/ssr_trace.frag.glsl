@@ -57,7 +57,8 @@ bool point_between_planes(float z, float z_a, float z_b, float trace_length, out
     if (z - hit_tolerance_ws * trace_length <= max(z_a, z_b)) {
 
         #if GET_SETTING(ssr, abort_on_object_infront)
-            hit_factor = z + hit_tolerance_ws * trace_length >= min(z_a, z_b) - hit_tolerance_backface;
+            hit_factor = (z + hit_tolerance_ws * trace_length) >=
+                            min(z_a, z_b) - hit_tolerance_backface;
         #else
             hit_factor = true;
         #endif
@@ -191,7 +192,8 @@ void main()
     vec2 intersection = vec2(-1);
 
     // Jitter ray position to make sure we catch all details
-    float jitter = abs(rand(ivec2(gl_FragCoord.xy) + (MainSceneData.frame_index % GET_SETTING(ssr, history_length)) * 0.1));
+    float jitter = abs(rand(ivec2(gl_FragCoord.xy) +
+        (MainSceneData.frame_index % GET_SETTING(ssr, history_length)) * 0.1));
     // jitter *= 2.0;
     ray_pos += jitter * ray_step;
     // ray_pos += ray_step;
@@ -209,7 +211,8 @@ void main()
 
 
         // Increase ray bias as we advance the ray
-        float trace_len = GET_SETTING(ssr, intial_bias) * 10.0 + 100.0 * distance_squared(curr_coord, texcoord);
+        float trace_len = GET_SETTING(ssr, intial_bias) * 10.0 +
+            100.0 * distance_squared(curr_coord, texcoord);
         trace_len *= 1.0 + 1.0 * roughness;
 
         // Check for intersection
@@ -219,7 +222,8 @@ void main()
             float depth_sample = textureLod(GBuffer.Depth, curr_coord, 0).x;
         #endif
 
-        if (point_between_planes(depth_sample, ray_pos.z, ray_pos.z - ray_step.z, trace_len, hit_factor)) {
+        if (point_between_planes(depth_sample, ray_pos.z,
+                                    ray_pos.z - ray_step.z, trace_len, hit_factor)) {
             intersection = curr_coord;
             break;
         }
@@ -240,4 +244,3 @@ void main()
     }
     result = intersection;
 }
-

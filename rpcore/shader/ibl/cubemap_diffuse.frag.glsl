@@ -68,5 +68,5 @@ void main() {
 
     accum /= weights;
 
-    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(accum, 1) );
+    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(accum, 1));
 }

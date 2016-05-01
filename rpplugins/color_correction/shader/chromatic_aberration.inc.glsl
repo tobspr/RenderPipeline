@@ -34,7 +34,8 @@ vec3 do_chromatic_aberration(sampler2D colortex, vec2 texcoord, float factor) {
     vec3 blurred = vec3(0);
     const int num_samples = GET_SETTING(color_correction, chromatic_aberration_samples);
 
-    float factor_base = saturate(factor) * GET_SETTING(color_correction, chromatic_aberration_strength);
+    float factor_base = saturate(factor) *
+        GET_SETTING(color_correction, chromatic_aberration_strength);
     float factor_strength = 25.0;
 
     vec2 mid_coord_r = mid_coord;
@@ -48,12 +49,12 @@ vec3 do_chromatic_aberration(sampler2D colortex, vec2 texcoord, float factor) {
         vec2 offcord_r = mid_coord_r + offset;
         vec2 offcord_g = mid_coord_g + offset;
         vec2 offcord_b = mid_coord_b + offset;
-        blurred.r += textureLod(colortex, offcord_r*0.5+0.5, 0).r;
-        blurred.g += textureLod(colortex, offcord_g*0.5+0.5, 0).g;
-        blurred.b += textureLod(colortex, offcord_b*0.5+0.5, 0).b;
+        blurred.r += textureLod(colortex, offcord_r * 0.5 + 0.5, 0).r;
+        blurred.g += textureLod(colortex, offcord_g * 0.5 + 0.5, 0).g;
+        blurred.b += textureLod(colortex, offcord_b * 0.5 + 0.5, 0).b;
     }
 
-    blurred /= fma( float(num_samples), 2.0, 1.0);
+    blurred /= fma(float(num_samples), 2.0, 1.0);
 
     return blurred;
 }

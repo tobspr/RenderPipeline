@@ -36,23 +36,23 @@
 out vec2 result;
 
 void main() {
-  ivec2 coord = ivec2(gl_FragCoord.xy);
-  ivec2 screen_coord = ivec2(coord.x, coord.y * tile_size);
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 screen_coord = ivec2(coord.x, coord.y * tile_size);
 
-  vec2 max_velocity = vec2(0);
-  float max_velocity_len_sq = 0.0;
+    vec2 max_velocity = vec2(0);
+    float max_velocity_len_sq = 0.0;
 
-  // Find the longest vector in the tile
-  for (int y = 0; y <= tile_size; y += 4) {
-    vec2 velocity = get_gbuffer_object_velocity(GBuffer, ivec2(coord.x, screen_coord.y + y));
-    float len_sq = dot(velocity, velocity);
+    // Find the longest vector in the tile
+    for (int y = 0; y <= tile_size; y += 4) {
+        vec2 velocity = get_gbuffer_object_velocity(GBuffer, ivec2(coord.x, screen_coord.y + y));
+        float len_sq = dot(velocity, velocity);
 
-    // Check if the vector is longer than the current longest vector
-    if (len_sq > max_velocity_len_sq) {
-      max_velocity_len_sq = len_sq;
-      max_velocity = velocity;
+        // Check if the vector is longer than the current longest vector
+        if (len_sq > max_velocity_len_sq) {
+            max_velocity_len_sq = len_sq;
+            max_velocity = velocity;
+        }
     }
-  }
 
-  result = adjust_velocity(max_velocity);
+    result = adjust_velocity(max_velocity);
 }

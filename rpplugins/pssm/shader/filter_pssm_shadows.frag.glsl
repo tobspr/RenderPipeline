@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma optionNV (unroll all)
 
@@ -81,7 +81,8 @@ void main() {
 
     // Early out, different optimizations
     bool early_out = is_skybox(m) || sun_vector.z < SUN_VECTOR_HORIZON;
-    early_out = early_out || (m.shading_model != SHADING_MODEL_FOLIAGE && dot(m.normal, sun_vector) <= 1e-7);
+    early_out = early_out ||
+        (m.shading_model != SHADING_MODEL_FOLIAGE && dot(m.normal, sun_vector) <= 1e-7);
 
     if (early_out) {
         result = 0.0;
@@ -137,7 +138,8 @@ void main() {
         mat4 mvp = pssm_mvps[split];
 
 
-        float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 4);
+        float rotation = interleaved_gradient_noise(
+            gl_FragCoord.xy + MainSceneData.frame_index % 4);
         mat2 rotation_mat = make_rotation_mat(rotation);
 
         // Get the plugin settings
@@ -145,7 +147,8 @@ void main() {
         float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 1.5 * split);
         const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
         const int num_samples = GET_SETTING(pssm, filter_sample_count);
-        const float filter_radius = GET_SETTING(pssm, filter_radius) / GET_SETTING(pssm, resolution);
+        const float filter_radius = GET_SETTING(pssm, filter_radius) /
+            GET_SETTING(pssm, resolution);
 
         // Compute the biased position based on the normal and slope scaled
         // bias.

@@ -50,7 +50,8 @@ void reconstruct_tangent(out vec3 tangent, out vec3 binormal) {
 
 // Aplies a normal map with a given base normal and displace normal, weighted by
 // the bump factor
-vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor, vec3 tangent, vec3 binormal) {
+vec3 apply_normal_map(vec3 base_normal, vec3 displace_normal, float bump_factor,
+        vec3 tangent, vec3 binormal) {
     // Optional: Make sure the base normal is correct
     // base_normal = normalize(base_normal);
     displace_normal = mix(vec3(0, 0, 1), displace_normal, saturate(bump_factor));
@@ -85,7 +86,7 @@ vec2 get_parallax_texcoord(sampler2D displacement_map, float strength) {
     float NxV = max(0.0, dot(vOutput.normal, vec_to_cam / pixel_dist)); // xxx merge with pixel dist
 
     float raymarch_distance = 0.2 * strength;
-    int num_steps = max(5, int( (40 - (pixel_dist / max_dist) * 37.0) * (1 - NxV) ));
+    int num_steps = max(5, int((40 - (pixel_dist / max_dist) * 37.0) * (1 - NxV)));
 
     vec3 tangent, binormal;
     reconstruct_tangent(tangent, binormal);

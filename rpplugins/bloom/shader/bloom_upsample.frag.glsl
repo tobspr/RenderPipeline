@@ -66,15 +66,23 @@ void main() {
 
     vec3 source_sample = textureLod(SourceTex, flt_coord, sourceMip).xyz * 4;
 
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  0,  1) * texel_size, sourceMip).xyz * 2;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  0, -1) * texel_size, sourceMip).xyz * 2;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  0) * texel_size, sourceMip).xyz * 2;
-    source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  0) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(0, 1) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(0, -1) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(1, 0) * texel_size, sourceMip).xyz * 2;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(-1, 0) * texel_size, sourceMip).xyz * 2;
 
-    source_sample += textureLod(SourceTex, flt_coord + vec2( -1, -1) * texel_size, sourceMip).xyz;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  1, -1) * texel_size, sourceMip).xyz;
-    source_sample += textureLod(SourceTex, flt_coord + vec2( -1,  1) * texel_size, sourceMip).xyz;
-    source_sample += textureLod(SourceTex, flt_coord + vec2(  1,  1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(-1, -1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(1, -1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(-1, 1) * texel_size, sourceMip).xyz;
+    source_sample += textureLod(
+        SourceTex, flt_coord + vec2(1, 1) * texel_size, sourceMip).xyz;
 
     source_sample /= 16.0;
     source_sample *= mip_color;

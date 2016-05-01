@@ -1,4 +1,4 @@
-#version 400
+#version 430
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
@@ -13,8 +13,8 @@ out vec3 ws_normal;
 out vec2 ms_uv;
 
 void main() {
-  ms_uv = p3d_MultiTexCoord0;
-  ws_normal = normalize(tpose_world_to_model * p3d_Normal).xyz;
-  ws_position = (p3d_ModelMatrix * p3d_Vertex).xyz;
-  gl_Position = p3d_ViewProjectionMatrix * vec4(ws_position, 1);
+    ms_uv = p3d_MultiTexCoord0;
+    ws_normal = normalize(tpose_world_to_model * p3d_Normal).xyz;
+    ws_position = (p3d_ModelMatrix * p3d_Vertex).xyz;
+    gl_Position = p3d_ViewProjectionMatrix * vec4(ws_position, 1);
 }

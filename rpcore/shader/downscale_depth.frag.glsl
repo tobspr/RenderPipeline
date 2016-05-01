@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"

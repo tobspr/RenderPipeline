@@ -1,4 +1,6 @@
 
+// lint: skip-file
+
 vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }

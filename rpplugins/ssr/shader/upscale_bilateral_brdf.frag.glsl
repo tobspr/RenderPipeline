@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma optionNV (unroll all)
 
@@ -33,7 +33,7 @@
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
-layout(location=0) out vec4 result;
+layout(location = 0) out vec4 result;
 
 uniform sampler2D SourceTex;
 uniform sampler2D LastFrameColor;
@@ -115,7 +115,7 @@ void main() {
             vec3 h = normalize(view_vector + l);
             float NxH = max(1e-5, dot(m.normal, h));
 
-            float weight = clamp(brdf_distribution_ggx(NxH,  0.05 + sqrt(roughness)), 0.0, 1.0);
+            float weight = clamp(brdf_distribution_ggx(NxH, 0.05 + sqrt(roughness)), 0.0, 1.0);
             weight *= 1 - saturate(abs(mid_depth - sample_depth) / max_depth_diff);
             vec4 color_sample = textureLod(LastFrameColor, intersection, 0);
 
@@ -133,10 +133,6 @@ void main() {
     } else {
         accum /= weights;
     }
-
-
-    // accum.w = 1;
-    // accum.xyz = m.normal;
 
     result = accum;
 }

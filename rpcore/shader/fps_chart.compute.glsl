@@ -53,12 +53,14 @@ void main() {
     buffer_offset = buffer_offset % widget_size.x;
 
     float ms_value = texelFetch(FPSValues, buffer_offset).x;
-    float prev_ms_value = texelFetch(FPSValues, (buffer_offset - 1 + widget_size.x) % widget_size.x ).x;
+    float prev_ms_value = texelFetch(
+        FPSValues, (buffer_offset - 1 + widget_size.x) % widget_size.x).x;
 
     int ms_pixel = int(ms_value / maxMs * widget_size.y);
     int prev_ms_pixel = int(prev_ms_value / maxMs * widget_size.y);
 
-    if (coord.y >= min(ms_pixel, prev_ms_pixel) && coord.y <= max(ms_pixel, prev_ms_pixel) ) {
+    if (coord.y >= min(ms_pixel, prev_ms_pixel) &&
+        coord.y <= max(ms_pixel, prev_ms_pixel)) {
         color = vec4(0, 1, 0, 1);
     }
 

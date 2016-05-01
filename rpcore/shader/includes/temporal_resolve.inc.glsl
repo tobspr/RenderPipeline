@@ -33,30 +33,30 @@
 
 // Maximum color distance
 #ifndef RS_MAX_CLIP_DIST
-   #define RS_MAX_CLIP_DIST 0.5
+    #define RS_MAX_CLIP_DIST 0.5
 #endif
 
 // Blending factor
 #ifndef RS_DISTANCE_SCALE
-   #define RS_DISTANCE_SCALE 10.0
+    #define RS_DISTANCE_SCALE 10.0
 #endif
 
 // How long to keep good pixels
 #ifndef RS_KEEP_GOOD_DURATION
-   #define RS_KEEP_GOOD_DURATION 10.0
+    #define RS_KEEP_GOOD_DURATION 10.0
 #endif
 
 // How long to keep bad pixels
 #ifndef RS_KEEP_BAD_DURATION
-   #define RS_KEEP_BAD_DURATION 3.0
- #endif
+    #define RS_KEEP_BAD_DURATION 3.0
+#endif
 
 #ifndef RS_AABB_SIZE
-   #define RS_AABB_SIZE 1.0
+    #define RS_AABB_SIZE 1.0
 #endif
 
 #ifndef RS_USE_SMOOTH_TECHNIQUE
-   #define RS_USE_SMOOTH_TECHNIQUE 0
+    #define RS_USE_SMOOTH_TECHNIQUE 0
 #endif
 
 /*
@@ -136,18 +136,17 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
             vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord);
 
             float last_z = texture(Previous_SceneDepth, last_coord).x;
-            vec3 last_pos = calculate_surface_pos(last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
+            vec3 last_pos = calculate_surface_pos(
+                last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
             // Weight by distance
             float max_distance = RS_DISTANCE_SCALE;
             max_distance *= distance(curr_pos, MainSceneData.camera_pos) / 10.0;
 
-
             float weight = 1.0 - saturate(distance(curr_pos, last_pos) / max_distance);
-            // weight = 1;
             weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
 
-            vec4 last_m  = texture(last_tex, last_coord);
+            vec4 last_m = texture(last_tex, last_coord);
             return mix(curr_m, last_m, weight);
 
         #else
@@ -209,9 +208,9 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
         // Get current frame neighbor texels
         vec4 curr_tl = texture(current_tex, curr_coord + vec2(-bbs, -bbs) * one_pixel);
-        vec4 curr_tr = texture(current_tex, curr_coord + vec2( bbs, -bbs) * one_pixel);
-        vec4 curr_bl = texture(current_tex, curr_coord + vec2(-bbs,  bbs) * one_pixel);
-        vec4 curr_br = texture(current_tex, curr_coord + vec2( bbs,  bbs) * one_pixel);
+        vec4 curr_tr = texture(current_tex, curr_coord + vec2(bbs, -bbs) * one_pixel);
+        vec4 curr_bl = texture(current_tex, curr_coord + vec2(-bbs, bbs) * one_pixel);
+        vec4 curr_br = texture(current_tex, curr_coord + vec2(bbs, bbs) * one_pixel);
 
         // Get current frame neighbor AABB
         vec4 curr_min = min5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
@@ -219,11 +218,11 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
         // Get last frame texels
         float blend_weight = 1.0;
-        vec4 last_m  = texture(last_tex, last_coord);
+        vec4 last_m = texture(last_tex, last_coord);
         vec4 last_tl = texture(last_tex, last_coord + vec2(-bbs, -bbs) * one_pixel);
-        vec4 last_tr = texture(last_tex, last_coord + vec2( bbs, -bbs) * one_pixel);
-        vec4 last_bl = texture(last_tex, last_coord + vec2(-bbs,  bbs) * one_pixel);
-        vec4 last_br = texture(last_tex, last_coord + vec2( bbs,  bbs) * one_pixel);
+        vec4 last_tr = texture(last_tex, last_coord + vec2(bbs, -bbs) * one_pixel);
+        vec4 last_bl = texture(last_tex, last_coord + vec2(-bbs, bbs) * one_pixel);
+        vec4 last_br = texture(last_tex, last_coord + vec2(bbs, bbs) * one_pixel);
 
         float neighbor_diff = length(clamp(last_tl.xyz, curr_min.xyz, curr_max.xyz) - last_tl.xyz)
                             + length(clamp(last_tr.xyz, curr_min.xyz, curr_max.xyz) - last_tr.xyz)
@@ -232,24 +231,21 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
         const float tolerance = 0.0;
 
-        // last_m = clamp(last_m, curr_min - tolerance, curr_max + tolerance);
-        
-        // last_m.xyz = clamp(last_m.xyz, curr_min.xyz, curr_max.xyz);
-
-        float max_difference = clamp( max(get_luminance(last_m.xyz), get_luminance(curr_m.xyz)), 0.0001, 15.0) * RS_MAX_CLIP_DIST;
+        float max_difference = clamp(max(
+            get_luminance(last_m.xyz),
+            get_luminance(curr_m.xyz)), 0.0001, 15.0) * RS_MAX_CLIP_DIST;
 
         if (neighbor_diff >= max_difference)
             blend_weight = 0.0;
 
-        float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE );
+        float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) *
+            RS_DISTANCE_SCALE);
 
         // Merge the sample with the current color, in case we can't pick it
         last_m = mix(curr_m, last_m, blend_weight);
 
-        
-        float weight = saturate(1.0 / mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
-
-        // weight = 1.0 / RS_KEEP_GOOD_DURATION;
+        float weight = saturate(1.0 /
+            mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
 
         return max(vec4(0.0), mix(last_m, curr_m, weight));
     #endif

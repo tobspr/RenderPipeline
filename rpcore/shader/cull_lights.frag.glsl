@@ -89,8 +89,8 @@ void main() {
 
     // Cull all lights
     for (int i = local_offset;
-         i < max_frustum_lights && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL;
-         i += LC_CULL_THREADS ) {
+            i < max_frustum_lights && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL;
+            i += LC_CULL_THREADS) {
 
         int light_index = int(texelFetch(FrustumLights, i).x);
 
@@ -108,7 +108,7 @@ void main() {
 
         // XXX: This prevents invalid light culling for very distant small lights.
         // Should find a better solution for this!
-        sphere.radius *= max(1.0, length(light_pos_view.xyz) / 200.0 );
+        sphere.radius *= max(1.0, length(light_pos_view.xyz) / 200.0);
 
         for (int k = 0; k < num_raydirs; ++k) {
             visible = visible || viewspace_ray_sphere_distance_intersection(

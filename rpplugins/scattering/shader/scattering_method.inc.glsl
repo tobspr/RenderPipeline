@@ -37,4 +37,3 @@
 #else
     #error Unkown Scattering Method!
 #endif
-

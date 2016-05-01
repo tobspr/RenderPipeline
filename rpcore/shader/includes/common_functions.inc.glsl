@@ -39,7 +39,7 @@
 // Fixes the cubemap direction
 vec3 fix_cubemap_coord(vec3 coord) {
     // return normalize(coord.xzy * vec3(1,-1,1));
-    return normalize(coord.yxz * vec3(-1,1,1));
+    return normalize(coord.yxz * vec3(-1, 1, 1));
 }
 
 
@@ -69,7 +69,7 @@ vec2 get_skydome_coord(vec3 view_dir) {
 vec3 texcoord_to_cubemap(int cubemap_size, ivec2 coord, out ivec2 clamped_coord, out int face) {
     face = coord.x / cubemap_size;
     clamped_coord = coord % cubemap_size;
-    vec2 local_coord = saturate( (clamped_coord+0.5) / float(cubemap_size)) * 2.0 - 1.0;
+    vec2 local_coord = saturate((clamped_coord + 0.5) / float(cubemap_size)) * 2.0 - 1.0;
     return get_cubemap_coordinate(face, local_coord);
 }
 
@@ -108,7 +108,8 @@ bool out_of_screen(vec2 tcoord) {
 
 // Checks if a 3D-coordinate exceeds the [0, 1] range
 bool out_of_unit_box(vec3 coord) {
-    return coord.x < 0.0 || coord.y < 0.0 || coord.z < 0.0 || coord.x > 1.0 || coord.y > 1.0 || coord.z > 1.0;
+    return coord.x < 0.0 || coord.y < 0.0 || coord.z < 0.0 ||
+            coord.x > 1.0 || coord.y > 1.0 || coord.z > 1.0;
 }
 
 
@@ -222,18 +223,19 @@ int gpu_cq_unpack_int_from_float(float v) {
 // Computes the diffuse antialiasing factor
 // From: http://blog.selfshadow.com/sandbox/diffuse_aa.html
 float get_diffuse_aa(float w, float NxL) {
-    float x  = sqrt(1.0 - w);
-    float x0 = 0.373837*NxL;
-    float x1 = 0.66874*x;
-    float n  = x0 + x1;
-    return w*((abs(x0) <= x1) ? n*n/x : saturate(NxL));
+    float x = sqrt(1.0 - w);
+    float x0 = 0.373837 * NxL;
+    float x1 = 0.66874 * x;
+    float n = x0 + x1;
+    return w * ((abs(x0) <= x1) ? n * n / x : saturate(NxL));
 }
 
 // Blends a material
 float blend_material(float material_factor, float detailmap, float add_factor, float pow_factor) {
     material_factor = max(0, material_factor);
     return saturate(
-        mix( pow( max(0, detailmap + add_factor), pow_factor), 1.0, material_factor) * material_factor);
+        mix(pow(max(0, detailmap + add_factor), pow_factor), 1.0, material_factor) *
+        material_factor);
 }
 
 // Blends a specular IOR to make sure it never drops below 1.0
@@ -248,10 +250,10 @@ float blend_ior(float material_specular, float sampled_specular) {
 #define get_texcoord() (gl_FragCoord.xy / SCREEN_SIZE)
 
 // Texcoord for half-res targets sampling full-res targets
-#define get_half_texcoord() vec2( (ivec2(gl_FragCoord.xy) * 2 + 0.5) / SCREEN_SIZE )
+#define get_half_texcoord() vec2((ivec2(gl_FragCoord.xy) * 2 + 0.5) / SCREEN_SIZE)
 
 // Texcoord for half-res targets sampling half-res targets
-#define get_half_native_texcoord() ((vec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE/2))
+#define get_half_native_texcoord() ((vec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE / 2))
 
 // Converts degree (0 .. 360) to radians (0 .. 2 PI)
 float degree_to_radians(float degree) {
@@ -280,9 +282,9 @@ float distance_squared(vec2 a, vec2 b) { return length_squared(a - b); }
 
 // Returns x * x
 float square(float x) { return x * x; }
-vec2  square(vec2 x)  { return x * x; }
-vec3  square(vec3 x)  { return x * x; }
-vec4  square(vec4 x)  { return x * x; }
+vec2 square(vec2 x) { return x * x; }
+vec3 square(vec3 x) { return x * x; }
+vec4 square(vec4 x) { return x * x; }
 
 // Minimum and maximum for multiple components
 // XXX: There are hardware instructions (at least on AMD) for it:

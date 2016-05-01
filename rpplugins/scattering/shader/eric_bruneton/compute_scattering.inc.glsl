@@ -59,12 +59,12 @@ bool intersect_atmosphere(vec3 cam_pos, vec3 d, out float offset, out float max_
 
     // vector from ray origin to center of the sphere
     vec3 l = -cam_pos;
-    float l2 = dot(l,l);
-    float s = dot(l,d);
+    float l2 = dot(l, l);
+    float s = dot(l, d);
 
     // adjust top atmosphere boundary by small epsilon to prevent artifacts
     float r = Rt - EPSILON_ATMOSPHERE;
-    float r2 = r*r;
+    float r2 = r * r;
     if(l2 <= r2)
     {
         // ray origin inside sphere, hit is ensured
@@ -101,7 +101,8 @@ vec3 worldspace_to_atmosphere(vec3 pos) {
     return pos;
 }
 
-vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuation, inout float irradiance_factor)
+vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuation,
+        inout float irradiance_factor)
 {
     vec3 inscattered_light = vec3(0);
     float offset;
@@ -137,7 +138,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             // in-scattering for infinite ray (light in-scattered when
             // no surface hit or object behind atmosphere)
             vec4 inscatter = max(texture4D(InscatterSampler, start_pos_height,
-               mustart_pos, musstart_pos, nustart_pos), 0.0f);
+                mustart_pos, musstart_pos, nustart_pos), 0.0f);
             float surface_pos_height = length(surface_pos);
             float musEndPos = dot(surface_pos, sun_vector) / surface_pos_height;
 
@@ -151,7 +152,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
                 float muEndPos = dot(surface_pos, view_dir) / surface_pos_height;
                 vec4 inscatterSurface = texture4D(InscatterSampler, surface_pos_height,
                     muEndPos, musEndPos, nustart_pos);
-                inscatter = max(inscatter-attenuation.rgbr*inscatterSurface, 0.0f);
+                inscatter = max(inscatter - attenuation.rgbr * inscatterSurface, 0.0f);
                 irradiance_factor = 1.0f;
             } else {
                 // retrieve extinction factor for infinite ray
@@ -168,19 +169,19 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
                 if (abs(mustart_pos - muHorizon) < EPSILON_INSCATTER)
                 {
                     float mu = muHorizon - EPSILON_INSCATTER;
-                    float samplePosHeight = sqrt(start_pos_height*start_pos_height
-                        +path_length*path_length+2.0f*start_pos_height*
-                        path_length*mu);
+                    float samplePosHeight = sqrt(start_pos_height * start_pos_height
+                        + path_length * path_length + 2.0f * start_pos_height *
+                        path_length * mu);
                     float muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
                     vec4 inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
                         musstart_pos, nustart_pos);
                     vec4 inScatter1 = texture4D(InscatterSampler, samplePosHeight,
                         muSamplePos, musEndPos, nustart_pos);
-                    vec4 inScatterA = max(inScatter0-attenuation.rgbr*inScatter1,0.0);
+                    vec4 inScatterA = max(inScatter0 - attenuation.rgbr * inScatter1, 0.0);
                     mu = muHorizon + EPSILON_INSCATTER;
-                    samplePosHeight = sqrt(start_pos_height*start_pos_height
-                        +path_length*path_length+2.0f*
-                        start_pos_height*path_length*mu);
+                    samplePosHeight = sqrt(start_pos_height * start_pos_height
+                        + path_length * path_length + 2.0f *
+                        start_pos_height * path_length * mu);
                     muSamplePos = (start_pos_height * mu + path_length) / samplePosHeight;
                     inScatter0 = texture4D(InscatterSampler, start_pos_height, mu,
                         musstart_pos, nustart_pos);
@@ -188,7 +189,8 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
                         musEndPos, nustart_pos);
                     vec4 inScatterB = max(inScatter0 - attenuation.rgbr * inScatter1,
                         0.0f);
-                    float t = ((mustart_pos - muHorizon) + EPSILON_INSCATTER) / (2.0 * EPSILON_INSCATTER);
+                    float t = ((mustart_pos - muHorizon) + EPSILON_INSCATTER) /
+                        (2.0 * EPSILON_INSCATTER);
                     inscatter = mix(inScatterA, inScatterB, t);
                 }
             #endif
@@ -232,4 +234,3 @@ vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float sky_clip)
 
     return scattering;
 }
-

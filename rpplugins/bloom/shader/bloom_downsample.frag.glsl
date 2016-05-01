@@ -46,34 +46,44 @@ void main() {
     vec3 center_sample = textureLod(SourceTex, flt_coord, sourceMip).xyz;
 
     // inner samples (marked red)
-    vec3 sample_r_tl = textureLod(SourceTex, flt_coord + vec2(-1, 1 ) * texel_size, sourceMip).xyz;
-    vec3 sample_r_tr = textureLod(SourceTex, flt_coord + vec2( 1, 1 ) * texel_size, sourceMip).xyz;
-    vec3 sample_r_bl = textureLod(SourceTex, flt_coord + vec2(-1,-1 ) * texel_size, sourceMip).xyz;
-    vec3 sample_r_br = textureLod(SourceTex, flt_coord + vec2( 1,-1 ) * texel_size, sourceMip).xyz;
+    vec3 sample_r_tl = textureLod(
+        SourceTex, flt_coord + vec2(-1, 1) * texel_size, sourceMip).xyz;
+    vec3 sample_r_tr = textureLod(
+        SourceTex, flt_coord + vec2(1, 1) * texel_size, sourceMip).xyz;
+    vec3 sample_r_bl = textureLod(
+        SourceTex, flt_coord + vec2(-1, -1) * texel_size, sourceMip).xyz;
+    vec3 sample_r_br = textureLod(
+        SourceTex, flt_coord + vec2(1, -1) * texel_size, sourceMip).xyz;
 
     // corner samples
-    vec3 sample_t = textureLod(SourceTex, flt_coord + vec2( 0, 2 ) * texel_size, sourceMip).xyz;
-    vec3 sample_r = textureLod(SourceTex, flt_coord + vec2( 2, 0 ) * texel_size, sourceMip).xyz;
-    vec3 sample_b = textureLod(SourceTex, flt_coord + vec2( 0,-2 ) * texel_size, sourceMip).xyz;
-    vec3 sample_l = textureLod(SourceTex, flt_coord + vec2(-2, 0 ) * texel_size, sourceMip).xyz;
+    vec3 sample_t = textureLod(
+        SourceTex, flt_coord + vec2(0, 2) * texel_size, sourceMip).xyz;
+    vec3 sample_r = textureLod(
+        SourceTex, flt_coord + vec2(2, 0) * texel_size, sourceMip).xyz;
+    vec3 sample_b = textureLod(
+        SourceTex, flt_coord + vec2(0, -2) * texel_size, sourceMip).xyz;
+    vec3 sample_l = textureLod(
+        SourceTex, flt_coord + vec2(-2, 0) * texel_size, sourceMip).xyz;
 
     // edge samples
-    vec3 sample_tl = textureLod(SourceTex, flt_coord + vec2( -2, 2 ) * texel_size, sourceMip).xyz;
-    vec3 sample_tr = textureLod(SourceTex, flt_coord + vec2(  2, 2 ) * texel_size, sourceMip).xyz;
-    vec3 sample_bl = textureLod(SourceTex, flt_coord + vec2( -2,-2 ) * texel_size, sourceMip).xyz;
-    vec3 sample_br = textureLod(SourceTex, flt_coord + vec2(  2,-2 ) * texel_size, sourceMip).xyz;
+    vec3 sample_tl = textureLod(
+        SourceTex, flt_coord + vec2(-2, 2) * texel_size, sourceMip).xyz;
+    vec3 sample_tr = textureLod(
+        SourceTex, flt_coord + vec2(2, 2) * texel_size, sourceMip).xyz;
+    vec3 sample_bl = textureLod(
+        SourceTex, flt_coord + vec2(-2, -2) * texel_size, sourceMip).xyz;
+    vec3 sample_br = textureLod(
+        SourceTex, flt_coord + vec2(2, -2) * texel_size, sourceMip).xyz;
 
-    vec3 kernel_sum_red    = sample_r_tl + sample_r_tr + sample_r_bl + sample_r_br;
-    vec3 kernel_sum_yellow = sample_tl   + sample_t    + sample_l    + center_sample;
-    vec3 kernel_sum_green  = sample_tr   + sample_t    + sample_r    + center_sample;
-    vec3 kernel_sum_purple = sample_bl   + sample_b    + sample_l    + center_sample;
-    vec3 kernel_sum_blue   = sample_br   + sample_b    + sample_r    + center_sample;
+    vec3 kernel_sum_red = sample_r_tl + sample_r_tr + sample_r_bl + sample_r_br;
+    vec3 kernel_sum_yellow = sample_tl + sample_t + sample_l + center_sample;
+    vec3 kernel_sum_green = sample_tr + sample_t + sample_r + center_sample;
+    vec3 kernel_sum_purple = sample_bl + sample_b + sample_l + center_sample;
+    vec3 kernel_sum_blue = sample_br + sample_b + sample_r + center_sample;
 
-    vec3 summed_kernel = kernel_sum_red * 0.5 +
-                         kernel_sum_yellow * 0.125 +
-                         kernel_sum_green  * 0.125 +
-                         kernel_sum_purple * 0.125 +
-                         kernel_sum_blue   * 0.125;
+    vec3 summed_kernel = kernel_sum_red * 0.5 + kernel_sum_yellow * 0.125 +
+                            kernel_sum_green * 0.125 + kernel_sum_purple * 0.125 +
+                            kernel_sum_blue * 0.125;
 
     // since every sub-kernel has 4 samples, normalize that
     summed_kernel /= 4.0;

@@ -83,7 +83,9 @@ void main() {
 
             // In case the culled light is of the same type as the type we are looking for
             if (classify_light(light_type, casts_shadows) == light_class) {
-                imageStore(GroupedCellLightsBuffer, light_dest_offset + num_processed_lights, ivec4(light_index));
+                imageStore(
+                    GroupedCellLightsBuffer,
+                    light_dest_offset + num_processed_lights, ivec4(light_index));
                 ++light_count;
                 ++num_processed_lights;
             }
@@ -93,4 +95,3 @@ void main() {
         imageStore(GroupedCellLightsBuffer, dest_offset + light_class, uvec4(light_count));
     }
 }
-

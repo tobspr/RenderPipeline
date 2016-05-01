@@ -37,24 +37,24 @@ uniform sampler2D SourceTex;
 out vec2 result;
 
 void main() {
-  ivec2 coord = ivec2(gl_FragCoord.xy);
-  ivec2 source_coord = ivec2(coord.x * tile_size, coord.y);
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 source_coord = ivec2(coord.x * tile_size, coord.y);
 
-  vec2 max_velocity = vec2(0);
-  float max_velocity_len_sq = 0.0;
+    vec2 max_velocity = vec2(0);
+    float max_velocity_len_sq = 0.0;
 
-  // Find the longest vector in the tile
-  for (int x = 0; x <= tile_size; x += 4) {
-    int x_coord = clamp(source_coord.x + x, 0, WINDOW_WIDTH - 1);
-    vec2 velocity = texelFetch(SourceTex, ivec2(x_coord, source_coord.y), 0).xy;
-    float len_sq = dot(velocity, velocity);
+    // Find the longest vector in the tile
+    for (int x = 0; x <= tile_size; x += 4) {
+        int x_coord = clamp(source_coord.x + x, 0, WINDOW_WIDTH - 1);
+        vec2 velocity = texelFetch(SourceTex, ivec2(x_coord, source_coord.y), 0).xy;
+        float len_sq = dot(velocity, velocity);
 
-    // Check if the vector is longer than the current longest vector
-    if (len_sq > max_velocity_len_sq) {
-      max_velocity_len_sq = len_sq;
-      max_velocity = velocity;
+        // Check if the vector is longer than the current longest vector
+        if (len_sq > max_velocity_len_sq) {
+            max_velocity_len_sq = len_sq;
+            max_velocity = velocity;
+        }
     }
-  }
 
-  result = max_velocity;
+    result = max_velocity;
 }

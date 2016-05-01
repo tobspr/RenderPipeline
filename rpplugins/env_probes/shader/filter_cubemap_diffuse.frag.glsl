@@ -59,4 +59,3 @@ void main() {
     imageStore(DestTex, ivec3(clamped_coord, currentIndex * 6 + face), accum);
     result = accum;
 }
-

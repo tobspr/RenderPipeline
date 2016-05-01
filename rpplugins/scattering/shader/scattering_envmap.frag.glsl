@@ -56,7 +56,7 @@ void main() {
 
     // Get inscattered light
     vec3 inscattered_light = DoScattering(view_vector * 1e10, view_vector, sky_clip)
-                             * TimeOfDay.scattering.sun_intensity;
+                            * TimeOfDay.scattering.sun_intensity;
 
     inscattered_light = srgb_to_rgb(inscattered_light);
     inscattered_light *= 3.0;
@@ -77,5 +77,5 @@ void main() {
         #endif
     }
 
-    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0) );
+    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0));
 }

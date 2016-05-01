@@ -1,3 +1,7 @@
+
+// lint: skip-file
+
+
 /**
  * Copyright (C) 2013 Jorge Jimenez (jorge@iryoku.com)
  * Copyright (C) 2013 Jose I. Echevarria (joseignacioechevarria@gmail.com)

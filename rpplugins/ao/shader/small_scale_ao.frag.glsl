@@ -24,7 +24,7 @@
  *
  */
 
-#version 420
+#version 430
 
 #pragma optionNV (unroll all)
 
@@ -64,11 +64,9 @@ void main() {
         result = prev_result;
         return;
     }
-    
-    // vec3 noise_vec = rand_rgb(texcoord + 0.5 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
 
-    vec3 noise_vec = rand_rgb(coord % 4 + 0.01 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
-
+    vec3 noise_vec = rand_rgb(coord % 4 +
+        0.01 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
@@ -88,9 +86,7 @@ void main() {
 
     for (int i = 0; i < num_samples; ++i) {
         vec3 offset = poisson_disk_3D_16[4 * i];
-        // if (GET_SETTING(ao, clip_length) > 1) {
-            offset = mix(offset, noise_vec, 0.5);
-        // }
+        offset = mix(offset, noise_vec, 0.5);
 
         // Flip offset in case it faces away from the normal
         offset = face_forward(offset, pixel_view_normal);

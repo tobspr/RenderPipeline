@@ -24,7 +24,7 @@
  *
  */
 
-#version 400
+#version 430
 
 in vec4 p3d_Vertex;
 in vec2 p3d_MultiTexCoord0;

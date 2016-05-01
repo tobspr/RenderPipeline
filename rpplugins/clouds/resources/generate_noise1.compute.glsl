@@ -36,23 +36,23 @@ const int tex_size = 128;
 #pragma include "noise.inc.glsl"
 
 void main() {
-  ivec3 coord = ivec3(gl_GlobalInvocationID.xyz);
-  vec3 flt_coord = coord / float(tex_size);
-  float fbm0 = fbm(flt_coord * 5);
+    ivec3 coord = ivec3(gl_GlobalInvocationID.xyz);
+    vec3 flt_coord = coord / float(tex_size);
+    float fbm0 = fbm(flt_coord * 5);
 
-  float worley = fbm_worley(flt_coord, 8, 0.7, 2, 0.2723424);
+    float worley = fbm_worley(flt_coord, 8, 0.7, 2, 0.2723424);
 
-  float OldMin = -1.0;
-  float OldMax = 1.0;
-  float NewMin = worley * 0.5;
-  float NewMax = 1.0;
+    float OldMin = -1.0;
+    float OldMax = 1.0;
+    float NewMin = worley * 0.5;
+    float NewMax = 1.0;
 
-  float combined = NewMin + (((fbm0 - OldMin) / (OldMax - OldMin)) * (NewMax - NewMin));
-  fbm0 = combined;
+    float combined = NewMin + (((fbm0 - OldMin) / (OldMax - OldMin)) * (NewMax - NewMin));
+    fbm0 = combined;
 
-  float worley1 = sqrt(fbm_worley(flt_coord, 8, 0.6, 4, 0.164354)) * 1.0;
-  float worley2 = sqrt(fbm_worley(flt_coord, 16, 0.6, 3, 0.19123)) * 1.0;
-  float worley3 = sqrt(fbm_worley(flt_coord, 32, 0.4, 2, 0.2613)) * 1.0;
+    float worley1 = sqrt(fbm_worley(flt_coord, 8, 0.6, 4, 0.164354)) * 1.0;
+    float worley2 = sqrt(fbm_worley(flt_coord, 16, 0.6, 3, 0.19123)) * 1.0;
+    float worley3 = sqrt(fbm_worley(flt_coord, 32, 0.4, 2, 0.2613)) * 1.0;
 
-  imageStore(DestTex, coord, vec4(fbm0, worley1, worley2, worley3));
+    imageStore(DestTex, coord, vec4(fbm0, worley1, worley2, worley3));
 }

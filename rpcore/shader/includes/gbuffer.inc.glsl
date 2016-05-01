@@ -40,9 +40,9 @@ uniform mat4 p3d_ProjectionMatrix;
 
     */
 
-    layout(location=0) out vec4 gbuffer_out_0;
-    layout(location=1) out vec4 gbuffer_out_1;
-    layout(location=2) out vec4 gbuffer_out_2;
+    layout(location = 0) out vec4 gbuffer_out_0;
+    layout(location = 1) out vec4 gbuffer_out_1;
+    layout(location = 2) out vec4 gbuffer_out_2;
 
     vec2 compute_velocity() {
         // Compute velocity based on this and last frames mvp matrix
@@ -58,7 +58,8 @@ uniform mat4 p3d_ProjectionMatrix;
         if (avg_normal_length < 1.0)
         {
             float avg_len_sq = avg_normal_length * avg_normal_length;
-            float kappa = (3 * avg_normal_length - avg_normal_length * avg_len_sq ) / (1 - avg_len_sq);
+            float kappa = (3 * avg_normal_length - avg_normal_length * avg_len_sq) /
+                (1 - avg_len_sq);
             float variance = 1.0 / (2.0 * kappa) ;
             return sqrt(roughness * roughness + variance);
         }
@@ -186,14 +187,14 @@ uniform mat4 p3d_ProjectionMatrix;
         vec4 data2 = textureLod(data.Data2, fcoord, 0);
 
         Material m;
-        m.position      = get_gbuffer_position(data, fcoord);
-        m.basecolor     = data0.xyz;
+        m.position = get_gbuffer_position(data, fcoord);
+        m.basecolor = data0.xyz;
         m.linear_roughness = clamp(data0.w, MINIMUM_ROUGHNESS, 1.0);
-        m.roughness     = m.linear_roughness * m.linear_roughness;
-        m.normal        = unpack_normal_octahedron(data1.xy);
-        m.metallic      = saturate(data1.z * 1.001 - 0.0005);
-        m.specular_ior  = data1.w;
-        m.specular      = ior_to_specular(data1.w);
+        m.roughness = m.linear_roughness * m.linear_roughness;
+        m.normal = unpack_normal_octahedron(data1.xy);
+        m.metallic = saturate(data1.z * 1.001 - 0.0005);
+        m.specular_ior = data1.w;
+        m.specular = ior_to_specular(data1.w);
         m.shading_model = int(data2.z);
         m.shading_model_param0 = data2.w;
 
@@ -293,18 +294,13 @@ uniform mat4 p3d_ProjectionMatrix;
 
         // Returns the cameras velocity
         vec2 get_camera_velocity(vec2 texcoord) {
-
-          // Reconstruct last frame texcoord
-          vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0,1.0 / ASPECT_RATIO);
-          vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
-          vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
-          vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
-          // return vec2(0.0);
-          // texcoord -= 0.5 / SCREEN_SIZE;
-
-          return last_coord - texcoord;
+            vec2 film_offset_bias = MainSceneData.current_film_offset *
+            vec2(1.0, 1.0 / ASPECT_RATIO);
+            vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
+            vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
+            vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
+            return last_coord - texcoord;
         }
-
 
     #endif
 
