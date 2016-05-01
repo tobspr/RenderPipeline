@@ -92,6 +92,10 @@ void main() {
 
             #if !REFERENCE_MODE
                 result = textureLod(ShadedScene, texcoord, 0);
+
+                #if !HAVE_PLUGIN(scattering)
+                    result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 1) * DEFAULT_ENVMAP_BRIGHTNESS;
+                #endif
             #else
 
                 // When in reference mode, display the used environment cubemap as background
@@ -102,9 +106,6 @@ void main() {
                 #endif
             #endif
 
-            #if 0
-                result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0);
-            #endif
             return;
         }
 

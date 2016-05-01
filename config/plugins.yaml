@@ -144,6 +144,7 @@ overrides:
         mie_phase_factor: 0.21
         beta_mie_scattering: 4.0
         enable_godrays: False
+        atmosphere_start: 100.0
 
     skin_shading:
         quality: medium
@@ -163,7 +164,7 @@ overrides:
         abort_on_object_infront: True
         intial_bias: 0.1
         hit_tolerance: 0.1
-        roughness_fade: 0.56
+        roughness_fade: 0.72
         skip_invalid_samples: False
         border_fade: 0.005
 

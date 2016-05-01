@@ -157,11 +157,16 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
 
     float local_distance = intersection_distance / map.bounding_sphere_radius;
 
-    if (map.use_parallax) {
-        mipmap *= intersection_distance * 0.012;
-    } else {
-        mipmap *= 0.1;
-    }
+    #if 0
+        if (map.use_parallax) {
+            // mipmap *= intersection_distance * 0.012;
+        } else {
+            mipmap *= 0.1;
+        }
+    #endif
+    
+    mipmap *= 0.1;
+
 
     specular = textureLod(EnvProbes.cubemaps,
         vec4(direction, map.index), clamp(mipmap, 0.0, max_mip) );

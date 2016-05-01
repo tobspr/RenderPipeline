@@ -184,8 +184,8 @@ class MovementController(object):
         if self.showbase.mouseWatcherNode.has_mouse():
             x = self.showbase.mouseWatcherNode.get_mouse_x()
             y = self.showbase.mouseWatcherNode.get_mouse_y()
-            self.current_mouse_pos = (x * 90 * self.mouse_sensivity,
-                                      y * 70 * self.mouse_sensivity)
+            self.current_mouse_pos = (x * self.showbase.camLens.get_fov().x * self.mouse_sensivity,
+                                      y * self.showbase.camLens.get_fov().y * self.mouse_sensivity)
 
             if self.mouse_enabled:
                 diffx = self.last_mouse_pos[0] - self.current_mouse_pos[0]

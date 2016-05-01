@@ -284,7 +284,8 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.3
+            rp_light.inner_radius = 0.4
+
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
@@ -309,7 +310,7 @@ class RenderPipeline(RPObject):
         for np in scene.find_all_matches("**/ENVPROBE*"):
             probe = self.add_environment_probe()
             probe.set_mat(np.get_mat())
-            probe.border_smoothness = 0.001
+            probe.border_smoothness = 0.05
             probe.parallax_correction = True
             np.remove_node()
             envprobes.append(probe)

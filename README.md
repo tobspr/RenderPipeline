@@ -19,6 +19,7 @@ You can click on the images to enlarge them. Besides of that, you can find many 
 
 **Car rendering**
 <img src="http://i.imgur.com/ZDbOwRI.png" alt="Car rendering" />
+<img src="http://i.imgur.com/wXlVqI1.png" alt="Car rendering" />
 
 **Terrain and volumetric clouds**
 <img src="http://i.imgur.com/zE0ywPl.png" />

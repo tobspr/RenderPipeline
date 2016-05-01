@@ -113,16 +113,16 @@ fragment:
         // Material definitions
 
         MaterialShaderOutput grass_mat = make_default_material_output();
-        grass_mat.basecolor = vec3(0.2, 0.4, 0.2);
+        grass_mat.basecolor = vec3(0.1, 0.2, 0.1);
         grass_mat.roughness = 0.8;
 
         MaterialShaderOutput rock_mat = make_default_material_output();
-        rock_mat.basecolor = vec3(0.2);
+        rock_mat.basecolor = vec3(0.13);
         rock_mat.roughness = 0.8;
         rock_mat.specular_ior = 1.4;
 
         MaterialShaderOutput snow_mat = make_default_material_output();
-        snow_mat.basecolor = vec3(1.0, 1.0, 2.0) * 1.4;
+        snow_mat.basecolor = vec3(0.6, 0.6, 0.9);
         snow_mat.roughness = 0.5;
         snow_mat.specular_ior = 1.7;
 

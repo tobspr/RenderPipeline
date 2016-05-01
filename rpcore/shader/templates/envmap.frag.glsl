@@ -57,6 +57,6 @@ void main() {
     vec3 sun_lighting = get_sun_shading(m_out);
     vec3 lights = get_forward_light_shading(m_out);
 
-    vec3 combined_lighting = (ambient + lights + sun_lighting) * 0.2; // XXX: Magic number
+    vec3 combined_lighting = ambient + lights + sun_lighting;
     result = vec4(combined_lighting, 1);
 }

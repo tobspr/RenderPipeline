@@ -58,8 +58,9 @@ class Application(ShowBase):
         if isfile(join(source_path, "1.png")):
             extension = ".png"
 
-        cubemap = self.loader.loadCubeMap(Filename.from_os_specific(join(source_path, "#" + extension)))
-        mipmap, size = -1, 512
+        cubemap = self.loader.loadCubeMap(
+            Filename.from_os_specific(join(source_path, "#" + extension)))
+        mipmap, size = -1, 1024
 
         cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
 
