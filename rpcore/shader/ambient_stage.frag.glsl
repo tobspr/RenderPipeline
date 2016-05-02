@@ -51,6 +51,10 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D AmbientOcclusion;
 #endif
 
+#if HAVE_PLUGIN(sky_ao)
+    uniform sampler2D SkyAO;
+#endif
+
 #if HAVE_PLUGIN(vxgi)
     // uniform sampler2D VXGISpecular;
     uniform sampler2D VXGIDiffuse;
@@ -218,11 +222,21 @@ void main() {
         // Sample precomputed occlusion and multiply the ambient term with it
         #if HAVE_PLUGIN(ao)
             float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
-            float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
         #else
-            const float occlusion = 1.0;
-            const float specular_occlusion = 1.0;
+            float occlusion = 1.0;
         #endif
+
+        #if HAVE_PLUGIN(sky_ao)
+            float sky_ao_factor = textureLod(SkyAO, texcoord, 0).x;
+            sky_ao_factor = pow(sky_ao_factor, 3.0);
+
+            // Prevent total dark ao term
+            sky_ao_factor = max(0.17, sky_ao_factor);
+
+            occlusion = min(occlusion, sky_ao_factor);
+        #endif
+
+        float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
 
         // Add diffuse and specular ambient term
         ambient += diffuse_ambient * occlusion + specular_ambient * specular_occlusion;
