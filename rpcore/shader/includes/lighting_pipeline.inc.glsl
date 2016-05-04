@@ -156,6 +156,10 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         return vec3(0);
     #endif
 
+    // Skip emissive materials
+    if (m.shading_model == SHADING_MODEL_EMISSIVE)
+        return vec3(0);
+
     vec3 shading_result = vec3(0);
 
     // Find per tile lights

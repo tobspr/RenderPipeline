@@ -114,8 +114,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // light gets scattered and thus a wider highlight is shown.
     // This approximates the reference in mitsuba very well.
     // float distribution = brdf_distribution(NxH, m.roughness);
-    float distribution = brdf_distribution(NxH, m.roughness *
-        (m.shading_model == SHADING_MODEL_CLEARCOAT ? 1.4 : 1.0)); // xxx
+    float distribution = brdf_distribution(NxH, m.roughness); // xxx
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
 

@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import Vec2
+
 from rpcore.render_stage import RenderStage
 
 
@@ -41,8 +43,19 @@ class SkyAOStage(RenderStage):
 
     def create(self):
         self.target = self.create_target("ComputeSkyAO")
+        self.target.size = -2
         self.target.add_color_attachment(bits=(16, 0, 0, 0))
         self.target.prepare_buffer()
 
+        self.target_upscale = self.create_target("UpscaleSkyAO")
+        self.target_upscale.add_color_attachment(bits=(16, 0, 0, 0))
+        self.target_upscale.prepare_buffer()
+
+        self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
+        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
+
     def reload_shaders(self):
-        self.target.shader = self.load_plugin_shader("compute_sky_ao.frag.glsl")
+        self.target.shader = self.load_plugin_shader(
+            "compute_sky_ao.frag.glsl")
+        self.target_upscale.shader = self.load_plugin_shader(
+            "/$$rp/shader/bilateral_upscale.frag.glsl")

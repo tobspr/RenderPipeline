@@ -30,6 +30,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
 uniform sampler2D SkyAOHeight;
 uniform vec3 SkyAOCapturePosition;
@@ -38,7 +39,7 @@ out vec4 result;
 
 void main() {
 
-    vec2 texcoord = get_texcoord();
+    vec2 texcoord = get_half_texcoord();
     Material m = unpack_material(GBuffer, texcoord);
 
     const float film_size = 200.0 * 0.5;
@@ -50,6 +51,8 @@ void main() {
         return;
     }
 
+    vec3 noise = rand_rgb(ivec2(gl_FragCoord.xy) % 4);
+
     const float ao_scale = 1.0; // xxx: make configurable
     const float radius = 10.0;
 
@@ -59,7 +62,7 @@ void main() {
     float accum = 0.0;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offcoord = local_coord + poisson_disk_2D_32[i] / 1024.0 * radius;
+        vec2 offcoord = local_coord + (poisson_disk_2D_32[i] + 0.0 * noise.xy) / 1024.0 * radius;
         float sample_z = texture(SkyAOHeight, offcoord).x;
         accum += saturate(ao_scale * (sample_z - ref_z));
     }

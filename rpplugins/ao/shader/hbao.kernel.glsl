@@ -41,7 +41,7 @@ for (int i = 0; i < num_angles; ++i) {
     vec2 sample_dir = vec2(cos(angle), sin(angle));
 
     // Find the tangent andle
-    float tangent_angle = acos(dot(vec3(sample_dir, 0), pixel_view_normal)) - 0.5 * M_PI)
+    float tangent_angle = acos(dot(vec3(sample_dir, 0), pixel_view_normal)) - 0.5 * M_PI
                         + tangent_bias;
 
     // Assume the horizon angle is the same as the tangent angle at the beginning
