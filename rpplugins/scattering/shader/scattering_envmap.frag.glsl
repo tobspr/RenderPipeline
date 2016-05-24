@@ -29,7 +29,7 @@
 #define USE_TIME_OF_DAY 1
 #pragma include "render_pipeline_base.inc.glsl"
 
-uniform writeonly imageCube RESTRICT DestCubemap;
+layout(r11f_g11f_b10f) uniform imageCube RESTRICT DestCubemap;
 uniform sampler2D DefaultSkydome;
 uniform samplerCube DefaultEnvmap;
 

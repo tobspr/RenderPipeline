@@ -35,7 +35,7 @@
 
 uniform int currentMip;
 uniform samplerCube SourceTex;
-uniform writeonly imageCube RESTRICT DestMipmap;
+layout(r11f_g11f_b10f) uniform imageCube RESTRICT DestMipmap;
 
 void main() {
     const int num_samples = 0;
