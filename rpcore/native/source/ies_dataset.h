@@ -30,6 +30,7 @@
 #include "pta_float.h"
 #include "pointerToArray.h"
 #include "texture.h"
+#include "pnmImage.h"
 
 NotifyCategoryDecl(iesdataset, EXPORT_CLASS, EXPORT_TEMPL);
 
