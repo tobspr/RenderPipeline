@@ -38,8 +38,8 @@ uniform sampler2D CombinedVelocity;
 out vec3 result;
 
 const int num_samples = GET_SETTING(motion_blur, num_camera_samples) * 2;
-const float max_velocity = 70.0 / WINDOW_WIDTH;
-const float min_velocity = 0.5 / WINDOW_WIDTH;
+float max_velocity = 70.0 / WINDOW_WIDTH;
+float min_velocity = 0.5 / WINDOW_WIDTH;
 
 void main() {
 
