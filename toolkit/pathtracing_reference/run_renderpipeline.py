@@ -25,7 +25,6 @@ class Application(ShowBase):
 
         self.render_pipeline = RenderPipeline()
         self.render_pipeline.mount_mgr.config_dir = "config/"
-        self.render_pipeline.set_empty_loading_screen()
         self.render_pipeline.create(self)
 
         sphere = self.loader.loadModel("res/sphere.bam")
