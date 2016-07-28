@@ -37,7 +37,6 @@ class Application(ShowBase):
         # Construct render pipeline
         self.render_pipeline = RenderPipeline()
         self.render_pipeline.mount_mgr.config_dir = "config/"
-        self.render_pipeline.set_empty_loading_screen()
         self.render_pipeline.create(self)
 
         self.setup_scene()
