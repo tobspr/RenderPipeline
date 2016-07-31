@@ -61,15 +61,10 @@ void main() {
         vec2 Xi = hammersley(i, num_samples);
         vec3 h = importance_sample_ggx(Xi, sample_roughness);
         h = normalize(h.x * tangent + h.y * binormal + h.z * n);
-
-        // Reconstruct light vector
-        vec3 l = -reflect(n, h.xyz);
-        float weight = max(0, dot(n, l));
-        accum += textureLod(SourceTex, l, 1).xyz * weight;
-        accum_weights += weight;
+        accum += textureLod(SourceTex, h, 1).xyz;
     }
 
     // Energy conservation
-    accum /= max(0.01, accum_weights);
+    accum /= num_samples;
     imageStore(DestMipmap, ivec3(clamped_coord, face), vec4(accum, 1.0));
 }

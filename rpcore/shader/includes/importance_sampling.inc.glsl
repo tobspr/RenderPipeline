@@ -40,9 +40,9 @@ vec3 importance_sample_ggx(vec2 Xi, float alpha)
     // alpha is already squared roughness
     float r_square = alpha * alpha;
     float phi = TWO_PI * Xi.x;
-    float cos_theta = sqrt((1 - Xi.y) / max(1e-3, 1 + (r_square * r_square - 1) * Xi.y));
-    float sin_theta = sqrt(max(0.0, 1 - cos_theta * cos_theta));
-
+    float cos_theta_sq = (1 - Xi.y) / max(1e-3, 1 + (r_square * r_square - 1) * Xi.y);
+    float cos_theta = sqrt(cos_theta_sq);
+    float sin_theta = sqrt(max(0.0, 1.0 - cos_theta_sq));
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
@@ -50,10 +50,6 @@ vec3 importance_sample_lambert(vec2 Xi)
 {
     float phi = TWO_PI * Xi.x;
     float cos_theta = sqrt(Xi.y);
-    float sin_theta = sqrt(1 - cos_theta * cos_theta);
-    vec3 H;
-    H.x = sin_theta * cos(phi);
-    H.y = sin_theta * sin(phi);
-    H.z = cos_theta;
-    return vec3(H);
+    float sin_theta = sqrt(1 - Xi.y);
+    return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }

@@ -118,9 +118,10 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
 
+
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply
-    shading_result += (distribution * visibility) * fresnel / M_PI * energy;
+    shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * energy;
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);

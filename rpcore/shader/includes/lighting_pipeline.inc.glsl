@@ -178,7 +178,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     uint num_point_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_SHADOW).x;
 
     #if MODE_ACTIVE(LIGHT_COUNT)
-        int total_lights = num_spot_noshadow + num_spot_shadow +
+        uint total_lights = num_spot_noshadow + num_spot_shadow +
                             num_point_noshadow + num_point_shadow;
         float factor = total_lights / float(LC_MAX_LIGHTS_PER_CELL);
         return vec3(factor, 1 - factor, 0);
@@ -192,7 +192,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
                 int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
                 shading_result += 1.0;
             }
-            int num_lights = num_spot_noshadow + num_spot_shadow +
+            uint num_lights = num_spot_noshadow + num_spot_shadow +
                                 num_point_noshadow + num_point_shadow;
             float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
             shading_result += ((tile.z + 1) % 2) * 0.2;

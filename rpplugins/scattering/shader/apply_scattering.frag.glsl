@@ -55,20 +55,13 @@ void main() {
     result.xyz = textureLod(ShadedScene, texcoord, 0).xyz;
     result.w = 1;
 
-    inscattered_light = srgb_to_rgb(inscattered_light);
-
     // Cloud color
     if (is_skybox(m)) {
 
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-            cloud_color = pow(cloud_color, vec3(2.2));
-            cloud_color = mix(cloud_color, vec3(1), pow(1 - saturate(view_vector.z), 15.0));
-            inscattered_light *= 1.0 + 2.3 * cloud_color;
+            inscattered_light *= 1.0 + 5 * cloud_color;
         #endif
-
-        inscattered_light *= 3.0;
-        inscattered_light *= 5.0;
 
         // Sun disk
         vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) *
@@ -89,7 +82,6 @@ void main() {
             result.w = extinction;
         #endif
     }
-
 
     #if !DEBUG_MODE
         result.xyz += inscattered_light;

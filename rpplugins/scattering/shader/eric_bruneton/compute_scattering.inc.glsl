@@ -209,6 +209,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
         }
     }
 
+    inscattered_light *= 20.0;
 
     #if !HAVE_PLUGIN(color_correction)
         // Reduce scattering, otherwise its way too bright without automatic

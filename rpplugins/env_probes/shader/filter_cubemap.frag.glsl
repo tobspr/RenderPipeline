@@ -56,20 +56,14 @@ void main() {
     find_arbitrary_tangent(n, tangent, binormal);
 
     vec4 accum = vec4(0.0);
-    float accum_weights = 0.0;
     for (uint i = 0; i < num_samples; ++i) {
         vec2 Xi = hammersley(i, num_samples);
         vec3 h = importance_sample_ggx(Xi, sample_roughness);
         h = normalize(h.x * tangent + h.y * binormal + h.z * n);
-
-        // Reconstruct light vector
-        vec3 l = -reflect(n, h.xyz);
-        float weight = max(0, dot(n, l));
-        accum += textureLod(SourceTex, vec4(l, currentIndex), currentMip - 1) * weight;
-        accum_weights += weight;
+        accum += textureLod(SourceTex, vec4(h, currentIndex), currentMip - 1);
     }
 
-    accum /= max(1e-5, accum_weights);
+    accum /= num_samples;
 
     // It seems we are having some precision issues here. To make sure that
     // no sky-cubemap leaks in, increase the weight by a small amount.

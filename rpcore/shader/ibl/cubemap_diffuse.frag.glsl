@@ -54,19 +54,14 @@ void main() {
     find_arbitrary_tangent(n, tangent, binormal);
 
     vec3 accum = vec3(0);
-    float weights = 1e-5;
     for (int i = 0; i < sample_count; ++i)
     {
         vec2 xi = hammersley(i, sample_count);
         vec3 offset = importance_sample_lambert(xi);
         offset = normalize(tangent * offset.x + binormal * offset.y + n * offset.z);
-        offset = face_forward(offset, n);
-        float weight = saturate(dot(offset, n));
-        accum += textureLod(SourceCubemap, offset, 0).xyz * weight;
-        weights += weight;
+        accum += textureLod(SourceCubemap, offset, 0).xyz;
     }
 
-    accum /= weights;
-
+    accum /= sample_count;
     imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(accum, 1));
 }

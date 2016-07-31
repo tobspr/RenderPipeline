@@ -242,8 +242,8 @@ vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
 float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
 
     // Choose one:
-    // return brdf_lambert();
-    return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
+    return brdf_lambert();
+    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
 }
 
 
@@ -258,8 +258,8 @@ float brdf_distribution(float NxH, float roughness)
     // return brdf_distribution_beckmann(NxH, roughness);
     // return brdf_distribution_exponential(NxH, roughness);
     // return brdf_distribution_gaussian(NxH, roughness);
-    // return brdf_distribution_trowbridge_reitz(NxH, roughness);
-    return brdf_distribution_ggx(NxH, roughness);
+    return brdf_distribution_trowbridge_reitz(NxH, roughness);
+    // return brdf_distribution_ggx(NxH, roughness);
 }
 
 // Geometric Visibility
@@ -267,13 +267,12 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 
     // Choose one:
     // float vis = brdf_visibility_neumann(NxV, NxL);
+    float vis = brdf_visibility_implicit(NxV, NxL);
     // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
-    float vis = brdf_visibility_schlick(NxV, NxL, roughness);
+    // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     // float vis = brdf_visibility_smith(NxL, NxV, roughness);
 
-    // Normalize the brdf
-    return vis / max(1e-5, 4.0 * VxH);
 
     return vis;
 }
