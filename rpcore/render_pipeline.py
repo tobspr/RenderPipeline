@@ -477,6 +477,7 @@ class RenderPipeline(RPObject):
             self.light_mgr.compute_tile_size()
             self.stage_mgr.handle_window_resize()
             self.debugger.handle_window_resize()
+            self.plugin_mgr.trigger_hook("window_resized")
 
     def _clear_state_cache(self, task=None):
         """ Task which repeatedly clears the state cache to avoid storing

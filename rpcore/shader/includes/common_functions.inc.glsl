@@ -31,6 +31,7 @@
 #define M_PI 3.1415926535897932384626433
 #define HALF_PI 1.5707963267948966192313216
 #define TWO_PI 6.2831853071795864769252867
+#define FOUR_PI 12.566370614359172953850573
 #define ONE_BY_PI 0.3183098861837906715377675
 #define SQRT_TWO 1.4142135623730950488016887
 
@@ -310,10 +311,10 @@ mat2 make_rotation_mat(float rotation) {
 
 // Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
-#define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity * 20.0)
+#define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity)
 #define get_sun_color_scale(_v) saturate(square((_v.z) / 0.15))
 
 #if !HAVE_PLUGIN(color_correction)
     #undef get_sun_color
-    #define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity * 10.0)
+    #define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity)
 #endif

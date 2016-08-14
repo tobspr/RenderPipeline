@@ -139,8 +139,9 @@ void main() {
 
 
         float rotation = interleaved_gradient_noise(
-            gl_FragCoord.xy + MainSceneData.frame_index % 4);
-        mat2 rotation_mat = make_rotation_mat(rotation);
+            gl_FragCoord.xy + (MainSceneData.frame_index % 4) / 3.0 );
+        // mat2 rotation_mat = make_rotation_mat(rotation);
+        mat2 rotation_mat = mat2(1, 0, 0, 1);
 
         // Get the plugin settings
         float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);

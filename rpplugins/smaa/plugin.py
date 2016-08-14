@@ -88,6 +88,10 @@ class Plugin(BasePlugin):
         """ Updates the jitter pattern when the setting was changed """
         self._compute_jitters()
 
+    def on_window_resized(self):
+        """ Updates the jitter pattern when the window size was changed """
+        self._compute_jitters()
+
     def _load_textures(self):
         """ Loads all required textures """
         search_tex = RPLoader.load_texture(self.get_resource("search_tex.png"))

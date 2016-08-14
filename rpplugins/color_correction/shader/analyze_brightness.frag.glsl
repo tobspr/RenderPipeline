@@ -57,9 +57,12 @@ void main() {
 
     float min_ev = GET_SETTING(color_correction, min_exposure_value);
     float max_ev = GET_SETTING(color_correction, max_exposure_value);
-    float exposure_bias = GET_SETTING(color_correction, exposure_scale);
+    float exposure_scale = GET_SETTING(color_correction, exposure_scale);
 
-    exposure *= exposure_bias;
+    // XXX: Without a multiplier of two, the image gets way too dark - not sure
+    // why, but most likely an issue in the exposure calculation. However,
+    // this is not physically correct.
+    exposure *= exposure_scale * 2.0;
 
     // Clamp to min and max exposure value
     exposure = clamp(exposure, min_ev, max_ev);
@@ -77,6 +80,6 @@ void main() {
 
     float adjustment = saturate(MainSceneData.smooth_frame_delta * adaption_rate);
     float new_luminance = mix(curr_exposure, exposure, adjustment);
-    new_luminance = clamp(new_luminance, 0.0, 1000.0);
+    new_luminance = clamp(new_luminance, 0.0, 1e4);
     imageStore(ExposureStorage, 0, vec4(new_luminance));
 }

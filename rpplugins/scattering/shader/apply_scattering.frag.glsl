@@ -49,6 +49,12 @@ void main() {
 
     // Fetch scattering
     float sky_clip = 0.0;
+
+    // Prevent a way too dark horizon by clamping the view vector
+    if (is_skybox(m)) {
+        view_vector.z = max(view_vector.z, 0.05);
+    }
+
     vec3 inscattered_light = DoScattering(m.position, view_vector, sky_clip)
                                 * TimeOfDay.scattering.sun_intensity;
 
@@ -58,9 +64,12 @@ void main() {
     // Cloud color
     if (is_skybox(m)) {
 
+        inscattered_light *= M_PI; // XXX: This makes it look better, but has no physical background.
+
         #if !HAVE_PLUGIN(clouds)
             vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-            inscattered_light *= 1.0 + 5 * cloud_color;
+            // inscattered_light = 15 * cloud_color * M_PI;
+            // inscattered_light *= 1.0 + 5 * cloud_color;
         #endif
 
         // Sun disk
@@ -70,7 +79,7 @@ void main() {
         float disk_factor = pow(saturate(dot(view_vector, sun_vector) + 0.000069), 23.0 * 1e5);
         float upper_disk_factor = smoothstep(0, 1, (view_vector.z + 0.045) * 1.0);
         inscattered_light += vec3(1, 0.3, 0.1) * disk_factor * upper_disk_factor *
-            silhouette_col * 3.0 * 1e4;
+            silhouette_col * 3.0 * 1e3;
 
     } else {
         inscattered_light *= 70.0;

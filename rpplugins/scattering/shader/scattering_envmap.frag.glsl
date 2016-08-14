@@ -54,18 +54,20 @@ void main() {
                             * TimeOfDay.scattering.sun_intensity;
 
     if (horizon > 0.0) {
+        inscattered_light *= 2.0; // XXX: This makes it look better, but has no physical background.
+        
         // Render clouds to provide more variance for the cubemap
         vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
-        inscattered_light *= 1.0 + 5 * cloud_color;
+        // inscattered_light = cloud_color * 15;
     } else {
         // Blend ambient cubemap at the bottom
         vec3 sun_vector = get_sun_vector();
         vec3 color_scale = get_sun_color_scale(sun_vector) * TimeOfDay.scattering.sun_color;
         inscattered_light = textureLod(DefaultEnvmap, fix_cubemap_coord(view_vector), 0).xyz
-                            * TimeOfDay.scattering.sun_intensity * color_scale * 12.0;
+                            * TimeOfDay.scattering.sun_intensity / M_PI * color_scale;
 
         #if !HAVE_PLUGIN(color_correction)
-            inscattered_light *= 0.1;
+            // inscattered_light *= 0.1;
         #endif
     }
 

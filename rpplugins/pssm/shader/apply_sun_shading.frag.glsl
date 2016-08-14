@@ -84,9 +84,10 @@ void main() {
         l = DdotR < d ? normalize(d * sun_vector + normalize(S) * r) : reflected_dir;
     }
 
-
     vec3 lighting_result = apply_light(m, v, l, sun_color, 1.0, prefiltered_shadow, transmittance);
 
+    // Backface shading for foliage, not physically correct but a nice
+    // approximation
     float foliage_factor = m.shading_model == SHADING_MODEL_FOLIAGE ? 1.0 : 0.0;
     lighting_result += foliage_factor * prefiltered_shadow * sun_color * m.basecolor * 0.1;
 

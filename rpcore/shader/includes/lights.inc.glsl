@@ -31,15 +31,15 @@
 #pragma include "includes/ies_lighting.inc.glsl"
 
 // Computes the quadratic attenuation curve
-float attenuation_curve(float dist_sq, float radius) {
+float attenuation_curve(float dist_square, float radius) {
     #if 0
-        return step(dist_sq, radius * radius);
+        return step(dist_square, radius * radius);
     #endif
 
     #if 1
-        float r_sq = radius * radius;
-        float f = saturate(1.0 - (dist_sq * dist_sq) / (r_sq * r_sq));
-        return f * f / (1e-3 + dist_sq);
+        float factor = dist_square / (radius * radius);
+        float smooth_factor = saturate(1.0 - factor * factor);
+        return smooth_factor * smooth_factor / max(0.01 * 0.01, dist_square);
     #endif
 }
 
@@ -50,8 +50,11 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
     float dist_attenuation = attenuation_curve(dist_sq, radius);
     float cos_angle = dot(l, -light_dir);
 
-    // Rescale angle to fit the full range. We only do this for spot lights,
-    // for point lights we use the actual angle
+    // Rescale angle to fit the full range of the IES profile. We only do this
+    // for spot lights, for point lights we use the actual angle.
+    // This is NOT physically correct for spotlights without a FoV of 180deg.
+    // However, IES profiles might look quite boring when not getting rescaled,
+    // so the rescaling is performed. 
     float linear_angle = (cos_angle - fov) / (1 - fov);
     float angle_att = saturate(linear_angle);
     float ies_factor = get_ies_factor(ies_profile, linear_angle, 0);
@@ -73,7 +76,7 @@ vec3 get_spherical_area_light_horizon(vec3 l_unscaled, vec3 n, float radius) {
 }
 
 float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
-    return max(0.000005, alpha * alpha) / max(0.01, radius * radius);
+     return max(0.000005, alpha * alpha) / max(0.01, radius * radius) * 4 * M_PI;
 }
 
 // Computes a lights influence

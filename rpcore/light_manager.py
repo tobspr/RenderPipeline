@@ -59,7 +59,7 @@ class LightManager(RPObject):
         self.compute_tile_size()
         self.init_internal_manager()
         self.init_command_queue()
-        self.initshadow_manager()
+        self.init_shadow_manager()
         self.init_stages()
 
     @property
@@ -123,7 +123,7 @@ class LightManager(RPObject):
         self.cmd_queue.register_input("SourceData", self.img_source_data)
         self.internal_mgr.set_command_list(self.cmd_queue.command_list)
 
-    def initshadow_manager(self):
+    def init_shadow_manager(self):
         """ Inits the shadow manager """
         self.shadow_manager = ShadowManager()
         self.shadow_manager.set_max_updates(self.pipeline.settings["shadows.max_updates"])
