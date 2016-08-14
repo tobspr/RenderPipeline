@@ -41,7 +41,7 @@ void main() {
         vec4 scene_color = directional_filter(ShadedScene, texcoord);
     #else
         vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
-        vec4 scene_color = texture(ShadedScene, texcoord);
+        vec4 scene_color = textureLod(ShadedScene, texcoord, 0);
     #endif
 
     result = vec4(scene_color.xyz, 1);

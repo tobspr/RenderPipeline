@@ -52,9 +52,9 @@ void main() {
     // Get current scene color
     vec2 texcoord = get_texcoord();
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    vec4 scene_color = texture(ShadedScene, texcoord);
+    vec4 scene_color = textureLod(ShadedScene, texcoord, 0);
 
-    float prefiltered_shadow = texture(PrefilteredShadows, texcoord).x;
+    float prefiltered_shadow = textureLod(PrefilteredShadows, texcoord, 0).x;
 
     // Early out
     if (prefiltered_shadow < 1e-5) {

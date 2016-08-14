@@ -52,7 +52,7 @@ void main() {
 
     if (out_of_unit_box(voxel_coord))
     {
-        result = texture(ScatteringIBLDiffuse, m.normal);
+        result = textureLod(ScatteringIBLDiffuse, m.normal, 0);
         return;
     }
 

@@ -88,7 +88,7 @@ void main() {
         vec3 projected = project(PSSMSceneSunShadowMVP, pos);
         projected.z -= fixed_bias;
 
-        float shadow_term = texture(PSSMSceneSunShadowMapPCF, projected).x;
+        float shadow_term = textureLod(PSSMSceneSunShadowMapPCF, projected, 0).x;
         if (out_of_unit_box(projected)) {
             // break;
             shadow_term = 1;
@@ -103,6 +103,6 @@ void main() {
     // volumetrics.w *= 10.0;
     volumetrics.w = saturate(volumetrics.w);
 
-    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     result = volumetrics;
 }

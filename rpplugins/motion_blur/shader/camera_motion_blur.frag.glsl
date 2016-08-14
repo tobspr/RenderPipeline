@@ -47,7 +47,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     #if DEBUG_MODE
-        result = texture(SourceTex, texcoord).xyz;
+        result = textureLod(SourceTex, texcoord, 0).xyz;
         return;
     #endif
 
@@ -71,7 +71,7 @@ void main() {
 
     // We can abort early when no velocity is present
     if (velocity_len < min_velocity) {
-        result = texture(SourceTex, texcoord, 0).xyz;
+        result = textureLod(SourceTex, texcoord, 0).xyz;
         return;
     }
 
@@ -84,7 +84,7 @@ void main() {
     // Weight the center sample by a small bit to make sure we always have a weight.
     // However, we don't weight it too much to make the blur not look weird.
     float weights = 1e-3;
-    vec3 accum = texture(SourceTex, texcoord).xyz * weights;
+    vec3 accum = textureLod(SourceTex, texcoord, 0).xyz * weights;
     float jitter = rand(texcoord);
 
     // Blur in both directions
@@ -92,9 +92,9 @@ void main() {
         vec2 offs = (i + 0.5 * jitter) / float(num_samples) * velocity;
 
         // Prevent bleeding when rotating - that is, objects moving into different directions
-        vec2 sample_velocity = texture(CombinedVelocity, texcoord + offs).xy;
+        vec2 sample_velocity = textureLod(CombinedVelocity, texcoord + offs, 0).xy;
         float weight = saturate(dot(sample_velocity, velocity) * WINDOW_WIDTH * 3);
-        accum += texture(SourceTex, texcoord + offs).xyz * weight;
+        accum += textureLod(SourceTex, texcoord + offs, 0).xyz * weight;
         weights += weight;
     }
 

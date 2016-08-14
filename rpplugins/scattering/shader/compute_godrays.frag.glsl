@@ -48,7 +48,7 @@ void main() {
     vec4 sun_proj = MainSceneData.view_proj_mat_no_jitter * vec4(sun_pos, 1);
     sun_proj.xyz /= sun_proj.w;
     if (sun_proj.w < 0.0) {
-        result = texture(ShadedScene, texcoord).xyz;
+        result = textureLod(ShadedScene, texcoord, 0).xyz;
         return;
     }
     sun_proj.xy = sun_proj.xy * 0.5 + 0.5;
@@ -62,7 +62,7 @@ void main() {
         float t = (i + jitter) / float(num_samples - 1);
 
         vec2 sample_coord = mix(texcoord, sun_proj.xy, pow(t, 1.0));
-        vec3 sample_data = texture(ShadedScene, sample_coord).xyz;
+        vec3 sample_data = textureLod(ShadedScene, sample_coord, 0).xyz;
 
         // float weight = step(get_luminance(sample_data), 1.0);
         float weight = step(1.0, get_luminance(sample_data));
@@ -73,9 +73,8 @@ void main() {
 
     accum /= num_samples;
     accum *= 0.001;
-    // accum *= 3.0;
-    // accum *= 05;
-    accum += texture(ShadedScene, texcoord).xyz;
+
+    accum += textureLod(ShadedScene, texcoord, 0).xyz;
     result = vec3(accum);
 
 }

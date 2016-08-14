@@ -85,7 +85,7 @@ vec4 trace_cone(vec3 start_pos, vec3 nrm, vec3 direction, int max_steps,
     if (is_specular) {
         // accum.xyz += textureLod(ScatteringIBLSpecular, direction, mipmap).xyz * (1-accum.w);
     } else {
-        // accum.xyz += texture(ScatteringIBLDiffuse, direction).xyz * (1-accum.w) * 0.1;
+        // accum.xyz += textureLod(ScatteringIBLDiffuse, direction, 0).xyz * (1-accum.w) * 0.1;
     }
 
     return accum;

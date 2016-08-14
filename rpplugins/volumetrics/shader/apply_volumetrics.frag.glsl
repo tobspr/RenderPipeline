@@ -56,12 +56,12 @@ void main() {
 
 
     #if GET_SETTING(volumetrics, enable_volumetric_shadows)
-        vec4 volumetrics = texture(VolumetricsTex, texcoord);
+        vec4 volumetrics = textureLod(VolumetricsTex, texcoord, 0);
     #else
         vec4 volumetrics = vec4(0);
     #endif
 
-    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     vec3 merged_color = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
 
     float fog_factor = 1;

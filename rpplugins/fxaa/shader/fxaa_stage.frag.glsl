@@ -82,6 +82,5 @@ void main() {
         vec4(1.0, -1.0, 0.25, -0.25)  // fxaaConsole360ConstDir
     );
 
-    // color = texture(SourceTex, texcoord);
     color = result;
 }

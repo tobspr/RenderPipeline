@@ -51,24 +51,20 @@ void main() {
         return;
     }
 
-    vec3 noise = rand_rgb(ivec2(gl_FragCoord.xy) % 4);
-
     const float ao_scale = 0.5; // xxx: make configurable
     const float radius = 3.0;
 
     float ref_z = m.position.z;
-
     const int num_samples = 32;
     float accum = 0.0;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offcoord = local_coord + (poisson_disk_2D_32[i] + 0.0 * noise.xy) / 1024.0 * radius;
-        float sample_z = texture(SkyAOHeight, offcoord).x;
+        vec2 offcoord = local_coord + poisson_disk_2D_32[i] / 1024.0 * radius;
+        float sample_z = textureLod(SkyAOHeight, offcoord, 0).x;
         accum += saturate(min(0.5, ao_scale * (sample_z - ref_z)));
     }
 
     accum /= num_samples;
     accum = 1 - accum;
-
     result = vec4(accum);
 }

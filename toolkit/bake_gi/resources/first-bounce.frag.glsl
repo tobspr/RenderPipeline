@@ -17,7 +17,7 @@ void main() {
     vec4 projected = shadowMVP * vec4(ws_position, 1);
     vec3 shadow_space_pos = projected.xyz / projected.w * 0.5 + 0.5;
 
-    float actual_depth = texture(ShadowMap, shadow_space_pos.xy).x;
+    float actual_depth = textureLod(ShadowMap, shadow_space_pos.xy, 0).x;
 
     const float bias = 0.001;
     float shadow = actual_depth >= shadow_space_pos.z - bias ? 1.0 : 0.0;

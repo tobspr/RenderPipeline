@@ -77,14 +77,14 @@ void main() {
     for (int i = 0; i < num_samples; ++i) {
 
         vec2 tc = start_tc + blur_step * (i + jitter);
-        vec2 vy = texture(PackedSceneData, tc).xy;
+        vec2 vy = textureLod(PackedSceneData, tc, 0).xy;
         float len_xy = abs(min_len_xy + len_xy_step * (i + jitter));
 
         vec2 cmp_softz = soft_depth_cmp(vec2(vx.y, vy.y), vec2(vy.y, vx.y));
         vec4 cmp_batch = batch_cmp(len_xy, max(vec2(1e-6), vec2(vy.x, vx.x)));
         float w = dot(cmp_softz, cmp_batch.xy) + (cmp_batch.z * cmp_batch.w) * 2.0;
 
-        accum += saturate(texture(ShadedScene, tc).xyz) * w;
+        accum += saturate(textureLod(ShadedScene, tc, 0).xyz) * w;
         weight_accum += w;
 
     }

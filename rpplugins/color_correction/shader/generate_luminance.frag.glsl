@@ -45,7 +45,7 @@ void main() {
 
     // Weight luminance based on distance to the borders - this is because
     // pixels in the center of the screen are more visually important
-    float weight = 1 - 0.5 * distance(local_coord, vec2(0.5, 0.5));
+    float weight = 1.05 - 0.2 * distance(local_coord, vec2(0.5, 0.5));
 
     vec4 luminances = vec4(
         get_log_luminance(weight *

@@ -179,7 +179,7 @@ void main() {
         vec2 refraction_screen = saturate(world_to_screen(refraction_dest).xy);
 
         vec2 scene_coord = get_texcoord();
-        vec3 back_color = texture(ShadedScene, refraction_screen).xyz;
+        vec3 back_color = textureLod(ShadedScene, refraction_screen, 0).xyz;
 
         color_result.xyz = back_color * (1 - alpha) + color * alpha;
         color_result.w = 1.0;

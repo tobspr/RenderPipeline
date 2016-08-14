@@ -8,13 +8,14 @@ enabled:
     - bloom
     - color_correction
     - env_probes
-    - forward_shading
+    # - forward_shading
     - motion_blur
     - pssm
     - scattering
-    - skin_shading
+    # - skin_shading
     - smaa
     - ssr
+    - sky_ao
     # - clouds
     # - dof
     # - fxaa
@@ -85,10 +86,10 @@ overrides:
         sharpen_twice: False
 
     dof:
-        focal_point: 5.0
-        focal_size: 6.67
-        blur_strength: 0.0
-        near_blur_strength: 0.0
+        focal_point: 6.0
+        focal_size: 12.5
+        blur_strength: 1.0
+        near_blur_strength: 1.0
 
     env_probes:
         probe_resolution: 128
@@ -154,8 +155,8 @@ overrides:
         use_reprojection: True
         smaa_quality: ultra
         jitter_pattern: halton16
-        history_length: 16
-        jitter_amount: 0.5
+        history_length: 8
+        jitter_amount: 0.3
 
     ssr:
         effect_scale: 1.0

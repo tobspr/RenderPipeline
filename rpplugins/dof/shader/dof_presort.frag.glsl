@@ -53,7 +53,7 @@ void main() {
     float tile_max_coc = tile_data.y;
 
     float pixel_depth = get_depth_at(texcoord);
-    float pixel_coc = texture(PrecomputedCoC, texcoord).w;
+    float pixel_coc = textureLod(PrecomputedCoC, texcoord, 0).w;
 
     float alpha = sample_alpha(pixel_coc); // XXX: Returns just strange values
     // float alpha = sample_alpha(tile_max_coc * 24.0); // XXX: Returns just strange values

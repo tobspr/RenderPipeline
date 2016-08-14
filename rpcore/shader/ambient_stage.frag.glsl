@@ -140,7 +140,7 @@ void main() {
                 CLEARCOAT_ROUGHNESS : get_specular_mipmap(m);
 
             ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
-            ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
+            ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz;
         #endif
 
         // Blend environment maps
@@ -153,8 +153,8 @@ void main() {
 
         // Blend VXGI on top
         #if HAVE_PLUGIN(vxgi)
-            // vec4 vxgi_spec = texture(VXGISpecular, texcoord);
-            ibl_diffuse = texture(VXGIDiffuse, texcoord).xyz;
+            // vec4 vxgi_spec = textureLod(VXGISpecular, texcoord, 0);
+            ibl_diffuse = textureLod(VXGIDiffuse, texcoord, 0).xyz;
             // ibl_specular *= ibl_diffuse;
             // ibl_specular = ibl_specular * (1 - vxgi_spec.w) + vxgi_spec.xyz;
         #endif

@@ -57,7 +57,7 @@ void main() {
     float pixel_z = get_linear_depth_at(texcoord);
 
     // Merge with previous ao result
-    float prev_result = texture(AOResult, texcoord).x;
+    float prev_result = textureLod(AOResult, texcoord, 0).x;
 
     // Fade out small scale ao
     if (pixel_z > 150.0) {

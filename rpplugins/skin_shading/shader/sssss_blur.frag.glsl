@@ -47,7 +47,7 @@ void main() {
 
     // Early out
     if (shading_model != SHADING_MODEL_SKIN) {
-        color = texture(ShadedScene, texcoord).xyz;
+        color = textureLod(ShadedScene, texcoord, 0).xyz;
         return;
     }
 
@@ -57,7 +57,7 @@ void main() {
     color = blur_result.xyz;
 
     #if DEBUG_MODE
-        color = texture(ShadedScene, texcoord).xyz;
+        color = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif
 
 }

@@ -47,7 +47,7 @@ out vec4 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+    vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
     vec2 last_coord = texcoord + velocity;
 
     // Out of screen, can early out
@@ -78,7 +78,7 @@ void main() {
         }
     #endif
 
-    vec3 intersected_color = texture(Previous_PostAmbientScene, last_coord).xyz;
+    vec3 intersected_color = textureLod(Previous_PostAmbientScene, last_coord, 0).xyz;
 
     // Prevent super bright spots by clamping to a reasonable high color.
     // Otherwise very bright highlights lead to artifacts.

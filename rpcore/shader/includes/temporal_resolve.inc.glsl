@@ -121,7 +121,7 @@ vec4 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec4 p, vec4 q)
 
 vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord, vec2 last_coord) {
     vec2 one_pixel = 1.0 / SCREEN_SIZE;
-    vec4 curr_m = texture(current_tex, curr_coord);
+    vec4 curr_m = textureLod(current_tex, curr_coord, 0);
 
     // Out of screen, can early out
     if (out_of_screen(last_coord)) {
@@ -135,7 +135,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
             float curr_z = get_depth_at(curr_coord);
             vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord);
 
-            float last_z = texture(Previous_SceneDepth, last_coord).x;
+            float last_z = textureLod(Previous_SceneDepth, last_coord, 0).x;
             vec3 last_pos = calculate_surface_pos(
                 last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
@@ -146,7 +146,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
             float weight = 1.0 - saturate(distance(curr_pos, last_pos) / max_distance);
             weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
 
-            vec4 last_m = texture(last_tex, last_coord);
+            vec4 last_m = textureLod(last_tex, last_coord, 0);
             return mix(curr_m, last_m, weight);
 
         #else
@@ -167,17 +167,17 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
             vec2 ss_offset01 = min_max_support * vec2(1, 0) / SCREEN_SIZE;
             vec2 ss_offset11 = min_max_support * vec2(0, 1) / SCREEN_SIZE;
 
-            vec4 c00 = texture(current_tex, curr_coord - ss_offset11);
-            vec4 c10 = texture(current_tex, curr_coord - ss_offset01);
-            vec4 c01 = texture(current_tex, curr_coord + ss_offset01);
-            vec4 c11 = texture(current_tex, curr_coord + ss_offset11);
+            vec4 c00 = textureLod(current_tex, curr_coord - ss_offset11, 0);
+            vec4 c10 = textureLod(current_tex, curr_coord - ss_offset01, 0);
+            vec4 c01 = textureLod(current_tex, curr_coord + ss_offset01, 0);
+            vec4 c11 = textureLod(current_tex, curr_coord + ss_offset11, 0);
 
             vec4 cmin = min4(c00, c10, c01, c11);
             vec4 cmax = max4(c00, c10, c01, c11);
 
             vec4 cavg = (c00 + c10 + c01 + c11) / 4.0;
 
-            vec4 last_m = texture(last_tex, curr_coord + velocity);
+            vec4 last_m = textureLod(last_tex, curr_coord + velocity, 0);
 
             #if USE_CLIPPING
                 last_m = clip_aabb(cmin.xyz, cmax.xyz, clamp(cavg, cmin, cmax), last_m);
@@ -207,10 +207,10 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
         const float bbs = RS_AABB_SIZE;
 
         // Get current frame neighbor texels
-        vec4 curr_tl = texture(current_tex, curr_coord + vec2(-bbs, -bbs) * one_pixel);
-        vec4 curr_tr = texture(current_tex, curr_coord + vec2(bbs, -bbs) * one_pixel);
-        vec4 curr_bl = texture(current_tex, curr_coord + vec2(-bbs, bbs) * one_pixel);
-        vec4 curr_br = texture(current_tex, curr_coord + vec2(bbs, bbs) * one_pixel);
+        vec4 curr_tl = textureLod(current_tex, curr_coord + vec2(-bbs, -bbs) * one_pixel, 0);
+        vec4 curr_tr = textureLod(current_tex, curr_coord + vec2(bbs, -bbs) * one_pixel, 0);
+        vec4 curr_bl = textureLod(current_tex, curr_coord + vec2(-bbs, bbs) * one_pixel, 0);
+        vec4 curr_br = textureLod(current_tex, curr_coord + vec2(bbs, bbs) * one_pixel, 0);
 
         // Get current frame neighbor AABB
         vec4 curr_min = min5(curr_m, curr_tl, curr_tr, curr_bl, curr_br);
@@ -218,11 +218,11 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
 
         // Get last frame texels
         float blend_weight = 1.0;
-        vec4 last_m = texture(last_tex, last_coord);
-        vec4 last_tl = texture(last_tex, last_coord + vec2(-bbs, -bbs) * one_pixel);
-        vec4 last_tr = texture(last_tex, last_coord + vec2(bbs, -bbs) * one_pixel);
-        vec4 last_bl = texture(last_tex, last_coord + vec2(-bbs, bbs) * one_pixel);
-        vec4 last_br = texture(last_tex, last_coord + vec2(bbs, bbs) * one_pixel);
+        vec4 last_m = textureLod(last_tex, last_coord, 0);
+        vec4 last_tl = textureLod(last_tex, last_coord + vec2(-bbs, -bbs) * one_pixel, 0);
+        vec4 last_tr = textureLod(last_tex, last_coord + vec2(bbs, -bbs) * one_pixel, 0);
+        vec4 last_bl = textureLod(last_tex, last_coord + vec2(-bbs, bbs) * one_pixel, 0);
+        vec4 last_br = textureLod(last_tex, last_coord + vec2(bbs, bbs) * one_pixel, 0);
 
         float neighbor_diff = length(clamp(last_tl.xyz, curr_min.xyz, curr_max.xyz) - last_tl.xyz)
                             + length(clamp(last_tr.xyz, curr_min.xyz, curr_max.xyz) - last_tr.xyz)

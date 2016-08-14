@@ -109,7 +109,7 @@ void main() {
     #endif
 
     #if MODE_ACTIVE(VELOCITY)
-        result.xyz = abs(texture(CombinedVelocity, texcoord).xyz) * 20.0;
+        result.xyz = abs(textureLod(CombinedVelocity, texcoord, 0).xyz) * 20.0;
     #endif
 
 }

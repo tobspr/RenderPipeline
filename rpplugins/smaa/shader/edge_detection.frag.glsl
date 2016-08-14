@@ -45,14 +45,6 @@ void main() {
 
     // Actual Fragment shader
     result = vec4(0);
-
-    #if SMAA_PREDICATION
-        // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
-        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene, PredicationSource);
-    #else
-        // result.xy = SMAADepthEdgeDetectionPS(texcoord, offset, GBuffer.Depth);
-        result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene);
-    #endif
-
+    result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene);
     result.w = 1.0;
 }

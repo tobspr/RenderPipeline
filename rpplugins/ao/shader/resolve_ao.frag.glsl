@@ -45,9 +45,9 @@ void main() {
 
     #if GET_SETTING(ao, clip_length) < 1
         // No reprojection needed without temporal ao
-        result = texture(CurrentTex, texcoord).xyz;
+        result = textureLod(CurrentTex, texcoord, 0).xyz;
     #else
-        vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+        vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
         vec2 last_coord = texcoord + velocity;
 
         result = resolve_temporal(

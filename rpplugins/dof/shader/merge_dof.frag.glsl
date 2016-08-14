@@ -37,8 +37,8 @@ void main() {
     const float sharpness = 0.5;
 
     vec2 texcoord = get_texcoord();
-    vec4 dof_result = texture(SourceTex, texcoord);
-    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+    vec4 dof_result = textureLod(SourceTex, texcoord, 0);
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
     // Reconstruct original color
     // dof_result.xyz = dof_result.xyz / (1 - (1 - sharpness) * get_luminance(dof_result.xyz));

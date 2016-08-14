@@ -36,14 +36,14 @@ out vec4 result;
 
 void main() {
     vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
-    result = vec4(texture(SourceTex, texcoord).xyz, 1);
+    result = vec4(textureLod(SourceTex, texcoord, 0).xyz, 1);
 
     #if SPECIAL_MODE_ACTIVE(LUMINANCE)
 
         // Luminance debug mode, too bright pixels get red, too dark pixels get blue,
         // rest stays green
 
-        vec3 color = texture(SourceTex, texcoord).xyz;
+        vec3 color = textureLod(SourceTex, texcoord, 0).xyz;
         float luminance = get_luminance(color);
 
         vec3 color_ok = vec3(0, 1, 0);

@@ -64,14 +64,14 @@ void main() {
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
-    float pixel_depth = texture(DownscaledDepth, texcoord).x;
+    float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
     // Blur to the right and left
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         vec2 offcoord = texcoord + pixel_size * i * blur_direction;
         VALUE_TYPE sampled = textureLod(SourceTex, offcoord, 0) SWIZLLE;
         vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
-        float depth = texture(DownscaledDepth, offcoord).x;
+        float depth = textureLod(DownscaledDepth, offcoord, 0).x;
 
         float weight = gaussian_weights_7[abs(i)];
 

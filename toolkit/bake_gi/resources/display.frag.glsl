@@ -73,7 +73,7 @@ void main() {
 
     vec3 precomputed_gi = mix(lerp_bottom, lerp_top, fract_coord.z);
 
-    vec3 basecolor = texture(p3d_Texture0, ms_uv).xyz;
+    vec3 basecolor = textureLod(p3d_Texture0, ms_uv, 0).xyz;
     // basecolor = vec3(0.8);
 
 
@@ -81,7 +81,7 @@ void main() {
     vec4 projected = shadowMVP * vec4(ws_position, 1);
     vec3 shadow_space_pos = projected.xyz / projected.w * 0.5 + 0.5;
 
-    float actual_depth = texture(ShadowMap, shadow_space_pos.xy).x;
+    float actual_depth = textureLod(ShadowMap, shadow_space_pos.xy, 0).x;
 
     const float bias = 0.001;
     float shadow = actual_depth >= shadow_space_pos.z - bias ? 1.0 : 0.0;

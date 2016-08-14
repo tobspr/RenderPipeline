@@ -102,7 +102,7 @@ void main() {
         float NxL = clamp(dot(n, l), 0.0, 1.0);
         float NxH = clamp(dot(n, h), 0.0, 1.0);
 
-        vec3 sampled = texture(SourceTex, l).rgb;
+        vec3 sampled = textureLod(SourceTex, l, 0).rgb;
 
         float weight = 1;
         weight = clamp(weight, 0.0, 1.0);

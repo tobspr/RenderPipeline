@@ -108,7 +108,7 @@ void main() {
 
         if (!out_of_unit_box(proj)) {
             const float esm_factor = 5.0;
-            float depth_sample = texture(PSSMDistSunShadowMap, proj.xy).x;
+            float depth_sample = textureLod(PSSMDistSunShadowMap, proj.xy, 0).x;
             shadow_factor = saturate(exp(-esm_factor * proj.z) * depth_sample);
             shadow_factor = pow(shadow_factor, 1e2);
         }
@@ -304,7 +304,7 @@ void main() {
         // vec3 step_dir = (end_coord - start_coord) / num_steps;
         // float cloud_factor = 0.0;
         // for (int i = 0; i < num_steps; ++i) {
-        //     float cloud_sample = texture(CloudVoxels, start_coord).w;
+        //     float cloud_sample = textureLod(CloudVoxels, start_coord, 0).w;
         //     cloud_factor += cloud_sample;
         //     start_coord += step_dir;
         // }

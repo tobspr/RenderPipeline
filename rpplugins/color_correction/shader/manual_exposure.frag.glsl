@@ -45,5 +45,5 @@ void main() {
         TimeOfDay.color_correction.camera_iso);
 
     float exposure = convertEV100ToExposure(exposure_val);
-    result = texture(ShadedScene, texcoord).xyz * exposure;
+    result = textureLod(ShadedScene, texcoord, 0).xyz * exposure;
 }

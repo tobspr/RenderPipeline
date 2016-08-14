@@ -39,7 +39,7 @@ class SkyAOStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"SkyAO": self.target.color_tex}
+        return {"SkyAO": self.target_upscale.color_tex}
 
     def create(self):
         self.target = self.create_target("ComputeSkyAO")

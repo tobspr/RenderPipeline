@@ -64,11 +64,11 @@ void main() {
     float tile_max_depth = tile_data.x;
     float tile_max_coc = tile_data.y;
 
-    vec3 presort_result = texture(PresortResult, texcoord).xyz;
+    vec3 presort_result = textureLod(PresortResult, texcoord, 0).xyz;
     float mid_coc = presort_result.x;
 
     if (tile_max_coc <= 1e-4) {
-        result = texture(ShadedScene, texcoord);
+        result = textureLod(ShadedScene, texcoord, 0);
         result.w = 0;
     }
 
@@ -81,7 +81,7 @@ void main() {
 
     int num_samples = 0;
 
-    vec3 scene_color = texture(ShadedScene, texcoord).xyz;
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
     float alpha = 0.0;
     vec4 foreground = vec4(scene_color, 1) * 1e-4;
@@ -104,8 +104,8 @@ void main() {
             // XXX: Instead of manual clamping, use a near filtered texture
             tcoord = truncate_coordinate(tcoord);
 
-            vec3 sample_data = texture(PresortResult, tcoord).xyz;
-            vec3 color_data = texture(PrecomputedCoC, tcoord).xyz;
+            vec3 sample_data = textureLod(PresortResult, tcoord, 0).xyz;
+            vec3 color_data = textureLod(PrecomputedCoC, tcoord, 0).xyz;
 
             float coc_weight = intersect_circle(r, sample_data.x * max_length);
             coc_weight *= 1.0 / max(1e-9, sample_data.x * sample_data.x);

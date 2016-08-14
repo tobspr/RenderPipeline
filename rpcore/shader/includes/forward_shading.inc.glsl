@@ -100,7 +100,7 @@ uniform int maxLightIndex;
             // ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
 
             // Diffuse IBL
-            // ibl_diffuse = texture(ScatteringIBLDiffuse, m.normal).xyz;
+            // ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz;
         #endif
 
         #if HAVE_PLUGIN(env_probes)
@@ -184,7 +184,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
         float shadow_term = 0;
         for(uint i = 0; i < 12; ++i) {
             vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
-            shadow_term += texture(PSSMSceneSunShadowMapPCF, projected + offset).x;
+            shadow_term += textureLod(PSSMSceneSunShadowMapPCF, projected + offset, 0).x;
         }
         shadow_term /= 12.0;
         return shadow_term;

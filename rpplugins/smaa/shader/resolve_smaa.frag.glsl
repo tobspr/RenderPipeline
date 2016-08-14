@@ -45,7 +45,7 @@ out vec3 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec2 velocity = texture(CombinedVelocity, texcoord).xy;
+    vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
     vec2 last_coord = texcoord + velocity;
 
     result = resolve_temporal(CurrentTex, Previous_SMAAPostResolve, texcoord, last_coord).xyz;
