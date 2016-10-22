@@ -1,5 +1,14 @@
 
 settings: !!omap
+    
+    - blur_quality:
+        type: enum
+        values: ["LOW", "MEDIUM", "HIGH", "ULTRA"]
+        default: "MEDIUM"
+        label: Blur quality
+        description: >
+            Controls the quality of the post-ao blur, higher values produce smoother
+            ambient occlusion, but also cost more performance. 
 
     # General settings
     - blur_normal_factor:

@@ -56,11 +56,27 @@ class AOStage(RenderStage):
         self.tarrget_detail_ao.prepare_buffer()
         self.tarrget_detail_ao.set_shader_input("AOResult", self.target_upscale.color_tex)
 
+        self.debug("Blur quality is", self.quality)
+
+        # Low
+        pixel_stretch = 2.0
+        blur_passes = 1
+
+        if self.quality == "MEDIUM":
+            pixel_stretch = 1.0
+            blur_passes = 2
+        elif self.quality == "HIGH":
+            pixel_stretch = 1.0
+            blur_passes = 3
+        elif self.quality == "ULTRA":
+            pixel_stretch = 1.0
+            blur_passes = 5
+
         self.blur_targets = []
 
         current_tex = self.tarrget_detail_ao.color_tex
 
-        for i in range(1):
+        for i in range(blur_passes):
             target_blur_v = self.create_target("BlurV-" + str(i))
             target_blur_v.add_color_attachment(bits=(8, 0, 0, 0))
             target_blur_v.prepare_buffer()
@@ -74,6 +90,9 @@ class AOStage(RenderStage):
 
             target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
             target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
+
+            target_blur_v.set_shader_input("pixel_stretch", pixel_stretch)
+            target_blur_h.set_shader_input("pixel_stretch", pixel_stretch)
 
             current_tex = target_blur_h.color_tex
             self.blur_targets += [target_blur_v, target_blur_h]

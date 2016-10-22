@@ -41,6 +41,10 @@ class CullLightsStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.max_lights_per_cell = pipeline.settings["lighting.max_lights_per_cell"]
+
+        if self.max_lights_per_cell > 2**16:
+            self.fatal("lighting.max_lights_per_cell must be <=", 2**16, "!")
+
         self.slice_width = pipeline.settings["lighting.culling_slice_width"]
         self.cull_threads = 32
 
@@ -49,7 +53,10 @@ class CullLightsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"PerCellLights": self.grouped_cell_lights}
+        return {
+            "PerCellLights": self.grouped_cell_lights,
+            "PerCellLightsCounts": self.grouped_cell_lights_counts
+        }
 
     @property
     def produced_defines(self):
@@ -80,9 +87,11 @@ class CullLightsStage(RenderStage):
         self.per_cell_lights = Image.create_buffer(
             "PerCellLights", 0, "R16UI")
         self.per_cell_light_counts = Image.create_buffer(
-            "PerCellLightCounts", 0, "R32I")
+            "PerCellLightCounts", 0, "R32I") # Needs to be R32 for atomic add in cull stage
         self.grouped_cell_lights = Image.create_buffer(
             "GroupedPerCellLights", 0, "R16UI")
+        self.grouped_cell_lights_counts = Image.create_buffer(
+            "GroupedPerCellLightsCount", 0, "R16UI")
 
         self.target_visible.set_shader_input("FrustumLights", self.frustum_lights)
         self.target_visible.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
@@ -93,6 +102,7 @@ class CullLightsStage(RenderStage):
         self.target_group.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
         self.target_group.set_shader_input("PerCellLightCountsBuffer", self.per_cell_light_counts)
         self.target_group.set_shader_input("GroupedCellLightsBuffer", self.grouped_cell_lights)
+        self.target_group.set_shader_input("GroupedPerCellLightsCountBuffer", self.grouped_cell_lights_counts)
 
         self.target_cull.set_shader_input("threadCount", self.cull_threads)
         self.target_group.set_shader_input("threadCount", 1)
@@ -119,3 +129,5 @@ class CullLightsStage(RenderStage):
             max_cells * (self.max_lights_per_cell + self.num_light_classes))
         self.target_cull.size = self.slice_width, num_rows_threaded
         self.target_group.size = self.slice_width, num_rows
+
+        self.grouped_cell_lights_counts.set_x_size(max_cells * (1 + self.num_light_classes))

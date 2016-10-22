@@ -79,18 +79,7 @@ class RenderPipeline(RPObject):
         that. If the showbase has been initialized before, have a look at
         the alternative initialization of the render pipeline (the first sample)."""
         RPObject.__init__(self)
-        self.debug("Using Python {}.{} with architecture {}".format(
-            sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
-        self.debug("Using Panda3D {} built on {}".format(
-            PandaSystem.get_version_string(), PandaSystem.get_build_date()))
-        if PandaSystem.get_git_commit():
-            self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
-        else:
-            self.debug("Using custom Panda3D build")
-        if not self._check_version():
-            self.fatal("Your Panda3D version is outdated! Please update to the newest \n"
-                       "git version! Checkout https://github.com/panda3d/panda3d to "
-                       "compile panda from source, or get a recent buildbot build.")
+        self._analyze_system()
         self.mount_mgr = MountManager(self)
         self.settings = {}
         self._pre_showbase_initialized = False
@@ -354,6 +343,23 @@ class RenderPipeline(RPObject):
         self.ies_loader = IESProfileLoader(self)
         self.common_resources = CommonResources(self)
         self._init_common_stages()
+
+    def _analyze_system(self):
+        """ Prints information about the system used, including information
+        about the used Panda3D build. Also checks if the Panda3D build is out
+        of date. """
+        self.debug("Using Python {}.{} with architecture {}".format(
+            sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
+        self.debug("Using Panda3D {} built on {}".format(
+            PandaSystem.get_version_string(), PandaSystem.get_build_date()))
+        if PandaSystem.get_git_commit():
+            self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
+        else:
+            self.debug("Using custom Panda3D build")
+        if not self._check_version():
+            self.fatal("Your Panda3D version is outdated! Please update to the newest \n"
+                       "git version! Checkout https://github.com/panda3d/panda3d to "
+                       "compile panda from source, or get a recent buildbot build.")
 
     def _initialize_managers(self):
         """ Internal method to initialize all managers, after they have been

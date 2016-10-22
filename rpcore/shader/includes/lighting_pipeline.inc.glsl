@@ -37,6 +37,7 @@
 
 uniform isampler2DArray CellIndices;
 uniform usamplerBuffer PerCellLights;
+uniform usamplerBuffer PerCellLightsCounts;
 uniform samplerBuffer AllLightsData;
 uniform samplerBuffer ShadowSourceData;
 
@@ -170,23 +171,29 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
     // Find per tile lights
     int cell_index = texelFetch(CellIndices, tile, 0).x;
-    int data_offs = cell_index * (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT);
+    int count_offs = cell_index * (1 + LIGHT_CLS_COUNT); // 1 for total count, rest for light classes
 
-    // Compute view vector
-    vec3 v = normalize(MainSceneData.camera_pos - m.position);
-
-    int curr_offs = data_offs + LIGHT_CLS_COUNT;
 
     // Get the light counts
-    uint num_spot_noshadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_SPOT_NOSHADOW).x;
-    uint num_spot_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_SPOT_SHADOW).x;
-    uint num_point_noshadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_NOSHADOW).x;
-    uint num_point_shadow = texelFetch(PerCellLights, data_offs + LIGHT_CLS_POINT_SHADOW).x;
+    uint num_total_lights  = texelFetch(PerCellLightsCounts, count_offs).x;
+
+    // Early out when no lights are there
+    if (num_total_lights == 0) {
+        return vec3(0);
+    }
+
+    // Get the per-class counts
+    uint num_spot_noshadow  = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x;
+    uint num_spot_shadow    = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x;
+    uint num_point_noshadow = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_NOSHADOW).x;
+    uint num_point_shadow   = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_SHADOW).x;
+
+    // Compute the index into the culled lights list
+    int data_offs = cell_index * LC_MAX_LIGHTS_PER_CELL;
+    int curr_offs = data_offs;
 
     #if MODE_ACTIVE(LIGHT_COUNT)
-        uint total_lights = num_spot_noshadow + num_spot_shadow +
-                            num_point_noshadow + num_point_shadow;
-        float factor = total_lights / float(LC_MAX_LIGHTS_PER_CELL);
+        float factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
         return vec3(factor, 1 - factor, 0);
     #endif
 
@@ -198,13 +205,14 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
                 int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
                 shading_result += 1.0;
             }
-            uint num_lights = num_spot_noshadow + num_spot_shadow +
-                                num_point_noshadow + num_point_shadow;
-            float light_factor = num_lights / float(LC_MAX_LIGHTS_PER_CELL);
+            float light_factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
             shading_result += ((tile.z + 1) % 2) * 0.2;
             shading_result += light_factor;
         #endif
     #endif
+
+    // Compute view vector
+    vec3 v = normalize(MainSceneData.camera_pos - m.position);
 
     // Spotlights without shadow
     for (int i = 0; i < num_spot_noshadow; ++i) {
@@ -252,7 +260,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     // Fade out lights as they reach the culling distance
     float curr_dist = distance(m.position, MainSceneData.camera_pos);
     float fade = saturate(curr_dist / LC_MAX_DISTANCE);
-    fade = 1 - pow(fade, 25.0);
+    fade = 1 - pow(fade, 10.0);
 
     return shading_result * fade;
 }

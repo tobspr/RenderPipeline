@@ -71,6 +71,7 @@ class Image(RPObject, Texture, ImageFormatTypes):
         "RGBA16": (Texture.T_float, Texture.F_rgba16),
         "RGBA32": (Texture.T_float, Texture.F_rgba32),
         "R8": (Texture.T_unsigned_byte, Texture.F_red),
+        "R8UI": (Texture.T_unsigned_byte, Texture.F_red),
         "R16": (Texture.T_float, Texture.F_r16),
         "R16UI": (Texture.T_unsigned_short, Texture.F_r16i),
         "R32": (Texture.T_float, Texture.F_r32),

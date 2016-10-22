@@ -41,6 +41,7 @@ uniform isamplerBuffer CellListBuffer;
 uniform usamplerBuffer PerCellLightsBuffer;
 layout(r32i) uniform iimageBuffer PerCellLightCountsBuffer;
 uniform writeonly uimageBuffer RESTRICT GroupedCellLightsBuffer;
+uniform writeonly uimageBuffer RESTRICT GroupedPerCellLightsCountBuffer;
 
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
@@ -59,14 +60,16 @@ void main() {
     }
 
     // Get the offset in the per-cell culled light list
-    int data_offset = LC_MAX_LIGHTS_PER_CELL * idx;
-    int dest_offset = (LC_MAX_LIGHTS_PER_CELL + LIGHT_CLS_COUNT) * idx;
-    int light_dest_offset = dest_offset + LIGHT_CLS_COUNT;
+    int data_offset = LC_MAX_LIGHTS_PER_CELL * idx; // Culled lights offset
+    int dest_offset = LC_MAX_LIGHTS_PER_CELL * idx; // Destination offset
 
-    // Get the amount of (unsorted) lights for this cell, and while we are on
-    // it, also reset the count
-    int num_culled_lights = imageAtomicExchange(PerCellLightCountsBuffer, idx, 0).x;
-    // int num_culled_lights = imageLoad(PerCellLightCountsBuffer, idx).x;
+    // Offset into the per-cell culled light counts 
+    int cell_lights_offset = idx * (1 + LIGHT_CLS_COUNT);
+
+    // Get the amount of (unsorted) lights for this cell
+    int num_culled_lights = imageLoad(PerCellLightCountsBuffer, idx).x; 
+    imageStore(PerCellLightCountsBuffer, idx, ivec4(0));
+
     num_culled_lights = min(LC_MAX_LIGHTS_PER_CELL, num_culled_lights);
     int num_processed_lights = 0;
 
@@ -77,7 +80,9 @@ void main() {
         // Iterate over the list of culled lights, and store all lights which
         // belong to this class
         for (int i = 0; i < num_culled_lights; ++i) {
-            int light_index = int(texelFetch(PerCellLightsBuffer, data_offset + 1 + i).x);
+            // XXX: Have to use int, because of stupid OpenGL specification,
+            // indexes into buffers are ints and not unsigned ints.
+            int light_index = int(texelFetch(PerCellLightsBuffer, data_offset + i).x);
             int light_type = read_light_type(AllLightsData, light_index);
             bool casts_shadows = read_casts_shadows(AllLightsData, light_index);
 
@@ -85,13 +90,16 @@ void main() {
             if (classify_light(light_type, casts_shadows) == light_class) {
                 imageStore(
                     GroupedCellLightsBuffer,
-                    light_dest_offset + num_processed_lights, ivec4(light_index));
+                    dest_offset + num_processed_lights, uvec4(light_index));
                 ++light_count;
                 ++num_processed_lights;
             }
         }
 
-        // Finally store the light class count
-        imageStore(GroupedCellLightsBuffer, dest_offset + light_class, uvec4(light_count));
+        // Store the light class count
+        imageStore(GroupedPerCellLightsCountBuffer, cell_lights_offset + 1 + light_class, uvec4(light_count));
     }
+
+    // Store the total light count to be able to early out
+    imageStore(GroupedPerCellLightsCountBuffer, cell_lights_offset, uvec4(num_processed_lights));
 }

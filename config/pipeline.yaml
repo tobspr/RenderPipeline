@@ -58,7 +58,7 @@ lighting:
     # is set too low, you might get artifacts when having many lights.
     # In general, try to set this value as low as possible without getting
     # artifacts
-    max_lights_per_cell: 128
+    max_lights_per_cell: 64
 
 shadows:
 

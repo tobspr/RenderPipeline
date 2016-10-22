@@ -170,3 +170,4 @@ class RenderStage(RPObject):
         """ This method should set the dimensions on all targets which don't
         have a relative constraint, and also the size of all images. This
         is called after initialization, and when the window resized. """
+        pass

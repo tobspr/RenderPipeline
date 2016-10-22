@@ -33,7 +33,7 @@ class ApplyLightsStage(RenderStage):
 
     required_inputs = ["AllLightsData", "IESDatasetTex", "ShadowSourceData"]
     required_pipes = ["GBuffer", "CellIndices", "PerCellLights", "ShadowAtlas",
-                      "ShadowAtlasPCF", "CombinedVelocity"]
+                      "ShadowAtlasPCF", "CombinedVelocity", "PerCellLightsCounts"]
 
     @property
     def produced_pipes(self):

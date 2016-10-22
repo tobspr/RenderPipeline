@@ -39,6 +39,8 @@ uniform sampler2D SourceTex;
 uniform sampler2D DownscaledDepth;
 uniform GBufferData GBuffer;
 
+uniform float pixel_stretch;
+
 // Can be used to only select a specific component. Currently hardcoded and unused.
 #define ONLY_RED_COMPONENT 1
 #if ONLY_RED_COMPONENT
@@ -53,7 +55,7 @@ out VALUE_TYPE result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec2 pixel_size = 2.0 / SCREEN_SIZE;
+    vec2 pixel_size = 1.0 * pixel_stretch / SCREEN_SIZE;
 
     // Store accumulated color
     VALUE_TYPE accum = VALUE_TYPE(0);
@@ -73,7 +75,7 @@ void main() {
         vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
         float depth = textureLod(DownscaledDepth, offcoord, 0).x;
 
-        float weight = gaussian_weights_7[abs(i)];
+        float weight = gaussian_weights_7[abs(i)]; // Change this if you modify the blur size
 
         // Weight by normal and depth
         weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) *

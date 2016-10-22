@@ -8,11 +8,11 @@ enabled:
     - bloom
     - color_correction
     - env_probes
-    # - forward_shading
+    - forward_shading
     - motion_blur
     - pssm
     - scattering
-    # - skin_shading
+    - skin_shading
     - smaa
     - ssr
     - sky_ao
@@ -25,6 +25,7 @@ enabled:
 
 overrides:
     ao:
+        blur_quality: MEDIUM
         blur_normal_factor: 1.2
         blur_depth_factor: 0.87
         occlusion_strength: 1.6
@@ -51,7 +52,7 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 0.68
+        bloom_strength: 2.0
         remove_fireflies: False
         lens_dirt_factor: 0.7
 
@@ -73,7 +74,7 @@ overrides:
         film_grain_strength: 0.1333
         color_lut: film_luts/kodak_portra_800.png
         use_chromatic_aberration: True
-        chromatic_aberration_strength: 0.2081
+        chromatic_aberration_strength: 0.05
         chromatic_aberration_samples: 2
         manual_camera_parameters: False
         min_exposure_value: 0.0
@@ -82,7 +83,7 @@ overrides:
         brightness_adaption_rate: 3.67
         darkness_adaption_rate: 0.73
         use_sharpen: True
-        sharpen_strength: 0.72
+        sharpen_strength: 0.5
         sharpen_twice: False
 
     dof:

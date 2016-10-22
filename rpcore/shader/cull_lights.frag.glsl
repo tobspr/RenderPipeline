@@ -89,7 +89,7 @@ void main() {
 
     // Cull all lights
     for (int i = local_offset;
-            i < max_frustum_lights && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL;
+            i < max_frustum_lights && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; 
             i += LC_CULL_THREADS) {
 
         int light_index = int(texelFetch(FrustumLights, i).x);
@@ -123,7 +123,7 @@ void main() {
 
             // Add one since the first element is the counter storing the total count
             int num_lights = imageAtomicAdd(PerCellLightCountsBuffer, idx, 1).x;
-            imageStore(PerCellLightsBuffer, storage_offs + 1 + num_lights, uvec4(light_index));
+            imageStore(PerCellLightsBuffer, storage_offs + num_lights, uvec4(light_index));
 
             num_rendered_lights = num_lights;
         }

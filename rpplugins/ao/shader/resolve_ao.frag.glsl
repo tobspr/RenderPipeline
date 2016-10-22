@@ -28,7 +28,7 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length))
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length) * 1.3)
 #define RS_USE_POSITION_TECHNIQUE 1
 #define RS_DISTANCE_SCALE 1.0
 

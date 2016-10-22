@@ -54,36 +54,42 @@ class CommonResources(RPObject):
     def _load_fonts(self):
         """ Loads the default font used for rendering and assigns it to
         Globals.font for further usage """
-        Globals.font = RPLoader.load_font("/$$rp/data/font/roboto-medium.ttf")
-        Globals.font.set_pixels_per_unit(35)
-        Globals.font.set_poly_margin(0.0)
-        Globals.font.set_texture_margin(1)
-        Globals.font.set_bg(Vec4(1, 1, 1, 0))
-        Globals.font.set_fg(Vec4(1, 1, 1, 1))
+        font = RPLoader.load_font("/$$rp/data/font/roboto-medium.ttf")
+        font.set_pixels_per_unit(35)
+        font.set_poly_margin(0.0)
+        font.set_texture_margin(1)
+        font.set_bg(Vec4(1, 1, 1, 0))
+        font.set_fg(Vec4(1, 1, 1, 1))
+        Globals.font = font
 
     def _setup_inputs(self):
         """ Creates commonly used shader inputs such as the current mvp and
         registers them to the stage manager so they can be used for rendering """
 
         self._input_ubo = GroupedInputBlock("MainSceneData")
-        self._input_ubo.register_pta("camera_pos", "vec3")
-        self._input_ubo.register_pta("view_proj_mat_no_jitter", "mat4")
-        self._input_ubo.register_pta("last_view_proj_mat_no_jitter", "mat4")
-        self._input_ubo.register_pta("last_inv_view_proj_mat_no_jitter", "mat4")
-        self._input_ubo.register_pta("view_mat_z_up", "mat4")
-        self._input_ubo.register_pta("proj_mat", "mat4")
-        self._input_ubo.register_pta("inv_proj_mat", "mat4")
-        self._input_ubo.register_pta("view_mat_billboard", "mat4")
-        self._input_ubo.register_pta("frame_delta", "float")
-        self._input_ubo.register_pta("smooth_frame_delta", "float")
-        self._input_ubo.register_pta("frame_time", "float")
-        self._input_ubo.register_pta("current_film_offset", "vec2")
-        self._input_ubo.register_pta("frame_index", "int")
-        self._input_ubo.register_pta("screen_size", "ivec2")
-        self._input_ubo.register_pta("native_screen_size", "ivec2")
-        self._input_ubo.register_pta("lc_tile_count", "ivec2")
-        self._input_ubo.register_pta("ws_frustum_directions", "mat4")
-        self._input_ubo.register_pta("vs_frustum_directions", "mat4")
+        inputs = (
+            ("camera_pos", "vec3"),
+            ("view_proj_mat_no_jitter", "mat4"),
+            ("last_view_proj_mat_no_jitter", "mat4"),
+            ("last_inv_view_proj_mat_no_jitter", "mat4"),
+            ("view_mat_z_up", "mat4"),
+            ("proj_mat", "mat4"),
+            ("inv_proj_mat", "mat4"),
+            ("view_mat_billboard", "mat4"),
+            ("frame_delta", "float"),
+            ("smooth_frame_delta", "float"),
+            ("frame_time", "float"),
+            ("current_film_offset", "vec2"),
+            ("frame_index", "int"),
+            ("screen_size", "ivec2"),
+            ("native_screen_size", "ivec2"),
+            ("lc_tile_count", "ivec2"),
+            ("ws_frustum_directions", "mat4"),
+            ("vs_frustum_directions", "mat4"),
+        )
+        for name, ipt_type in inputs:
+            self._input_ubo.register_pta(name, ipt_type)
+
         self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
 
         # Main camera and main render have to be regular inputs, since they are

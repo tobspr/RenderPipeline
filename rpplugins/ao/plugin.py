@@ -41,5 +41,7 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         self.stage = self.create_stage(AOStage)
 
+        self.stage.quality = self.get_setting("blur_quality")
+
         # Make the stages use our output
         AmbientStage.required_pipes.append("AmbientOcclusion")

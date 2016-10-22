@@ -99,7 +99,7 @@ void main() {
 
                 #if !HAVE_PLUGIN(scattering)
                     result = textureLod(
-                        DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 1) *
+                        DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0) *
                         DEFAULT_ENVMAP_BRIGHTNESS;
                 #endif
             #else
