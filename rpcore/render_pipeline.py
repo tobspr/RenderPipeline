@@ -171,7 +171,6 @@ class RenderPipeline(RPObject):
 
         self.plugin_mgr.trigger_hook("pipeline_created")
 
-        self.loading_screen.remove()
         self._listener = NetworkCommunication(self)
         self._set_default_effect()
 
@@ -179,8 +178,9 @@ class RenderPipeline(RPObject):
         # when we finished, so we can measure how long it took to render the
         # first frame (where the shaders are actually compiled)
         init_duration = (time.time() - start_time)
-        self.debug("Finished initialization in {:3.3f} s".format(init_duration))
         self._first_frame = time.clock()
+        self.debug("Finished initialization in {:3.3f} s, first frame: {}".format(
+            init_duration, Globals.clock.get_frame_count()))
 
     def set_loading_screen_image(self, image_source):
         """ Tells the pipeline to use the default loading screen, which consists
@@ -504,6 +504,11 @@ class RenderPipeline(RPObject):
         self.debugger.update()
         self.daytime_mgr.update()
         self.light_mgr.update()
+
+        if Globals.clock.get_frame_count() == 10:
+            self.debug("Hiding loading screen after 10 pre-rendered frames.")
+            self.loading_screen.remove()
+
         return task.cont
 
     def _update_inputs_and_stages(self, task):

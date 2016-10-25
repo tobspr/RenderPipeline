@@ -40,7 +40,7 @@ uniform sampler2D DownscaledDepth;
 out vec2 result;
 
 #define USE_LINEAR_DEPTH 0
-#define NUM_RAYDIR_RETRIES 5
+#define NUM_RAYDIR_RETRIES 3
 
 const int num_steps = GET_SETTING(ssr, trace_steps);
 const float hit_tolerance_ws = 0.00001 * GET_SETTING(ssr, hit_tolerance);
@@ -115,9 +115,6 @@ void main()
     for (;retry < NUM_RAYDIR_RETRIES; ++retry) {
 
         vec2 seed = texcoord + 1.3123 * retry + 0.176445 * (MainSceneData.frame_index % 32);
-        // int index = ( int(gl_FragCoord.x) * 1801 + int(gl_FragCoord.y) * 1699 + 15 * retry + MainSceneData.frame_index) % 32;
-
-        // vec2 xi = clamp(halton_32[index] + 0.5, vec2(0.01), vec2(0.99));
 
         // Get random sequence, should probably use halton or so
         vec2 xi = clamp(abs(rand_rgb(seed).xy), vec2(0.01), vec2(0.99));
@@ -150,7 +147,7 @@ void main()
         return;
     }
 
-    float max_ray_len = 1000.0 * pixeldist;
+    float max_ray_len = 1.0 * pixeldist;
 
     // Clip ray to near plane
     #if 1
@@ -192,11 +189,13 @@ void main()
     vec2 intersection = vec2(-1);
 
     // Jitter ray position to make sure we catch all details
-    float jitter = abs(rand(ivec2(gl_FragCoord.xy) +
+    float jitter = abs(rand(ivec2(gl_FragCoord.xy) % 8 +
         (MainSceneData.frame_index % GET_SETTING(ssr, history_length)) * 0.1));
-    // jitter *= 2.0;
+    
+    // Rough sourfaces need more jitter
+    jitter *= max(0.5, m.roughness);
+
     ray_pos += jitter * ray_step;
-    // ray_pos += ray_step;
 
     int i = 0;
     float intersection_weight = 0.0;

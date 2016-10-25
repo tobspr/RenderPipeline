@@ -72,11 +72,11 @@ void main() {
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
 
     float kernel_scale = min(5.0, 10.0 / pixel_z);
-    const float sample_radius = 11.0;
+    const float sample_radius = 6.0;
 
     const int num_samples = 4;
-    const float bias = 0.0005 + 0.016 / kernel_scale;
-    float max_range = 2.7;
+    const float bias = 0.0005 + 0.01 / kernel_scale;
+    float max_range = 0.2;
 
     float sample_offset = sample_radius * pixel_size.x * 30.0;
     float range_accum = 0.0;
@@ -86,7 +86,8 @@ void main() {
 
     for (int i = 0; i < num_samples; ++i) {
         vec3 offset = poisson_disk_3D_16[4 * i];
-        offset = mix(offset, noise_vec, 0.5);
+        // offset = mix(offset, noise_vec, 0.5);
+        offset = normalize(offset + noise_vec);
 
         // Flip offset in case it faces away from the normal
         offset = face_forward(offset, pixel_view_normal);
@@ -106,7 +107,7 @@ void main() {
         float linz_b = sample_depth;
 
         // Compare both depths by distance to find the AO factor
-        float modifier = step(distance(linz_a, linz_b), max_range * 0.2);
+        float modifier = step(distance(linz_a, linz_b), max_range);
         range_accum += fma(modifier, 0.5, 0.5);
         modifier *= step(linz_b + bias, linz_a);
         accum += modifier;
@@ -115,6 +116,8 @@ void main() {
     // Normalize samples
     accum /= max(0.1, range_accum);
     accum = 1 - accum;
-    prev_result *= pow(accum, 3.0);
+    accum = pow(accum, 5.0);
+    prev_result *= accum;
+    // prev_result = pow(accum, 9.0);
     result = prev_result;
 }
