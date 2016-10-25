@@ -214,6 +214,9 @@ def setup():
         error("Failed to import Panda3D modules")
 
     check_panda_version()
+    print_step("Checking requirements ..")
+    exec_python_file("data/setup/check_requirements.py")
+
 
     if not CMD_ARGS.skip_native:
         query = ("The C++ modules of the pipeline are faster and produce better \n"
