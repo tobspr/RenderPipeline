@@ -117,6 +117,9 @@ class PluginManager(RPObject):
         config["settings"] = config["settings"] or []
         config["daytime_settings"] = config["daytime_settings"] or []
 
+        if config["settings"] and len(config["settings"][0]) != 2:
+            self.fatal("Invalid plugin configuration, did you miss '!!omap'?")
+
         settings = collections.OrderedDict(
             [(k, make_setting_from_data(v)) for k, v in config["settings"]])
         self.settings[plugin_id] = settings

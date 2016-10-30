@@ -50,24 +50,27 @@ class SkyAOCaptureStage(RenderStage):
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.pta_position = PTALVecBase3f.empty_array(1)
+        self.resolution = 512
+        self.capture_height = 100.0
+        self.max_radius = 100.0
 
     def create(self):
         self.camera = Camera("SkyAOCaptureCam")
         self.cam_lens = OrthographicLens()
-        self.cam_lens.set_film_size(200, 200)
-        self.cam_lens.set_near_far(0.0, 500.0)
+        self.cam_lens.set_film_size(self.max_radius, self.max_radius)
+        self.cam_lens.set_near_far(0, self.capture_height)
         self.camera.set_lens(self.cam_lens)
         self.cam_node = Globals.base.render.attach_new_node(self.camera)
         self.cam_node.look_at(0, 0, -1)
         self.cam_node.set_r(0)
 
         self.target = self.create_target("SkyAOCapture")
-        self.target.size = 1024
+        self.target.size = self.resolution
         self.target.add_depth_attachment(bits=16)
         self.target.prepare_render(self.cam_node)
 
         self.target_convert = self.create_target("ConvertDepth")
-        self.target_convert.size = 1024
+        self.target_convert.size = self.resolution
         self.target_convert.add_color_attachment(bits=(16, 0, 0, 0))
         self.target_convert.prepare_buffer()
 
@@ -78,12 +81,12 @@ class SkyAOCaptureStage(RenderStage):
         self._pipeline.tag_mgr.register_camera("shadow", self.camera)
 
     def update(self):
-        snap_size = 200.0 / 1024
+        snap_size = self.max_radius / self.resolution
         cam_pos = Globals.base.camera.get_pos(Globals.base.render)
         self.cam_node.set_pos(
             cam_pos.x - cam_pos.x % snap_size,
             cam_pos.y - cam_pos.y % snap_size,
-            250.0)
+            self.capture_height / 2.0)
         self.pta_position[0] = self.cam_node.get_pos()
 
     def reload_shaders(self):

@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
+    <width>973</width>
     <height>632</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1000</width>
+    <width>973</width>
     <height>632</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1000</width>
+    <width>973</width>
     <height>632</height>
    </size>
   </property>
@@ -37,9 +37,9 @@
      <colorrole role="Button">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -109,18 +109,18 @@
      <colorrole role="Base">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -174,9 +174,9 @@
      <colorrole role="Button">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -246,18 +246,18 @@
      <colorrole role="Base">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -311,9 +311,9 @@
      <colorrole role="Button">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -383,18 +383,18 @@
      <colorrole role="Base">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>42</red>
-        <green>42</green>
-        <blue>42</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -445,206 +445,62 @@
     <normaloff>:/res/res/icon.png</normaloff>:/res/res/icon.png</iconset>
   </property>
   <property name="autoFillBackground">
-   <bool>true</bool>
+   <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow { background: #fff;}
+*, QLabel { font-family: Roboto; font-weight: 300; }
+
+QScrollBar {
+	background: #eee;
+}
+
+
+QScrollBar:vertical {
+                        width: 9px;
+	margin: 0;
+                      }
+
+                      QScrollBar::handle:vertical {
+                        min-height: 15px;
+						background: #aaa;
+
+                      }
+
+
+                      QScrollBar::handle:vertical:hover {
+                        
+						background: #999;
+
+                      }
+                      QScrollBar::add-line:vertical {
+                      }
+
+                      QScrollBar::sub-line:vertical {
+                      }
+
+
+                      QScrollBar::add-page:vertical {
+                        background: #ddd;
+
+                      }
+                      QScrollBar::sub-page:vertical {
+                        background: #ddd;
+					}
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>-4</y>
-      <width>1000</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>0</width>
-      <height>65</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>1001</width>
-      <height>80</height>
-     </size>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap resource="resources.qrc">:/res/res/daytime_editor_logo.png</pixmap>
-    </property>
-   </widget>
-   <widget class="QTreeWidget" name="settings_tree">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>120</y>
-      <width>311</width>
-      <height>491</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QTreeView {
-    background: #333;
-	border: 0;
-	color: #eee;
-}
-
-QTreeView::item {
-	background: #444;
-	padding: 4px 3px;
-	outline: 0 !important;
-	margin-bottom: 3px;
-	border-top: 1px solid rgba(255, 255, 255, 40);
-	border-bottom: 1px solid  rgba(0, 0, 0, 90);
-	border-radius: 1px;
-	outline: none;
-}
-
-QTreeView::item:hover {
-background: #494949;
-}
-
-QTreeView::item:selected {
-background: #2c6893;
-border-top: 1px solid #3680b4;
-border-bottom: 1px solid #25577a;
-outline: none !important;
-color: #eee;
-}
-
-* {
-outline: 0;
-}
-
-</string>
-    </property>
-    <property name="verticalScrollBarPolicy">
-     <enum>Qt::ScrollBarAsNeeded</enum>
-    </property>
-    <property name="horizontalScrollBarPolicy">
-     <enum>Qt::ScrollBarAsNeeded</enum>
-    </property>
-    <property name="editTriggers">
-     <set>QAbstractItemView::NoEditTriggers</set>
-    </property>
-    <property name="showDropIndicator" stdset="0">
-     <bool>false</bool>
-    </property>
-    <property name="alternatingRowColors">
-     <bool>false</bool>
-    </property>
-    <property name="selectionBehavior">
-     <enum>QAbstractItemView::SelectRows</enum>
-    </property>
-    <property name="verticalScrollMode">
-     <enum>QAbstractItemView::ScrollPerPixel</enum>
-    </property>
-    <property name="indentation">
-     <number>18</number>
-    </property>
-    <property name="rootIsDecorated">
-     <bool>true</bool>
-    </property>
-    <property name="uniformRowHeights">
-     <bool>false</bool>
-    </property>
-    <property name="itemsExpandable">
-     <bool>true</bool>
-    </property>
-    <property name="sortingEnabled">
-     <bool>false</bool>
-    </property>
-    <property name="animated">
-     <bool>true</bool>
-    </property>
-    <property name="allColumnsShowFocus">
-     <bool>false</bool>
-    </property>
-    <property name="wordWrap">
-     <bool>true</bool>
-    </property>
-    <property name="headerHidden">
-     <bool>true</bool>
-    </property>
-    <attribute name="headerVisible">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="headerCascadingSectionResizes">
-     <bool>false</bool>
-    </attribute>
-    <attribute name="headerDefaultSectionSize">
-     <number>200</number>
-    </attribute>
-    <column>
-     <property name="text">
-      <string>Setting</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Value</string>
-     </property>
-    </column>
-    <item>
-     <property name="text">
-      <string>Scattering</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>Sun Height</string>
-      </property>
-      <property name="text">
-       <string>0,4</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Sun Color</string>
-      </property>
-      <property name="text">
-       <string>[128, 255, 100]</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Sun Angle</string>
-      </property>
-      <property name="text">
-       <string>180 °</string>
-      </property>
-     </item>
-    </item>
-    <item>
-     <property name="text">
-      <string>Ambient Occlusion</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="flags">
-      <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled|ItemIsTristate</set>
-     </property>
-     <item>
-      <property name="text">
-       <string>Occlusion Strength</string>
-      </property>
-      <property name="text">
-       <string>0.5</string>
-      </property>
-     </item>
-    </item>
-   </widget>
    <widget class="QFrame" name="frame_current_setting">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>350</x>
       <y>80</y>
-      <width>621</width>
+      <width>641</width>
       <height>551</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame { background: #e5e5e5;}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::NoFrame</enum>
@@ -655,20 +511,22 @@ outline: 0;
     <widget class="QLabel" name="lbl_current_setting">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>9</y>
+       <x>20</x>
+       <y>16</y>
        <width>221</width>
        <height>31</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>14</pointsize>
-       <kerning>true</kerning>
+       <family>Roboto</family>
+       <pointsize>-1</pointsize>
+       <weight>37</weight>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #eee;</string>
+      <string notr="true">color: #555; border: 0;  font-size: 15px; text-transform: uppercase;</string>
      </property>
      <property name="text">
       <string>Occlusion Strength</string>
@@ -678,33 +536,41 @@ outline: 0;
      <property name="geometry">
       <rect>
        <x>500</x>
-       <y>20</y>
+       <y>14</y>
        <width>101</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">background: #444; border: 0; color: #eee;
-border-radius: 1px;
-border-top: 1px solid #555;
-border-bottom: 1px solid #222;</string>
+      <string notr="true">QPushButton {
+color: #eee;
+background: #666;
+border: 0; 
+}
+
+QPushButton:hover {
+	background: #555;
+}
+
+QPushButton:pressed {
+	background: #111;
+}</string>
      </property>
      <property name="text">
-      <string>Reset to Default</string>
+      <string>Reset curve</string>
      </property>
     </widget>
     <widget class="QFrame" name="frame_3">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>20</x>
        <y>94</y>
-       <width>601</width>
+       <width>581</width>
        <height>441</height>
       </rect>
      </property>
      <property name="styleSheet">
       <string notr="true">QFrame {
-background: #eee;border: 1px solid #000;
 }</string>
      </property>
      <property name="frameShape">
@@ -718,7 +584,7 @@ background: #eee;border: 1px solid #000;
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>591</width>
+        <width>571</width>
         <height>441</height>
        </rect>
       </property>
@@ -732,15 +598,17 @@ background: #eee;border: 1px solid #000;
     <widget class="QLabel" name="lbl_setting_desc">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>41</y>
-       <width>351</width>
+       <x>20</x>
+       <y>50</y>
+       <width>571</width>
        <height>41</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>8</pointsize>
+       <family>Roboto</family>
+       <weight>37</weight>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
@@ -756,17 +624,26 @@ background: #eee;border: 1px solid #000;
     <widget class="QPushButton" name="btn_insert_point">
      <property name="geometry">
       <rect>
-       <x>360</x>
-       <y>20</y>
+       <x>368</x>
+       <y>14</y>
        <width>131</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">background: #444; border: 0; color: #eee;
-border-radius: 1px;
-border-top: 1px solid #555;
-border-bottom: 1px solid #222;</string>
+      <string notr="true">QPushButton {
+color: #eee;
+background: #666;
+border: 0; 
+}
+
+QPushButton:hover {
+	background: #555;
+}
+
+QPushButton:pressed {
+	background: #111;
+}</string>
      </property>
      <property name="text">
       <string>Insert point from data</string>
@@ -776,14 +653,14 @@ border-bottom: 1px solid #222;</string>
    <widget class="QFrame" name="frame_2">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>55</y>
-      <width>340</width>
-      <height>581</height>
+      <x>-1</x>
+      <y>80</y>
+      <width>351</width>
+      <height>551</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: #333;</string>
+     <string notr="true">background: #eee;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -791,49 +668,189 @@ border-bottom: 1px solid #222;</string>
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QLabel" name="label_2">
+    <widget class="QTreeWidget" name="settings_tree">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>121</width>
-       <height>31</height>
+       <x>14</x>
+       <y>20</y>
+       <width>311</width>
+       <height>511</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-       <kerning>true</kerning>
-      </font>
-     </property>
      <property name="styleSheet">
-      <string notr="true">color: #eee;border: 0;</string>
+      <string notr="true">QTreeWidget::item {
+padding: 7px 7px 6px;
+background: #ddd;
+outline: 0 !important;
+margin-bottom: 1px;
+margin-right: 0px;
+color: #777;
+border: 0;
+border-radius: 0;
+}
+
+QTreeWidget::item:hover {
+background: #ccc;
+}
+
+QTreeWidget::item:selected {
+background: #555;
+color: #eee;
+}
+
+QTreeWidget {
+padding: 0;
+color: #eee;
+background: transparent;
+
+}
+
+* {
+outline: 0;
+}
+
+</string>
      </property>
-     <property name="text">
-      <string>Settings</string>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>false</bool>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="indentation">
+      <number>18</number>
+     </property>
+     <property name="rootIsDecorated">
+      <bool>true</bool>
+     </property>
+     <property name="uniformRowHeights">
+      <bool>false</bool>
+     </property>
+     <property name="itemsExpandable">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="animated">
+      <bool>true</bool>
+     </property>
+     <property name="allColumnsShowFocus">
+      <bool>false</bool>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="headerHidden">
+      <bool>true</bool>
+     </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="headerCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="headerDefaultSectionSize">
+      <number>150</number>
+     </attribute>
+     <attribute name="headerStretchLastSection">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Setting</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Value</string>
+      </property>
+     </column>
+     <item>
+      <property name="text">
+       <string>Scattering</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Sun Height</string>
+       </property>
+       <property name="text">
+        <string>0,4</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sun Color</string>
+       </property>
+       <property name="text">
+        <string>[128, 255, 100]</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sun Angle</string>
+       </property>
+       <property name="text">
+        <string>180 °</string>
+       </property>
+      </item>
+     </item>
+     <item>
+      <property name="text">
+       <string>Ambient Occlusion</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="flags">
+       <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled|ItemIsTristate</set>
+      </property>
+      <item>
+       <property name="text">
+        <string>Occlusion Strength</string>
+       </property>
+       <property name="text">
+        <string>0.5</string>
+       </property>
+      </item>
+     </item>
     </widget>
    </widget>
    <widget class="QFrame" name="frame_4">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>20</y>
-      <width>601</width>
-      <height>51</height>
+      <x>420</x>
+      <y>10</y>
+      <width>551</width>
+      <height>61</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QFrame {
-	background: #3a3a3a;
-	border-radius: 1px;
-	border-top: 1px solid #555;
-	border-bottom: 1px solid #232323;
+	background: #fff;
 }
-QLabel {border: 0;}</string>
+</string>
     </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::NoFrame</enum>
     </property>
     <property name="frameShadow">
      <enum>QFrame::Plain</enum>
@@ -841,8 +858,8 @@ QLabel {border: 0;}</string>
     <widget class="QSlider" name="time_slider">
      <property name="geometry">
       <rect>
-       <x>70</x>
-       <y>21</y>
+       <x>10</x>
+       <y>11</y>
        <width>521</width>
        <height>20</height>
       </rect>
@@ -878,80 +895,209 @@ QLabel {border: 0;}</string>
       <number>432000</number>
      </property>
     </widget>
-    <widget class="QLabel" name="time_label">
+    <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>9</x>
-       <y>3</y>
-       <width>51</width>
-       <height>31</height>
+       <x>254</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>14</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: #eee;</string>
-     </property>
      <property name="text">
-      <string>11:15</string>
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/12_00.png</pixmap>
      </property>
     </widget>
-    <widget class="QLabel" name="time_float_label">
+    <widget class="QLabel" name="label_3">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>29</y>
-       <width>41</width>
-       <height>18</height>
+       <x>341</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
+     <property name="text">
+      <string/>
      </property>
-     <property name="styleSheet">
-      <string notr="true">color: #39f;</string>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/16_00.png</pixmap>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
      </property>
      <property name="text">
-      <string>0.486</string>
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/0_00.png</pixmap>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>84</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/4_00.png</pixmap>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/8_00.png</pixmap>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>422</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/20_00.png</pixmap>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_8">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>30</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="resources.qrc">:/res/res/0_00.png</pixmap>
      </property>
     </widget>
    </widget>
-   <widget class="QLabel" name="lbl_select_setting">
+   <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>480</x>
-      <y>370</y>
-      <width>421</width>
+      <x>20</x>
+      <y>35</y>
+      <width>261</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font-size: 20px; color: #2aa877;
+font-weight: 100;</string>
+    </property>
+    <property name="text">
+     <string>TIME OF DAY EDITOR</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="time_float_label">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>47</y>
+      <width>41</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Roboto</family>
+      <pointsize>-1</pointsize>
+      <weight>37</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #777; font-size: 12px;</string>
+    </property>
+    <property name="text">
+     <string>0.486</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="time_label">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>20</y>
+      <width>81</width>
       <height>31</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>12</pointsize>
+      <family>Roboto</family>
+      <pointsize>-1</pointsize>
+      <weight>37</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #eee;</string>
+     <string notr="true">color: #444; font-size: 22px;</string>
     </property>
     <property name="text">
-     <string>Select a setting on the left to modify its value</string>
+     <string>11:15</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>16</y>
+      <width>261</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font-size: 13px;
+color: #aaa;
+font-weight: 600;</string>
+    </property>
+    <property name="text">
+     <string>RENDER PIPELINE</string>
     </property>
    </widget>
    <zorder>frame_2</zorder>
-   <zorder>label</zorder>
-   <zorder>settings_tree</zorder>
    <zorder>frame_current_setting</zorder>
    <zorder>frame_4</zorder>
-   <zorder>lbl_select_setting</zorder>
+   <zorder>label</zorder>
+   <zorder>time_float_label</zorder>
+   <zorder>time_label</zorder>
+   <zorder>label_9</zorder>
   </widget>
  </widget>
  <resources>

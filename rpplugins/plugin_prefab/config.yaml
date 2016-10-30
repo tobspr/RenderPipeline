@@ -8,6 +8,13 @@ settings: !!omap
         label: Some integer setting
         description: Description of the setting.
 
+    - some_resolution_setting:
+        type: power_of_two
+        range: [4, 8192]
+        default: 32
+        label: Some resolution setting, must be power of two.
+        description: Description of the setting.
+
     - some_float_setting:
         type: float
         range: [-5.3, 2.9]

@@ -16,7 +16,7 @@ settings: !!omap
         range: [0.1, 10.0]
         default: 2.0
         shader_runtime: true
-        label: Biliteral Blur Normal Factor
+        label: Bilateral Blur Normal Factor
         description: >
             This setting controls the normal influence for the bilateral blur.
             A value of 0.0 means a normal blur, and a higher value will prevent

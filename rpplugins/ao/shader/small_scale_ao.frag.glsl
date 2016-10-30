@@ -85,7 +85,7 @@ void main() {
     sample_offset /= kernel_scale;
 
     for (int i = 0; i < num_samples; ++i) {
-        vec3 offset = poisson_disk_3D_16[4 * i];
+        vec3 offset = poisson_3D_16[4 * i];
         // offset = mix(offset, noise_vec, 0.5);
         offset = normalize(offset + noise_vec);
 

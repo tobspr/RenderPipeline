@@ -53,7 +53,7 @@ void main() {
     const float filter_radius = 0.05;
     vec3 accum = vec3(0.0);
     for (int i = 0; i < num_samples; ++i) {
-        vec2 offset = poisson_disk_2D_12[i];
+        vec2 offset = poisson_2D_12[i];
         vec3 sample_vec = normalize(n +
             filter_radius * offset.x * tangent +
             filter_radius * offset.y * binormal +

@@ -54,7 +54,7 @@ class CommonResources(RPObject):
     def _load_fonts(self):
         """ Loads the default font used for rendering and assigns it to
         Globals.font for further usage """
-        font = RPLoader.load_font("/$$rp/data/font/roboto-medium.ttf")
+        font = RPLoader.load_font("/$$rp/data/font/Roboto-Medium.ttf")
         font.set_pixels_per_unit(35)
         font.set_poly_margin(0.0)
         font.set_texture_margin(1)

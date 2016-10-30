@@ -46,14 +46,14 @@ toolkit/poisson_disk_generator.
 
 */
 
-CONST_ARRAY vec2 poisson_disk_2D_4[4] = vec2[](
+CONST_ARRAY vec2 poisson_2D_4[4] = vec2[](
     vec2(-0.953543, -0.300415),
     vec2(0.291287, -0.956411),
     vec2(0.957769, 0.282242),
     vec2(-0.277367, 0.960318)
 );
 
-CONST_ARRAY vec2 poisson_disk_2D_8[8] = vec2[](
+CONST_ARRAY vec2 poisson_2D_8[8] = vec2[](
     vec2(-0.994272, -0.104946),
     vec2(-0.375669, -0.92651),
     vec2(0.62611, -0.778924),
@@ -64,7 +64,7 @@ CONST_ARRAY vec2 poisson_disk_2D_8[8] = vec2[](
     vec2(0.00219648, 0.00555702)
 );
 
-CONST_ARRAY vec2 poisson_disk_2D_12[12] = vec2[](
+CONST_ARRAY vec2 poisson_2D_12[12] = vec2[](
     vec2(-0.759347, -0.650607),
     vec2(-0.276351, -0.00941298),
     vec2(-0.999368, -0.0324209),
@@ -80,7 +80,7 @@ CONST_ARRAY vec2 poisson_disk_2D_12[12] = vec2[](
 );
 
 
-CONST_ARRAY vec2 poisson_disk_2D_16[16] = vec2[](
+CONST_ARRAY vec2 poisson_2D_16[16] = vec2[](
     vec2(-0.680088, -0.731923),
     vec2(-0.957909, -0.247622),
     vec2(0.0948045, -0.992508),
@@ -99,7 +99,7 @@ CONST_ARRAY vec2 poisson_disk_2D_16[16] = vec2[](
     vec2(-0.857891, 0.512805)
 );
 
-CONST_ARRAY vec2 poisson_disk_2D_32[32] = vec2[](
+CONST_ARRAY vec2 poisson_2D_32[32] = vec2[](
     vec2(-0.645095, -0.281509),
     vec2(-0.491004, -0.535543),
     vec2(-0.251013, -0.96746),
@@ -134,7 +134,7 @@ CONST_ARRAY vec2 poisson_disk_2D_32[32] = vec2[](
     vec2(-0.999393, 0.0286758)
 );
 
-CONST_ARRAY vec2 poisson_disk_2D_64[64] = vec2[](
+CONST_ARRAY vec2 poisson_2D_64[64] = vec2[](
     vec2(-0.086316, -0.968111),
     vec2(-0.279227, -0.959008),
     vec2(-0.174659, -0.779219),
@@ -211,7 +211,7 @@ CONST_ARRAY vec2 poisson_disk_2D_64[64] = vec2[](
 
 */
 
-CONST_ARRAY vec3 poisson_disk_3D_16[16] = vec3[](
+CONST_ARRAY vec3 poisson_3D_16[16] = vec3[](
     vec3(-0.0601252, -0.090253, 0.242585),
     vec3(-0.954277, -0.230389, 0.0491814),
     vec3(-0.440708, -0.751107, 0.48156),
@@ -230,7 +230,7 @@ CONST_ARRAY vec3 poisson_disk_3D_16[16] = vec3[](
     vec3(-0.709746, 0.0374277, 0.68205)
 );
 
-CONST_ARRAY vec3 poisson_disk_3D_32[32] = vec3[](
+CONST_ARRAY vec3 poisson_3D_32[32] = vec3[](
     vec3(-0.637433, -0.0795689, 0.749829),
     vec3(-0.166216, -0.0315564, -0.983756),
     vec3(-0.528491, -0.143633, 0.195646),
@@ -265,7 +265,7 @@ CONST_ARRAY vec3 poisson_disk_3D_32[32] = vec3[](
     vec3(-0.312793, 0.316496, -0.184027)
 );
 
-CONST_ARRAY vec3 poisson_disk_3D_64[64] = vec3[](
+CONST_ARRAY vec3 poisson_3D_64[64] = vec3[](
     vec3(-0.15773, -0.0451896, -0.9623),
     vec3(-0.0130272, -0.640955, -0.751804),
     vec3(-0.214195, -0.789982, 0.571629),

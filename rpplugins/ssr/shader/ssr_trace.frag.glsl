@@ -33,7 +33,6 @@
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/importance_sampling.inc.glsl"
-#pragma include "includes/halton.inc.glsl"
 
 uniform sampler2D DownscaledDepth;
 

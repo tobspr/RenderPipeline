@@ -51,8 +51,8 @@ settings: !!omap
             of splits.
 
     - resolution:
-        type: int
-        range: [128, 3072]
+        type: power_of_two
+        range: [128, 4096]
         default: 2048
         label: Shadowmap resolution
         description: >
@@ -188,7 +188,7 @@ settings: !!omap
 
     - dist_shadow_resolution:
         display_if: {use_distant_shadows: true}
-        type: int
+        type: power_of_two
         range: [128, 8192]
         default: 4096
         label: Distant Shadow Resolution
@@ -217,7 +217,7 @@ settings: !!omap
             Same as the Sun Distance, but for the distant shadow map.
 
     - scene_shadow_resolution:
-        type: int
+        type: power_of_two
         range: [128, 4096]
         default: 512
         label: Scene shadow Resolution

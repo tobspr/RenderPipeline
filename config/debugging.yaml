@@ -19,6 +19,7 @@ render_modes:
   - { name: "Translucency", key: "TRANSLUCENCY" }
   - { name: "PSSM Splits",  key: "PSSM_SPLITS", requires: "pssm", cxx_only: true }
   - { name: "Ambient Occlusion", key: "OCCLUSION", requires: "ao" }
+  - { name: "Sky AO", key: "SKY_AO", requires: "sky_ao" }
   - { name: "Scattering", key: "SCATTERING", requires: "scattering" }
   - { name: "Velocity", key: "VELOCITY" }
   - { name: "Diffuse Ambient", key: "DIFFUSE_AMBIENT" }

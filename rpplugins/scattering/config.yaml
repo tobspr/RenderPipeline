@@ -107,7 +107,7 @@ daytime_settings: !!omap
         default: [126, 255, 100]
         label: Sun Color
         description: >
-            The color of the sun.
+            Color of the sun, only affects direct lighting, has no impact on scattering.
 
     - sun_azimuth:
         type: scalar

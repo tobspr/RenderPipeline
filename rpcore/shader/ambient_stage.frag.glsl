@@ -89,7 +89,7 @@ void main() {
     // Store the accumulated ambient term in a variable
     vec3 ambient = vec3(0);
 
-    #if !DEBUG_MODE || MODE_ACTIVE(DIFFUSE_AMBIENT) || MODE_ACTIVE(SPECULAR_AMBIENT) || MODE_ACTIVE(OCCLUSION)
+    #if !DEBUG_MODE || MODE_ACTIVE(DIFFUSE_AMBIENT) || MODE_ACTIVE(SPECULAR_AMBIENT) || MODE_ACTIVE(OCCLUSION) || MODE_ACTIVE(SKY_AO)
 
         // Skip skybox shading
         if (is_skybox(m)) {
@@ -115,6 +115,19 @@ void main() {
             return;
         }
 
+
+        #if HAVE_PLUGIN(sky_ao)
+            float sky_ao_factor = textureLod(SkyAO, texcoord, 0).x;
+            sky_ao_factor = pow(sky_ao_factor, 3.0);
+
+            // Prevent total dark ao term
+            sky_ao_factor = max(0.2, sky_ao_factor);
+
+
+            // occlusion *= min(occlusion, sky_ao_factor);
+            // occlusion *= sky_ao_factor;
+        #endif
+
         // Get reflection directory
         vec3 reflected_dir = get_reflection_vector(m, view_vector);
         float roughness = get_effective_roughness(m);
@@ -139,8 +152,8 @@ void main() {
             float scat_mipmap = m.shading_model == SHADING_MODEL_CLEARCOAT ?
                 CLEARCOAT_ROUGHNESS : get_specular_mipmap(m);
 
-            ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
-            ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz;
+            ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz * sky_ao_factor;
+            ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz * sky_ao_factor;
         #endif
 
         // Blend environment maps
@@ -201,7 +214,7 @@ void main() {
             #if HAVE_PLUGIN(scattering)
                 vec3 ibl_specular_base = textureLod(
                     ScatteringIBLSpecular, reflected_dir,
-                    get_specular_mipmap(m)).xyz;
+                    get_specular_mipmap(m)).xyz * sky_ao_factor;
             #else
                 vec3 ibl_specular_base = textureLod(
                     DefaultEnvmap, fix_cubemap_coord(reflected_dir),
@@ -226,15 +239,6 @@ void main() {
             float occlusion = 1.0;
         #endif
 
-        #if HAVE_PLUGIN(sky_ao)
-            float sky_ao_factor = textureLod(SkyAO, texcoord, 0).x;
-            sky_ao_factor = pow(sky_ao_factor, 3.0);
-
-            // Prevent total dark ao term
-            sky_ao_factor = max(0.17, sky_ao_factor);
-
-            occlusion = min(occlusion, sky_ao_factor);
-        #endif
 
         float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
 
@@ -253,8 +257,13 @@ void main() {
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
-            // result = textureLod(AmbientOcclusion, texcoord, 0).xxxx;
             result = vec4(occlusion);
+            result.w = 1;
+            return;
+        #endif
+
+        #if MODE_ACTIVE(SKY_AO)
+            result = vec4(sky_ao_factor);
             result.w = 1;
             return;
         #endif

@@ -1,4 +1,4 @@
- /**
+/**
  *
  * RenderPipeline
  *
@@ -26,39 +26,21 @@
 
 #pragma once
 
-// Halton sequences
 
-CONST_ARRAY vec2[] halton_32 = vec2[32](
-    vec2(0, -0.166667),
-    vec2(-0.25, 0.166667),
-    vec2(0.25, -0.388889),
-    vec2(-0.375, -0.0555556),
-    vec2(0.125, 0.277778),
-    vec2(-0.125, -0.277778),
-    vec2(0.375, 0.0555556),
-    vec2(-0.4375, 0.388889),
-    vec2(0.0625, -0.462963),
-    vec2(-0.1875, -0.12963),
-    vec2(0.3125, 0.203704),
-    vec2(-0.3125, -0.351852),
-    vec2(0.1875, -0.0185185),
-    vec2(-0.0625, 0.314815),
-    vec2(0.4375, -0.240741),
-    vec2(-0.46875, 0.0925926),
-    vec2(0.03125, 0.425926),
-    vec2(-0.21875, -0.425926),
-    vec2(0.28125, -0.0925926),
-    vec2(-0.34375, 0.240741),
-    vec2(0.15625, -0.314815),
-    vec2(-0.09375, 0.0185185),
-    vec2(0.40625, 0.351852),
-    vec2(-0.40625, -0.203704),
-    vec2(0.09375, 0.12963),
-    vec2(-0.15625, 0.462963),
-    vec2(0.34375, -0.487654),
-    vec2(-0.28125, -0.154321),
-    vec2(0.21875, 0.179012),
-    vec2(-0.03125, -0.376543),
-    vec2(0.46875, -0.0432099),
-    vec2(-0.484375, 0.290123)
-);
+// Poisson disks
+#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/halton_sequences.inc.glsl"
+
+
+// Special getter for plugin sequences
+
+#define GET_SEQUENCE_SIZE(plugin_id, setting_id) (GET_SETTING(plugin_id, setting_id).length())
+#define GET_SEQUENCE_SAMPLE(plugin_id, setting_id, sample_id) (GET_SETTING(plugin_id, setting_id)[sample_id])
+
+#define START_ITERATE_SEQUENCE(plugin_id, setting_id, storage) \
+    for (uint _seq_count_000 = 0; _seq_count_000 < GET_SEQUENCE_SIZE(plugin_id, setting_id); ++_seq_count_000) {\
+        storage = GET_SEQUENCE_SAMPLE(plugin_id, setting_id, _seq_count_000);
+
+#define END_ITERATE_SEQUENCE() }
+
+#define NORMALIZE_SEQUENCE(plugin_id, setting_id, var) var /= float(GET_SEQUENCE_SIZE(plugin_id, setting_id));

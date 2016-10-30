@@ -47,7 +47,7 @@ float accum = 0.0;
 sample_offset /= 0.8 * kernel_scale;
 
 for (int i = 0; i < num_samples; ++i) {
-    vec3 offset = poisson_disk_3D_32[i * int(32 / num_samples)];
+    vec3 offset = poisson_3D_32[i * int(32 / num_samples)];
     offset = mix(offset, noise_vec, 0.5);
     offset *= 0.6;
 

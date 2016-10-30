@@ -39,12 +39,9 @@ void main() {
 
     float depth_val = texelFetch(DepthTex, coord, 0).x;
 
-    const float near_plane = 0.0; // XXX: hardcoded
-    const float far_plane = 500.0;
+    const float far_plane = GET_SETTING(sky_ao, capture_height);
 
     float linear_depth = depth_val * far_plane;
-    // float dist = near_plane + linear_depth * far_plane;
-
     float z_pos = position.z - linear_depth;
     result = vec4(z_pos);
 }

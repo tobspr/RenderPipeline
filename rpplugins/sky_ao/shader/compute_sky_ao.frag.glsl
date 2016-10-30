@@ -29,7 +29,7 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/sampling_sequences.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 
 uniform sampler2D SkyAOHeight;
@@ -39,10 +39,17 @@ out vec4 result;
 
 void main() {
 
+    // Constants
+    const int ao_map_resolution = GET_SETTING(sky_ao, resolution);
+    const float radius = GET_SETTING(sky_ao, sample_radius);
+    const float ao_multiplier = GET_SETTING(sky_ao, ao_multiplier);
+    const float ao_bias = GET_SETTING(sky_ao, ao_bias);
+    const float fade_scale = GET_SETTING(sky_ao, blend_factor);
+    const float ao_map_scale = GET_SETTING(sky_ao, max_radius); // world space
+    const float film_size = ao_map_scale * 0.5;
+    
     vec2 texcoord = get_half_texcoord();
     Material m = unpack_material(GBuffer, texcoord);
-
-    const float film_size = 200.0 * 0.5;
 
     vec2 local_coord = (m.position.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5;
 
@@ -52,28 +59,35 @@ void main() {
     }
 
     // Blend ao
-    float fade_scale = 0.05;
     float blend = 1.0;
     blend *= saturate(min(local_coord.x, local_coord.y) / fade_scale);
     blend *= saturate(min(1 - local_coord.x, 1 - local_coord.y) / fade_scale);
 
+    // Factor to convert from tex-space to world-space
+    const float tc_to_ws = ao_map_scale;
 
-    const float ao_scale = 0.5; // xxx: make configurable
-    const float radius = 3.0;
-
-    float ref_z = m.position.z;
-    const int num_samples = 32;
     float accum = 0.0;
+    vec2 jitter = rand_rgb(ivec2(gl_FragCoord.xy) % 2).xy;
 
-    for (int i = 0; i < num_samples; ++i) {
-        vec2 offcoord = local_coord + poisson_disk_2D_32[i] / 1024.0 * radius;
+    // Capture samples
+    // for (int i = 0; i < num_samples; ++i) {
+
+    START_ITERATE_SEQUENCE(sky_ao, sample_sequence, vec2 offset)
+
+        offset = (offset * 0.9 + 0.1 * jitter) / ao_map_resolution * radius;
+        vec2 offcoord = local_coord + offset;
         float sample_z = textureLod(SkyAOHeight, offcoord, 0).x;
-        accum += saturate(min(0.5, ao_scale * (sample_z - ref_z)));
-    }
 
-    accum /= num_samples;
+        // Project sample in normal direction
+        float dist = length(offset) * tc_to_ws;
+        float proj_z = m.position.z + dist * max(0, 1 - m.normal.z);
+        accum += saturate(min(1 - ao_bias, ao_multiplier * (sample_z - proj_z)));
+
+    END_ITERATE_SEQUENCE()
+
+    NORMALIZE_SEQUENCE(sky_ao, sample_sequence, accum);
+
     accum = 1 - accum;
     accum = mix(1, accum, blend);
-
     result = vec4(accum);
 }

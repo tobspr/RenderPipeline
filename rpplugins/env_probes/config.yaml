@@ -2,7 +2,7 @@
 settings: !!omap
 
     - probe_resolution:
-        type: int
+        type: power_of_two
         range: [16, 512]
         default: 128
         label: Specular cubemap resolution
@@ -11,7 +11,7 @@ settings: !!omap
             the VRAM usage, so you shouldn't set it too high.
 
     - diffuse_probe_resolution:
-        type: int
+        type: power_of_two
         range: [1, 32]
         default: 4
         label: Diffuse cubemap resolution

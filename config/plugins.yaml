@@ -13,9 +13,9 @@ enabled:
     - pssm
     - scattering
     - skin_shading
+    - sky_ao
     - smaa
     - ssr
-    - sky_ao
     # - clouds
     # - dof
     # - fxaa
@@ -52,7 +52,7 @@ overrides:
 
     bloom:
         num_mipmaps: 8
-        bloom_strength: 2.0
+        bloom_strength: 1.0
         remove_fireflies: False
         lens_dirt_factor: 0.7
 
@@ -119,7 +119,7 @@ overrides:
         logarithmic_factor: 2.37
         sun_distance: 100.0
         split_count: 5
-        resolution: 1536
+        resolution: 1024
         border_bias: 0.0583
         use_pcf: True
         filter_sample_count: 8
@@ -151,6 +151,16 @@ overrides:
     skin_shading:
         quality: medium
         blur_scale: 0.43
+
+    sky_ao:
+        sample_radius: 6.0
+        max_radius: 200.0
+        resolution: 1024
+        sample_sequence: poisson_2D_32
+        ao_multiplier: 0.5
+        ao_bias: 0.3111
+        blend_factor: 0.05
+        capture_height: 250.0
 
     smaa:
         use_reprojection: True

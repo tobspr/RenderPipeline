@@ -37,7 +37,7 @@ class TextNode(RPObject):
 
     """ Interface for the Panda3D TextNode. """
 
-    def __init__(self, font="/$$rp/data/font/roboto-bold.ttf", pixel_size=16, align="left",
+    def __init__(self, font="/$$rp/data/font/Roboto-Bold.ttf", pixel_size=16, align="left",
                  pos=Vec2(0), color=Vec3(1), parent=None):
         """ Constructs a new text node, forwaring the parameters to the internal
         panda3d implementation """

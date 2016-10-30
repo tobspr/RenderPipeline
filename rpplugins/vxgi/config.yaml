@@ -2,7 +2,7 @@
 settings: !!omap
 
     - grid_resolution:
-        type: int
+        type: power_of_two
         range: [32, 384]
         default: 256
         label: Voxel Grid Resolution

@@ -183,7 +183,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
         float filter_radius = 1.0 / textureSize(PSSMSceneSunShadowMapPCF, 0).y;
         float shadow_term = 0;
         for(uint i = 0; i < 12; ++i) {
-            vec3 offset = vec3(poisson_disk_2D_12[i] * filter_radius, 0);
+            vec3 offset = vec3(poisson_2D_12[i] * filter_radius, 0);
             shadow_term += textureLod(PSSMSceneSunShadowMapPCF, projected + offset, 0).x;
         }
         shadow_term /= 12.0;

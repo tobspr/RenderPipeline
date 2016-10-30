@@ -56,7 +56,9 @@ def make_setting_from_data(data):
         "float": FloatType,
         "bool": BoolType,
         "enum": EnumType,
-        "path": PathType
+        "path": PathType,
+        "power_of_two": PowerOfTwoType,
+        "sample_sequence": SampleSequenceType
     }
     return make_setting_from_factory(data, factory)
 
@@ -123,6 +125,22 @@ class IntType(TemplatedType):
     def __init__(self, data):
         TemplatedType.__init__(self, int, data)
 
+class PowerOfTwoType(IntType):
+    """ Type for any power of two resolution """
+
+    def __init__(self, data):
+        IntType.__init__(self, data)
+
+    def set_value(self, value):
+        value = int(value)
+        if self.minval <= value <= self.maxval:
+            if value in [2**i for i in range(32)]:
+                self.value = value
+            else:
+                self.error("Not a power of two: {}".format(value))
+        else:
+            self.error("Invalid value: {}".format(value))
+
 
 class FloatType(TemplatedType):
     """ Template instantiation of TemplatedType using float """
@@ -158,7 +176,7 @@ class EnumType(BaseType):
 
     def set_value(self, value):
         if value not in self.values:
-            self.error("Value not in enum values!")
+            self.error("Value '" + str(value) + "' not in enum values!")
             return
         self.value = value
 
@@ -168,6 +186,41 @@ class EnumType(BaseType):
         for i, val in enumerate(self.values):
             defines["enum_{}_{}_{}".format(plugin_id, setting_id, val)] = 1000 + i
 
+class SampleSequenceType(BaseType):
+    """ Type for any 2D or 3D sample sequence """
+
+    POISSON_2D_SIZES = (4, 8, 12, 16, 32, 64)
+    POISSON_3D_SIZES = (16, 32, 64)
+    HALTON_SIZES = (4, 8, 16, 32, 64, 128)
+
+    def __init__(self, data):
+        BaseType.__init__(self, data)
+        self.dimension = int(data.pop("dimension"))
+        if self.dimension not in (2, 3):
+            raise Exception("Not a valid dimension, must be 2 or 3!")
+        self.default = data.pop("default")
+        if self.default not in self.sequences:
+            raise Exception("Not a valid sequence: {}".format(self.default))
+        self.value = self.default
+
+    def set_value(self, value):
+        if value not in self.sequences:
+            self.error("Value '" + str(value) + "' is not a valid sequence!")
+            return
+        self.value = value
+
+    @property
+    def sequences(self):
+        result = []
+        if self.dimension == 2:
+            for dim in self.POISSON_2D_SIZES:
+                result.append("poisson_2D_" + str(dim))
+        else:
+            for dim in self.POISSON_3D_SIZES:
+                result.append("poisson_3D_" + str(dim))
+        for dim in self.HALTON_SIZES:
+            result.append("halton_" + str(self.dimension) + "D_" + str(dim))
+        return result
 
 class PathType(BaseType):
     """ Path type to specify paths to files """

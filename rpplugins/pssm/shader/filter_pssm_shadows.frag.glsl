@@ -192,11 +192,11 @@ void main() {
                     // Find random sample locations on a poisson disk
                     vec2 offset = vec2(0);
                     if (num_search_samples <= 8)
-                        offset = poisson_disk_2D_8[i];
+                        offset = poisson_2D_8[i];
                     else if(num_search_samples <= 16)
-                        offset = poisson_disk_2D_16[i];
+                        offset = poisson_2D_16[i];
                     else
-                        offset = poisson_disk_2D_32[i];
+                        offset = poisson_2D_32[i];
 
                     offset = rotation_mat * offset;
 
@@ -230,7 +230,7 @@ void main() {
         for (int i = 0; i < num_samples; ++i) {
 
             // Get sample from a random poisson disk
-            vec2 offset = rotation_mat * poisson_disk_2D_32[i];
+            vec2 offset = rotation_mat * poisson_2D_32[i];
 
             // Find depth and apply contribution
             local_shadow_factor += get_shadow(

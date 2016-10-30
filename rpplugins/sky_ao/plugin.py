@@ -37,11 +37,15 @@ class Plugin(BasePlugin):
     author = "tobspr <tobias.springer1@gmail.com>"
     description = ("This plugin adds support for sky occlusion, computing "
                    "occlusion based on the sky visibility.")
-    version = "0.1 alpha (!)"
+    version = "0.2 beta"
 
     def on_stage_setup(self):
         self.capture_stage = self.create_stage(SkyAOCaptureStage)
         self.ao_stage = self.create_stage(SkyAOStage)
+
+        self.capture_stage.resolution = self.get_setting("resolution")
+        self.capture_stage.max_radius = self.get_setting("max_radius")
+        self.capture_stage.capture_height = self.get_setting("capture_height")
 
         # Make the stages use our output
         AmbientStage.required_pipes.append("SkyAO")

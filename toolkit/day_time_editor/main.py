@@ -41,15 +41,7 @@ os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, "../../")
 
 from rplibs.six import iteritems  # noqa
-
-# Load all PyQt classes
-try:
-    import PyQt4.QtCore as QtCore
-    import PyQt4.QtGui as QtGui
-except ImportError as msg:
-    print("Failed to import PyQt4:", msg)
-    print("Please make sure you installed PyQt!")
-    sys.exit(1)
+from rplibs.pyqt_imports import * # noqa
 
 from curve_widget import CurveWidget  # noqa
 
@@ -60,15 +52,12 @@ from rpcore.util.network_communication import NetworkCommunication  # noqa
 from ui.main_window_generated import Ui_MainWindow  # noqa
 from ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog  # noqa
 
-connect = QtCore.QObject.connect
-
-
-class PointDialog(QtGui.QDialog, Ui_PointDialog):
+class PointDialog(QDialog, Ui_PointDialog):
 
     def __init__(self, parent):
-        QtGui.QDialog.__init__(self, parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
-        connect(self.btn_insert, QtCore.SIGNAL("clicked()"), lambda: self.done(1))
+        qt_connect(self.btn_insert, "clicked()", lambda: self.done(1))
 
     def get_value(self):
         time = self.ipt_time.time()
@@ -76,7 +65,7 @@ class PointDialog(QtGui.QDialog, Ui_PointDialog):
         return time, val
 
 
-class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
+class DayTimeEditor(QMainWindow, Ui_MainWindow):
 
     """ This is the main editor class which handles the user interface """
 
@@ -89,19 +78,18 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self._plugin_mgr = PluginManager(None)
         self._plugin_mgr.load()
 
-        QtGui.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
         self.setupUi()
         self._tree_widgets = []
         self._cmd_queue = set()
-
-        self._update_settings_list()
 
         self._selected_setting_handle = None
         self._selected_setting = None
         self._selected_plugin = None
         self._current_time = 0.5
+
+        self._update_settings_list()
         self._on_time_changed(self.time_slider.value())
-        self.set_settings_visible(False)
 
         self._bg_thread = Thread(target=self.updateThread)
         self._bg_thread.start()
@@ -109,10 +97,8 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
     def set_settings_visible(self, visibility):
         if not visibility:
             self.frame_current_setting.hide()
-            self.lbl_select_setting.show()
         else:
             self.frame_current_setting.show()
-            self.lbl_select_setting.hide()
 
     def closeEvent(self, event):  # noqa
         event.accept()
@@ -148,28 +134,27 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.edit_widget.set_change_handler(self._on_curve_edited)
         self.prefab_edit_widget.addWidget(self.edit_widget)
 
-        connect(self.time_slider, QtCore.SIGNAL("valueChanged(int)"), self._on_time_changed)
-        connect(self.settings_tree,
-                QtCore.SIGNAL("itemSelectionChanged()"), self._on_setting_selected)
-        connect(self.btn_insert_point, QtCore.SIGNAL("clicked()"), self._insert_point)
-        connect(self.btn_reset, QtCore.SIGNAL("clicked()"), self._reset_settings)
+        qt_connect(self.time_slider, "valueChanged(int)", self._on_time_changed)
+        qt_connect(self.settings_tree, "itemSelectionChanged()", self._on_setting_selected)
+        qt_connect(self.btn_insert_point, "clicked()", self._insert_point)
+        qt_connect(self.btn_reset, "clicked()", self._reset_settings)
 
     def _reset_settings(self):
         """ Resets the current plugins settings """
-        # QtGui.QMessageBox.warning(self, "Houston, we have a problem!",
+        # QMessageBox.warning(self, "Houston, we have a problem!",
         #     "This functionality is not yet implemented! Blame tobspr if you need it.\n\n"
         #     "On a more serious note, you can still hand-edit config/daytime.yaml.",
-        #     QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        #     QMessageBox.Ok, QMessageBox.Ok)
 
         # Ask the user if he's really sure about it
         msg = "Are you sure you want to reset the control points of '" +\
               self._selected_setting_handle.label + "'?\n"
         msg += "!! This cannot be undone !! They will be lost forever (a long time!)."
-        reply = QtGui.QMessageBox.question(
-            self, "Warning", msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+        reply = QMessageBox.question(
+            self, "Warning", msg, QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
 
-            QtGui.QMessageBox.information(self, "Success", "Control points have been reset!")
+            QMessageBox.information(self, "Success", "Control points have been reset!")
             default = self._selected_setting_handle.default
             self._selected_setting_handle.curves[0].set_single_value(default)
             self._update_settings_list()
@@ -184,8 +169,8 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
             if (val < self._selected_setting_handle.minvalue or
                val > self._selected_setting_handle.maxvalue):
-                QtGui.QMessageBox.information(
-                    self, "Invalid Value", "Value is out of setting range!", QtGui.QMessageBox.Ok)
+                QMessageBox.information(
+                    self, "Invalid Value", "Value is out of setting range!", QMessageBox.Ok)
                 return
 
             val_linear = self._selected_setting_handle.get_linear_value(val)
@@ -200,7 +185,7 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
             widget.setText(1, formatted)
 
             if setting_handle.type == "color":
-                widget.setBackground(1, QtGui.QBrush(QtGui.QColor(*value)))
+                widget.setBackground(1, QBrush(QColor(*value)))
 
     def _on_curve_edited(self):
         """ Called when the curve got edited in the curve widget """
@@ -259,6 +244,8 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
         self.settings_tree.clear()
         self._tree_widgets = []
 
+        first_item = None
+
         for plugin_id, plugin in iteritems(self._plugin_mgr.instances):
 
             daytime_settings = self._plugin_mgr.day_settings[plugin_id]
@@ -267,10 +254,10 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
                 # Skip plugins with empty settings
                 continue
 
-            plugin_head = QtGui.QTreeWidgetItem(self.settings_tree)
+            plugin_head = QTreeWidgetItem(self.settings_tree)
             plugin_head.setText(0, plugin.name)
-            plugin_head.setFlags(QtCore.Qt.ItemIsEnabled)
-            font = QtGui.QFont()
+            plugin_head.setFlags(Qt.ItemIsEnabled)
+            font = QFont()
             font.setBold(True)
             if not self._plugin_mgr.is_plugin_enabled(plugin_id):
                 plugin_head.setText(0, plugin.name)
@@ -278,21 +265,29 @@ class DayTimeEditor(QtGui.QMainWindow, Ui_MainWindow):
 
             # Display all settings
             for setting, setting_handle in iteritems(daytime_settings):
-                setting_item = QtGui.QTreeWidgetItem(plugin_head)
+                setting_item = QTreeWidgetItem(plugin_head)
                 setting_item.setText(0, setting_handle.label)
-                setting_item.setTextColor(0, QtGui.QColor(150, 150, 150))
-                setting_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+                if PYQT_VERSION == 4:
+                    setting_item.setTextColor(0, QColor(150, 150, 150))
+                else:
+                    setting_item.setForeground(0, QColor(150, 150, 150))
+                setting_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
                 setting_item._setting_id = setting
                 setting_item._setting_handle = setting_handle
                 setting_item._plugin_id = plugin_id
                 setting_item.setToolTip(0, setting_handle.description)
                 setting_item.setToolTip(1, setting_handle.description)
                 self._tree_widgets.append((setting_handle, setting_item))
+                if not first_item:
+                    first_item = setting_item
 
         self.settings_tree.expandAll()
+        if first_item:
+            self.settings_tree.setCurrentItem(first_item)
 
 # Start application
-app = QtGui.QApplication(sys.argv)
+app = QApplication(sys.argv)
+qt_register_fonts()
 editor = DayTimeEditor()
 editor.show()
 app.exec_()
