@@ -79,9 +79,11 @@ class RenderModeSelector(DraggableWindow):
 
         collection = CheckboxCollection()
 
+        avg_colum_height = len(render_modes) // 3
+
         for idx, (mode, mode_id, requires_cxx, requires_plugin, special) in enumerate(render_modes):
-            offs_y = (idx // 3) * 24 + 35
-            offs_x = idx % 3 * 220
+            offs_y = (idx % avg_colum_height) * 24 + 35
+            offs_x = (idx // avg_colum_height) * 220
             enabled = True
             if requires_cxx and not NATIVE_CXX_LOADED:
                 enabled = False

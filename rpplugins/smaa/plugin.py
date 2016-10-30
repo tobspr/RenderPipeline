@@ -71,9 +71,10 @@ class Plugin(BasePlugin):
         self._jitter_index = 0
         scale = 1.0 / float(Globals.native_resolution.x)
 
+        # Reduce jittering to 35% to avoid flickering
+        scale *= 0.35
+
         for x, y in JITTERS[self.get_setting("jitter_pattern")]:
-            # The get_x_size() for both dimensions is not an error - its due to
-            # how the OrtographicLens works internally.
             jitter_x = (x * 2 - 1) * scale * 0.5
             jitter_y = (y * 2 - 1) * scale * 0.5
             self._jitters.append((jitter_x, jitter_y))

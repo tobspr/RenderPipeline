@@ -89,7 +89,7 @@ void main() {
     // Store the accumulated ambient term in a variable
     vec3 ambient = vec3(0);
 
-    #if !DEBUG_MODE || MODE_ACTIVE(DIFFUSE_AMBIENT) || MODE_ACTIVE(SPECULAR_AMBIENT)
+    #if !DEBUG_MODE || MODE_ACTIVE(DIFFUSE_AMBIENT) || MODE_ACTIVE(SPECULAR_AMBIENT) || MODE_ACTIVE(OCCLUSION)
 
         // Skip skybox shading
         if (is_skybox(m)) {
@@ -253,7 +253,9 @@ void main() {
 
     #if DEBUG_MODE
         #if MODE_ACTIVE(OCCLUSION)
-            result = textureLod(AmbientOcclusion, texcoord, 0).xxxx;
+            // result = textureLod(AmbientOcclusion, texcoord, 0).xxxx;
+            result = vec4(occlusion);
+            result.w = 1;
             return;
         #endif
 

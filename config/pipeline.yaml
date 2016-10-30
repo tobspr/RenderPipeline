@@ -10,6 +10,11 @@ pipeline:
     # it to false in that case.
     display_debugger: true
 
+    # Affects which debugging information is displayed. If this is set to false,
+    # only frame time is displayed, otherwise much more information is visible.
+    # Has no effect when display_debugger is set to false.
+    advanced_debugging_info: true
+
     # Whether to use the GL_R11F_G11F_B10F texture format to save memory
     # and bandwidth. Usually you want to enable this, however it can
     # cause banding sometimes, in which case you can disable this setting.

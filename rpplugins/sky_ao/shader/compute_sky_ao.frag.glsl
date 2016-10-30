@@ -51,6 +51,13 @@ void main() {
         return;
     }
 
+    // Blend ao
+    float fade_scale = 0.05;
+    float blend = 1.0;
+    blend *= saturate(min(local_coord.x, local_coord.y) / fade_scale);
+    blend *= saturate(min(1 - local_coord.x, 1 - local_coord.y) / fade_scale);
+
+
     const float ao_scale = 0.5; // xxx: make configurable
     const float radius = 3.0;
 
@@ -66,5 +73,7 @@ void main() {
 
     accum /= num_samples;
     accum = 1 - accum;
+    accum = mix(1, accum, blend);
+
     result = vec4(accum);
 }

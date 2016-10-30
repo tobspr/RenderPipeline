@@ -65,9 +65,15 @@ class Debugger(RPObject):
         self.create_components()
         self.init_keybindings()
 
-        Globals.base.doMethodLater(
-            0.5, lambda task: self.collect_scene_data(), "RPDebugger_collectSceneData_initial")
+        if self.advanced_info:
+            Globals.base.doMethodLater(
+                0.5, lambda task: self.collect_scene_data(), "RPDebugger_collectSceneData_initial")
+        
         Globals.base.doMethodLater(0.1, self.update_stats, "RPDebugger_updateStats")
+
+    @property
+    def advanced_info(self):
+        return self.pipeline.settings["pipeline.advanced_debugging_info"]
 
     def create_components(self):
         """ Creates the gui components """
@@ -83,8 +89,9 @@ class Debugger(RPObject):
             image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
             parent=self.fullscreen_node)
 
-        self.exposure_node = self.fullscreen_node.attach_new_node("ExposureWidget")
-        self.exposure_widget = ExposureWidget(self.pipeline, self.exposure_node)
+        if self.advanced_info:
+            self.exposure_node = self.fullscreen_node.attach_new_node("ExposureWidget")
+            self.exposure_widget = ExposureWidget(self.pipeline, self.exposure_node)
 
         self.fps_node = self.fullscreen_node.attach_new_node("FPSChart")
         self.fps_node.set_pos(Vec3(21, 1, -108 - 40))
@@ -115,9 +122,12 @@ class Debugger(RPObject):
         """ Creates the stats overlay """
         self.overlay_node = Globals.base.aspect2d.attach_new_node("Overlay")
         self.debug_lines = []
-        for i in range(6):
+
+        num_lines = 6 if self.advanced_info else 1
+        for i in range(num_lines):
             self.debug_lines.append(TextNode(
-                pos=Vec2(0, -i * 0.046), parent=self.overlay_node, align="right", color=Vec3(1)))
+                pos=Vec2(0, -i * 0.046), parent=self.overlay_node, align="right", color=Vec3(0.7, 1, 1)))
+        self.debug_lines[0].color = Vec4(1, 1, 0, 1)
 
     def create_hints(self):
         """ Creates the hints like keybindings and when reloading shaders """
@@ -159,9 +169,10 @@ class Debugger(RPObject):
         self.gui_scale = min(1.0, Globals.native_resolution.x / 1920.0)
         self.fullscreen_node.set_scale(self.gui_scale)
 
-        self.exposure_node.set_pos(
-            Globals.native_resolution.x // self.gui_scale - 200,
-            1, -Globals.native_resolution.y // self.gui_scale + 120)
+        if self.advanced_info:
+            self.exposure_node.set_pos(
+                Globals.native_resolution.x // self.gui_scale - 200,
+                1, -Globals.native_resolution.y // self.gui_scale + 120)
         self.hint_reloading.set_pos(
             float((Globals.native_resolution.x) // 2) / self.gui_scale - 465 // 2, 220)
         self.keybinding_instructions.set_pos(
@@ -213,9 +224,12 @@ class Debugger(RPObject):
             1000.0 / max(0.001, clock.get_average_frame_rate()),
             clock.get_max_frame_duration() * 1000.0)
 
-        text = "{:4d} render states  |  {:4d} transforms"
-        text += "  |  {:4d} commands  |  {:4d} lights  |  {:5d} shadow sources  "
-        text += "|  {:3.1f}% atlas usage"
+        if not self.advanced_info:
+            return task.again if task else None
+
+        text = "{:4d} states |  {:4d} transforms "
+        text += "|  {:4d} cmds |  {:4d} lights |  {:4d} shadows "
+        text += "|  {:5.1f}% atlas usage"
         self.debug_lines[1].text = text.format(
             RenderState.get_num_states(), TransformState.get_num_states(),
             self.pipeline.light_mgr.cmd_queue.num_processed_commands,
@@ -223,8 +237,8 @@ class Debugger(RPObject):
             self.pipeline.light_mgr.num_shadow_sources,
             self.pipeline.light_mgr.shadow_atlas_coverage)
 
-        text = "Pipeline:   {:3.0f} MiB VRAM  |  {:5d} images  |  {:5d} textures  |  "
-        text += "{:5d} render targets  |  {:3d} plugins  | {:2d}  views  ({:2d} active)"
+        text = "Internal:  {:3.0f} MB VRAM |  {:5d} img |  {:5d} tex |  "
+        text += "{:5d} fbos |  {:3d} plugins |  {:2d}  views  ({:2d} active)"
         tex_memory, tex_count = self.buffer_viewer.stage_information
 
         views, active_views = 0, 0
@@ -244,8 +258,8 @@ class Debugger(RPObject):
             len(self.pipeline.plugin_mgr.enabled_plugins),
             views, active_views)
 
-        text = "Scene:   {:4.0f} MiB VRAM  |  {:3d} textures  |  {:4d} geoms  "
-        text += "|  {:4d} nodes  |  {:7,.0f} vertices  |  {:5.0f} MiB vTX data  "
+        text = "Scene:   {:4.0f} MB VRAM |  {:3d} tex |  {:4d} geoms "
+        text += "|  {:4d} nodes |  {:7,.0f} vertices"
         scene_tex_size = 0
         for tex in TexturePool.find_all_textures():
             scene_tex_size += tex.estimate_texture_memory()
@@ -256,20 +270,19 @@ class Debugger(RPObject):
             self.analyzer.get_num_geoms(),
             self.analyzer.get_num_nodes(),
             self.analyzer.get_num_vertices(),
-            self.analyzer.get_vertex_data_size() / (1024**2),)
+        )
 
         sun_vector = Vec3(0)
         if self.pipeline.plugin_mgr.is_plugin_enabled("scattering"):
             sun_vector = self.pipeline.plugin_mgr.instances["scattering"].sun_vector
 
-        text = "{} ({:1.3f})  |  {:0.2f} {:0.2f} {:0.2f}  |  {:3d} daytime settings"
-        text += "    |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
-        text += "    |  Total tasks:  {:2d}   |   scheduled: {:2d}"
+        text = "Time:  {} ({:1.3f}) |  Sun  {:0.2f} {:0.2f} {:0.2f}"
+        text += " |  X {:3.1f}  Y {:3.1f}  Z {:3.1f}"
+        text += " |  {:2d} tasks |  scheduled: {:2d}"
         self.debug_lines[4].text = text.format(
             self.pipeline.daytime_mgr.formatted_time,
             self.pipeline.daytime_mgr.time,
             sun_vector.x, sun_vector.y, sun_vector.z,
-            len(self.pipeline.plugin_mgr.day_settings),
             Globals.base.camera.get_x(Globals.base.render),
             Globals.base.camera.get_y(Globals.base.render),
             Globals.base.camera.get_z(Globals.base.render),
@@ -287,7 +300,7 @@ class Debugger(RPObject):
         else:
             text += "inactive"
 
-        text += "   |  H {:3.1f} P {:3.1f} R {:3.1f}  |   {:4d} x {:4d} pixels @ {:3.1f} %"
+        text += "   |  HPR  ({:3.1f}, {:3.1f}, {:3.1f})  |   {:4d} x {:4d} pixels @ {:3.1f} %"
         text += "   |  {:3d} x {:3d} tiles"
         self.debug_lines[5].text = text.format(
             Globals.base.camera.get_h(Globals.base.render),

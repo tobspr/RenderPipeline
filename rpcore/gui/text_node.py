@@ -54,7 +54,8 @@ class TextNode(RPObject):
         self._nodepath.set_pos(pos.x, 0, pos.y)
 
         font = RPLoader.load_font(font)
-        font.set_outline(Vec4(0, 0, 0, 0.78), 1.6, 0.37)
+        # font.set_outline(Vec4(0, 0, 0, 0.78), 1.6, 0.37)
+        font.set_outline(Vec4(0, 0, 0, 1), 1.6, 0.37)
         font.set_scale_factor(1.0)
         font.set_texture_margin(int(pixel_size / 4.0 * 2.0))
         font.set_bg(Vec4(0, 0, 0, 0))
@@ -71,5 +72,16 @@ class TextNode(RPObject):
         """ Sets the current text """
         self._node.set_text(text)
 
+    @property
+    def color(self):
+        """ Returns the current text color """
+        return self._node.get_text_color()
+
+    @color.setter
+    def color(self, val):
+        """ Sets the current text color """
+        self._node.set_text_color(val)
+
     def set_pixel_size(self, size):
+        """ Sets the text size in pixels """
         self._nodepath.set_scale(size * 2.0 / float(Globals.native_resolution.y))

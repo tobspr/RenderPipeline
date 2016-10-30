@@ -159,7 +159,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 // Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
-    #if DEBUG_MODE && !MODE_ACTIVE(LIGHT_COUNT) && !MODE_ACTIVE(LIGHT_TILES)
+    #if DEBUG_MODE && !MODE_ACTIVE(LIGHT_COUNT) && !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
         return vec3(0);
     #endif
 
@@ -178,9 +178,11 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     uint num_total_lights  = texelFetch(PerCellLightsCounts, count_offs).x;
 
     // Early out when no lights are there
-    if (num_total_lights == 0) {
-        return vec3(0);
-    }
+    #if !MODE_ACTIVE(LIGHT_COUNT) && !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
+        if (num_total_lights == 0) {
+            return vec3(0);
+        }
+    #endif
 
     // Get the per-class counts
     uint num_spot_noshadow  = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x;
@@ -220,7 +222,6 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         LightData light_data = read_light_data(AllLightsData, light_offs);
         shading_result += process_spotlight(m, light_data, v, 1.0);
     }
-
 
     // Pointlights without shadow
     for (int i = 0; i < num_point_noshadow; ++i) {
