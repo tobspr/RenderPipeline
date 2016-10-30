@@ -32,7 +32,7 @@ overrides:
         clip_length: 2
         technique: SSAO
         ssao_sample_radius: 79.61
-        ssao_sample_count: 4
+        ssao_sequence: halton_3D_8
         ssao_bias: 0.0333
         ssao_max_distance: 6.89
         hbao_sample_radius: 255.17
@@ -40,14 +40,14 @@ overrides:
         hbao_ray_steps: 3
         hbao_tangent_bias: 0.6556
         hbao_max_distance: 11.56
-        ssvo_sample_count: 4
+        ssvo_sequence: halton_2D_8
         ssvo_sphere_radius: 17.94
         ssvo_max_distance: 0.82
         alchemy_sample_radius: 211.28
-        alchemy_num_samples: 4
+        alchemy_sequence: halton_2D_8
         alchemy_max_distance: 4.74
         ue4ao_sample_radius: 110.33
-        ue4ao_sample_count: 4
+        ue4ao_sample_sequence: halton_2D_8
         ue4ao_max_distance: 1.87
 
     bloom:
@@ -122,14 +122,15 @@ overrides:
         resolution: 1024
         border_bias: 0.0583
         use_pcf: True
-        filter_sample_count: 8
+        filter_sequence: halton_2D_16
         filter_radius: 0.54
         fixed_bias: 0.4889
         slope_bias: 0.11
         normal_bias: 0.39
         use_pcss: False
-        pcss_search_samples: 8
+        pcss_sequence: halton_2D_16
         pcss_penumbra_size: 11.0
+        pcss_min_penumbra_size: 5.0
         use_distant_shadows: True
         dist_shadow_resolution: 1024
         dist_shadow_clipsize: 12924.44444

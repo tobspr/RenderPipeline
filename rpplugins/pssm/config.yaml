@@ -84,16 +84,15 @@ settings: !!omap
             It provides a better shadow quality, and theoretically a better
             performance. However, not all GPU's seem to support it.
 
-    - filter_sample_count:
-        type: int
-        range: [4, 32]
-        default: 16
+    - filter_sequence:
+        type: sample_sequence
+        dimension: 2
+        default: halton_2D_16
         shader_runtime: true
-        label: Filtering samples
+        label: Filtering sequence
         description: >
-            Amount of samples to take for filtering the shadow. The samples are
-            choosen randomly on a poisson disk. Higher values provide a better
-            shadow quality, but also are more expensive.
+            Amount and Type of samples to take for filtering the shadow. Higher
+            values provide a better shadow quality, but also are more expensive.
 
     - filter_radius:
         type: float
@@ -152,16 +151,16 @@ settings: !!omap
             PCSS requires additionally computations, and thus is slower than
             regular filtering.
 
-    - pcss_search_samples:
+    - pcss_sequence:
         display_if: {use_pcss: true}
-        type: int
-        range: [4, 32]
-        default: 16
+        type: sample_sequence
+        dimension: 2
+        default: halton_2D_16
         shader_runtime: true
-        label: PCSS Penumbra samples
+        label: PCSS Penumbra Samples
         description: >
-            Amount of samples to take for finding the penumbra size. Higher values
-            might produce better results at the cost of performance.
+            Amount and Type of samples to take for finding the penumbra size.
+            Higher values might produce better results at the cost of performance.
 
     - pcss_penumbra_size:
         display_if: {use_pcss: true}
@@ -175,6 +174,16 @@ settings: !!omap
             and does not affect performance much. Lower settings will cause a
             smaller penumbra, while higher settings produce a bigger one. Too
             high values might cause artifacts in the filtering.
+
+    - pcss_min_penumbra_size:
+        display_if: {use_pcss: true}
+        type: float
+        range: [0.1, 20.0]
+        default: 5.0
+        shader_runtime: true
+        label: PCSS Min. Penumbra scale
+        description: >
+            Specifies the minimum penumbra/filter size to avoid blocky shadows.
 
     - use_distant_shadows:
         type: bool

@@ -142,7 +142,7 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
     float roughness = get_effective_roughness(m);
 
     float factor = 0.0;
-    float mipmap = m.linear_roughness * 40.0;
+    float mipmap = m.linear_roughness * 30.0;
     float intersection_distance = 1.0;
 
     Cubemap map = get_cubemap(id);
@@ -152,12 +152,13 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
 
     vec3 vector_to_source = normalize(map.bounding_sphere_center - m.position);
 
-    float normal_blend_factor = saturate(0.1 + 1 * dot(vector_to_source, m.normal));
+    // float normal_blend_factor = saturate(0.1 + 1 * dot(vector_to_source, m.normal));
+    float normal_blend_factor = saturate(3.0 * dot(vector_to_source, m.normal));
     float blend = saturate((1 - factor) / max(1e-10, map.border_smoothness));
     blend *= normal_blend_factor;
 
     // Make sure the gradient looks right after tonemapping
-    blend = square(blend);
+    // blend = square(blend);
 
     float local_distance = intersection_distance / map.bounding_sphere_radius;
 
@@ -167,9 +168,10 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
         } else {
             mipmap *= 0.1;
         }
+    #else
+        mipmap *= 0.1;
     #endif
 
-    mipmap *= 0.1;
 
     specular = textureLod(EnvProbes.cubemaps,
         vec4(direction, map.index), clamp(mipmap, 0.0, max_mip));
@@ -225,7 +227,7 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
             total_specular += spec;
         }
 
-        float scale = 1.0 / max(1e-3, total_weight) * min(1.0, total_blend);
+        float scale = 1.0 / max(1e-9, total_weight) * min(1.0, total_blend);
 
         vec4 result_spec = total_specular * scale;
         vec4 result_diff = total_diffuse * scale;

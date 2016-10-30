@@ -148,7 +148,7 @@ uniform int maxLightIndex;
                 DEFAULT_ENVMAP_BRIGHTNESS;
         #endif
 
-        shading_result += (0.15 + 0.85 * m.basecolor) * diff_env;
+        shading_result += (0.1 + 0.3 * m.basecolor) * diff_env;
 
         // Emission
         if (m.shading_model == SHADING_MODEL_EMISSIVE) {

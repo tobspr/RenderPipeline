@@ -27,9 +27,9 @@ settings: !!omap
     - jitter_pattern:
         type: enum
         default: halton8
-        values: ["halton8", "skew_butterly", "uniorm4", "halton256", "rotated4_helix2", "uniorm2",
+        values: ["halton8", "skew_butterly", "uniform4", "halton256", "rotated4_helix2", "uniform2",
                  "halton16", "still", "rotated4", "rotated4_helix", "poisson10", "halton32",
-                 "uniorm4_helix", "uniorm4_double_helix", "pentagram"]
+                 "uniform4_helix", "uniform4_double_helix", "pentagram"]
         runtime: true
         label: Jitter sequence
         description: >

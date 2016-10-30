@@ -36,16 +36,15 @@ to approximate AO.
 
 
 const float sample_radius = GET_SETTING(ao, alchemy_sample_radius);
-const int num_samples = GET_SETTING(ao, alchemy_num_samples) * 4;
+
 float max_dist = GET_SETTING(ao, alchemy_max_distance);
 float accum = 0.0;
-float accum_count = 0;
+int accum_count = 0;
 vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.5;
 
-for (int i = 0; i < num_samples; ++i) {
 
-    // Get random texcoord offset
-    vec2 offset = poisson_2D_32[i * int(32 / num_samples)];
+START_ITERATE_SEQUENCE(ao, alchemy_sequence, vec2 offset)
+
     offset = mix(offset, noise_vec.xy, 0.3);
 
     vec2 offcoord = texcoord + offset * offset_scale;
@@ -63,9 +62,10 @@ for (int i = 0; i < num_samples; ++i) {
         accum += max(0, dot(pixel_view_normal, sample_vec)) * (1-dist);
     }
 
-    accum_count += 1.0;
+    ++accum_count;
 
-}
+END_ITERATE_SEQUENCE();
+
 // Normalize values
-accum /= max(1.0, accum_count);
+accum /= max(1.0, float(accum_count));
 result = 1 - accum;

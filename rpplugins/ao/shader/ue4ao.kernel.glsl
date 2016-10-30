@@ -37,7 +37,6 @@ unocluded vector.
 */
 
 const float sample_radius = GET_SETTING(ao, ue4ao_sample_radius);
-const int num_samples = GET_SETTING(ao, ue4ao_sample_count) * 4;
 const float max_distance = GET_SETTING(ao, ue4ao_max_distance);
 
 float accum = 0.0;
@@ -45,9 +44,8 @@ float accum_count = 0.0;
 
 vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.4;
 
-for (int i = 0; i < num_samples; ++i) {
+START_ITERATE_SEQUENCE(ao, ue4ao_sample_sequence, vec2 offset)
 
-    vec2 offset = poisson_2D_32[i * int(32 / num_samples)];
     offset = mix(offset, noise_vec.xy, 0.3);
     vec2 offcoord = offset * offset_scale;
 
@@ -90,7 +88,8 @@ for (int i = 0; i < num_samples; ++i) {
         accum_count += 0.5;
 
     }
-}
+
+END_ITERATE_SEQUENCE();
 
 accum /= max(1.0, accum_count);
 result = 1 - accum;

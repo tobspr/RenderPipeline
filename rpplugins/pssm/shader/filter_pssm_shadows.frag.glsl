@@ -32,7 +32,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/sampling_sequences.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 
@@ -147,7 +147,6 @@ void main() {
         float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
         float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 1.5 * split);
         const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
-        const int num_samples = GET_SETTING(pssm, filter_sample_count);
         const float filter_radius = GET_SETTING(pssm, filter_radius) /
             GET_SETTING(pssm, resolution);
 
@@ -182,21 +181,10 @@ void main() {
 
                 */
 
-                const int num_search_samples = GET_SETTING(pssm, pcss_search_samples);
-
                 float num_blockers = 0.0;
                 float sum_blockers = 0.0;
 
-                for (int i = 0; i < num_search_samples; ++i) {
-
-                    // Find random sample locations on a poisson disk
-                    vec2 offset = vec2(0);
-                    if (num_search_samples <= 8)
-                        offset = poisson_2D_8[i];
-                    else if(num_search_samples <= 16)
-                        offset = poisson_2D_16[i];
-                    else
-                        offset = poisson_2D_32[i];
+                START_ITERATE_SEQUENCE(pssm, pcss_sequence, vec2 offset)
 
                     offset = rotation_mat * offset;
 
@@ -209,13 +197,14 @@ void main() {
                     float factor = step(sampled_depth, ref_depth);
                     num_blockers += factor;
                     sum_blockers += sampled_depth * factor;
-                }
+                
+                END_ITERATE_SEQUENCE();
 
                 // Examine ratio between blockers and non-blockers
                 float avg_blocker_depth = sum_blockers / num_blockers;
 
                 // Penumbra size also takes average blocker depth into account
-                float penumbra_size = max(0.002, ref_depth - avg_blocker_depth) /
+                float penumbra_size = max(GET_SETTING(pssm, pcss_min_penumbra_size) * 0.03, ref_depth - avg_blocker_depth) /
                     ref_depth * GET_SETTING(pssm, pcss_penumbra_size);
 
                 // Apply penumbra size
@@ -226,19 +215,15 @@ void main() {
 
         float local_shadow_factor = 0.0;
 
+
         // Do the actual shadow map filtering
-        for (int i = 0; i < num_samples; ++i) {
+        START_ITERATE_SEQUENCE(pssm, filter_sequence, vec2 offset)
 
-            // Get sample from a random poisson disk
-            vec2 offset = rotation_mat * poisson_2D_32[i];
-
-            // Find depth and apply contribution
             local_shadow_factor += get_shadow(
-                projected_coord + offset * filter_size, ref_depth);
-        }
+                projected_coord + (rotation_mat * offset) * filter_size, ref_depth);
 
-        // Normalize shadow factor
-        local_shadow_factor /= num_samples;
+        END_ITERATE_SEQUENCE();
+        NORMALIZE_SEQUENCE(pssm, filter_sequence, local_shadow_factor);
 
 
         if (split >= GET_SETTING(pssm, split_count) - 1) {

@@ -41,26 +41,26 @@ JITTERS = {
         Vec2(0.0, 0.0),
     ],
 
-    "uniorm2": [
+    "uniform2": [
         Vec2(-0.25, -0.25), # ll
         Vec2( 0.25,  0.25), # ur
     ],
 
-    "uniorm4": [
+    "uniform4": [
         Vec2(-0.25, -0.25), # ll
         Vec2( 0.25, -0.25), # lr
         Vec2( 0.25,  0.25), # ur
         Vec2(-0.25,  0.25), # ul
     ],
 
-    "uniorm4_helix": [
+    "uniform4_helix": [
         Vec2(-0.25, -0.25), # ll  3  1
         Vec2( 0.25,  0.25), # ur   \/|
         Vec2( 0.25, -0.25), # lr   /\|
         Vec2(-0.25,  0.25), # ul  0  2
     ],
 
-    "uniorm4_double_helix": [
+    "uniform4_double_helix": [
         Vec2(-0.25, -0.25), # ll  3  1
         Vec2( 0.25,  0.25), # ur   \/|
         Vec2( 0.25, -0.25), # lr   /\|

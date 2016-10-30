@@ -80,16 +80,16 @@ settings: !!omap
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
 
-    - ssao_sample_count:
+    - ssao_sequence:
         display_if: {technique: "SSAO"}
-        type: int
-        range: [1, 8]
-        default: 8
+        type: sample_sequence
+        dimension: 3
+        default: halton_3D_8
         shader_runtime: true
-        label: SSAO Sample Count
+        label: SSAO Sample Sequence
         description: >
-            Amount of samples to use. A higher amount of samples provides a better
-            quality but also a decrease in performance.
+            Amount and type of samples to use. A higher amount of samples provides
+            a better quality but also a decrease in performance.
 
     - ssao_bias:
         display_if: {technique: "SSAO"}
@@ -170,16 +170,16 @@ settings: !!omap
 
 
     # Settings for SSVO
-    - ssvo_sample_count:
+    - ssvo_sequence:
         display_if: {technique: "SSVO"}
-        type: int
-        range: [1, 8]
-        default: 4
+        type: sample_sequence
+        dimension: 2
+        default: halton_2D_8
         shader_runtime: true
-        label: SSVO Sample Count
+        label: SSVO Sample Sequence
         description: >
-            Amount of samples to use. A higher amount of samples provides a better
-            quality but also a decrease in performance.
+            Amount and type of samples to use. A higher amount of samples
+            provides a better quality but also a decrease in performance.
 
     - ssvo_sphere_radius:
         display_if: {technique: "SSVO"}
@@ -217,16 +217,16 @@ settings: !!omap
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
 
-    - alchemy_num_samples:
+    - alchemy_sequence:
         display_if: {technique: "ALCHEMY"}
-        type: int
-        range: [2, 8]
-        default: 4
+        type: sample_sequence
+        dimension: 2
+        default: halton_2D_8
         shader_runtime: true
-        label: ALCHEMY Sample Count
+        label: ALCHEMY Sample Sequence
         description: >
-            Amount of samples to use. A higher amount of samples provides a better
-            quality but also a decrease in performance.
+            Amount and type of samples to use. A higher amount of samples provides
+            a better quality but also a decrease in performance.
 
     - alchemy_max_distance:
         display_if: {technique: "ALCHEMY"}
@@ -253,16 +253,16 @@ settings: !!omap
             Size of the sampling radius in pixels, higher values might look better,
             but also perform worse due to less caching.
 
-    - ue4ao_sample_count:
+    - ue4ao_sample_sequence:
         display_if: {technique: "UE4AO"}
-        type: int
-        range: [4, 8]
-        default: 4
+        type: sample_sequence
+        dimension: 2
+        default: halton_2D_8
         shader_runtime: true
-        label: UE4AO Sample Count
+        label: UE4AO Sample Sequence
         description: >
-            Amount of samples to use. A higher amount of samples provides a better
-            quality but also a decrease in performance.
+            Amount and type of samples to use. A higher amount of samples provides
+            a better quality but also a decrease in performance.
 
     - ue4ao_max_distance:
         display_if: {technique: "UE4AO"}

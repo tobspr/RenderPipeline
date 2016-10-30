@@ -31,7 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/sampling_sequences.inc.glsl"
 
 out float result;
 

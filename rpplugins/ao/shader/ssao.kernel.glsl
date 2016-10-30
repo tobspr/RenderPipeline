@@ -35,7 +35,6 @@ AO.
 */
 
 const float sample_radius = GET_SETTING(ao, ssao_sample_radius);
-const int num_samples = GET_SETTING(ao, ssao_sample_count) * 4;
 const float bias = GET_SETTING(ao, ssao_bias) * 0.5 / kernel_scale;
 float max_range = GET_SETTING(ao, ssao_max_distance);
 
@@ -46,8 +45,8 @@ float accum = 0.0;
 // Make sure we have nice sampling coherency by scaling the kernel
 sample_offset /= 0.8 * kernel_scale;
 
-for (int i = 0; i < num_samples; ++i) {
-    vec3 offset = poisson_3D_32[i * int(32 / num_samples)];
+START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
+
     offset = mix(offset, noise_vec, 0.5);
     offset *= 0.6;
 
@@ -72,7 +71,8 @@ for (int i = 0; i < num_samples; ++i) {
     range_accum += fma(modifier, 0.5, 0.5);
     modifier *= step(linz_b + bias, linz_a);
     accum += modifier;
-}
+
+END_ITERATE_SEQUENCE()
 
 
 // normalize samples

@@ -36,17 +36,15 @@ of the spheres volume is then used to compute AO.
 */
 
 
-const int num_samples = GET_SETTING(ao, ssvo_sample_count) * 4;
+
 vec2 sphere_radius = GET_SETTING(ao, ssvo_sphere_radius) * pixel_size;
 float max_depth_diff = GET_SETTING(ao, ssvo_max_distance) / kernel_scale;
 
 float accum = 0.0;
 float pixel_linz = get_linear_z_from_z(pixel_depth);
 
-for (int i = 0; i < num_samples; ++i) {
+START_ITERATE_SEQUENCE(ao, ssvo_sequence, vec2 offset)
 
-    // Get random offset in screen space
-    vec2 offset = poisson_2D_32[i * int(32 / num_samples)];
     offset = mix(offset, noise_vec.xy, 0.3);
 
     vec2 offc = offset * sphere_radius * 5.0 * kernel_scale;
@@ -94,8 +92,9 @@ for (int i = 0; i < num_samples; ++i) {
         accum += 1.0;
     }
 
-}
+END_ITERATE_SEQUENCE();
 
-// Normalize occlusion factor
-accum /= num_samples;
+NORMALIZE_SEQUENCE(ao, ssvo_sequence, accum);
+
+
 result = accum;
