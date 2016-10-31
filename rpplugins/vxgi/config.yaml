@@ -16,7 +16,7 @@ settings: !!omap
     - grid_ws_size:
         type: float
         range: [5.0, 150.0]
-        default: 30.0
+        default: 100.0
         label: Worlspace Grid Size
         description: >
             This controls the dimensions of the voxel grid. The voxel grid is
@@ -27,7 +27,7 @@ settings: !!omap
     - diffuse_cone_steps:
         type: int
         range: [2, 32]
-        default: 15
+        default: 32
         shader_runtime: true
         label: Diffuse Cone Steps
         description: >
@@ -37,7 +37,7 @@ settings: !!omap
     - specular_cone_steps:
         type: int
         range: [2, 150]
-        default: 70
+        default: 150
         shader_runtime: true
         label: Specular Cone Steps
         description: >

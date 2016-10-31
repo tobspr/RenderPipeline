@@ -67,12 +67,13 @@ class Ui_MainWindow(object):
         self.lst_plugins = QtWidgets.QListWidget(self.centralwidget)
         self.lst_plugins.setGeometry(QtCore.QRect(20, 80, 251, 531))
         self.lst_plugins.setStyleSheet("QListWidget::item {\n"
-"padding: 7px 7px 6px;\n"
+"padding: 8px 7px 5px;\n"
 "background: #ddd;\n"
 "outline: 0 !important;\n"
 "margin-bottom: 1px;\n"
 "margin-right: 10px;\n"
 "color: #777;\n"
+"font-weight: 500;\n"
 "border: 0;\n"
 "border-radius: 0;\n"
 "}\n"

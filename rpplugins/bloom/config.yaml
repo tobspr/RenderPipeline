@@ -13,7 +13,7 @@ settings: !!omap
     - bloom_strength:
         type: float
         range: [0.01, 10.0]
-        default: 4.0
+        default: 1.0
         shader_runtime: true
         label: Bloom Strength
         description: >
@@ -22,7 +22,7 @@ settings: !!omap
 
     - remove_fireflies:
         type: bool
-        default: true
+        default: false
         label: Remove fireflies
         description: >
             Attempts to reduce flickering by darkening very small bright spots.
@@ -32,7 +32,7 @@ settings: !!omap
     - lens_dirt_factor:
         type: float
         range: [0, 1]
-        default: 0.5
+        default: 0.7
         shader_runtime: true
         label: Lens dirt factor
         description: >

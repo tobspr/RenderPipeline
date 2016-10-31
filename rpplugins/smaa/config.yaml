@@ -50,8 +50,8 @@ settings: !!omap
     - jitter_amount:
         display_if: { use_reprojection: True }
         type: float
-        range: [0.1, 2.0]
-        default: 1.0
+        range: [0.05, 2.0]
+        default: 0.3
         runtime: true
         label: Jitter Amount
         description: >

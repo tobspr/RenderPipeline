@@ -14,7 +14,7 @@ settings: !!omap
     - camera_blur_factor:
         type: float
         range: [0.0, 2.0]
-        default: 0.8
+        default: 0.4
         label: Camera Blur factor
         shader_runtime: true
         description: >
@@ -22,7 +22,17 @@ settings: !!omap
             is applied, a factor of 0 means no blur at all. You should adjust
             this so the blur is not too strong, otherwise motion sickness can happen.
 
+    - enable_object_blur:
+        type: bool
+        default: false
+        label: Enable object blur
+        description: >
+            Whether to enable per object blur, this only works when the per
+            object velocity vector patch was applied. Otherwise, this just
+            costs more performance.
+
     - blur_factor:
+        display_if: {enable_object_blur: true}
         type: float
         range: [0.0, 1.0]
         default: 0.5
@@ -33,6 +43,7 @@ settings: !!omap
             full blur is applied, a factor of 0 means no blur at all.
 
     - tile_size:
+        display_if: {enable_object_blur: true}
         type: int
         range: [8, 64]
         default: 32
@@ -44,6 +55,7 @@ settings: !!omap
 
 
     - max_blur_radius:
+        display_if: {enable_object_blur: true}
         type: float
         range: [1.0, 64.0]
         default: 10.0
@@ -54,9 +66,10 @@ settings: !!omap
             possible without getting artifacts.
 
     - num_samples:
+        display_if: {enable_object_blur: true}
         type: int
         range: [2, 64]
-        default: 14
+        default: 12
         label: Object Blur sample count
         shader_runtime: true
         description: >

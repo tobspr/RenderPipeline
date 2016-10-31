@@ -18,7 +18,7 @@ Deferred Realtime Rendering Pipeline with Physically Based Shading for the <a hr
 You can click on the images to enlarge them. Besides of that, you can find many more screenshots in my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox folder</a>.
 
 **Material demo**
-<img src="http://i.imgur.com/xVsLJcu.jpg" />
+<img src="http://i.imgur.com/M5YtvYR.png" />
 
 **Screen space reflections**
 <img src="http://i.imgur.com/oOwLXAK.png" />
@@ -27,7 +27,7 @@ You can click on the images to enlarge them. Besides of that, you can find many 
 <img src="http://i.imgur.com/hFD4qjV.png" alt="Car rendering" />
 
 **Plugin and Time of Day editor:**
-<img src="http://fs5.directupload.net/images/161030/c8gqap4a.png" />
+<img src="http://i.imgur.com/a8VpiHS.png" />
 
 **Terrain and volumetric clouds**
 <img src="http://i.imgur.com/zE0ywPl.png" />

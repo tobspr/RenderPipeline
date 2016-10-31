@@ -179,6 +179,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
         self.lbl_plugin_version.setText(version_str)
         self.lbl_plugin_desc.setText(self._current_plugin_instance.description)
+
         self._render_current_settings()
 
     def _show_restart_hint(self):
@@ -195,11 +196,11 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
         label_font = QFont()
         label_font.setPointSize(10)
-        label_font.setFamily("Segoe UI")
+        label_font.setFamily("Roboto")
 
         desc_font = QFont()
         desc_font.setPointSize(8)
-        desc_font.setFamily("Segoe UI")
+        desc_font.setFamily("Roboto")
 
         for index, (name, handle) in enumerate(iteritems(settings)):
             if not handle.should_be_visible(settings):
@@ -217,6 +218,9 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
             if not (handle.shader_runtime or handle.runtime ):
                 label.setStyleSheet("color: #999;")
+
+            if handle.display_conditions:
+                label.setStyleSheet(label.styleSheet() + "padding-left: 10px;")
 
             label.setMargin(10)
 
@@ -420,7 +424,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
             desc_font = QFont()
             desc_font.setPointSize(7)
-            desc_font.setFamily("Segoe UI")
+            desc_font.setFamily("Roboto")
 
             label.setText(display_file)
             label.setFont(desc_font)
@@ -461,10 +465,16 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         self.lst_plugins.clear()
         plugins = sorted(iteritems(self._plugin_mgr.instances), key=lambda plg: plg[1].name)
 
+
+        item_font = QFont()
+        item_font.setBold(False)
+        item_font.setPointSize(10)
+
         for plugin_id, instance in plugins:
 
             item = QListWidgetItem()
             item.setText(" " + instance.name)
+            item.setFont(item_font)
 
             if self._plugin_mgr.is_plugin_enabled(plugin_id):
                 item.setCheckState(Qt.Checked)

@@ -13,7 +13,7 @@ settings: !!omap
     - diffuse_probe_resolution:
         type: power_of_two
         range: [1, 32]
-        default: 4
+        default: 2
         label: Diffuse cubemap resolution
         description: >
             Resolution of the diffuse cubemap in pixels, this can usually be quite low.
@@ -31,7 +31,7 @@ settings: !!omap
     - max_probes_per_cell:
         type: int
         range: [1, 16]
-        default: 5
+        default: 3
         label: Max overlapping probes
         description: >
             Controlls how many probes can overlay at a given location.

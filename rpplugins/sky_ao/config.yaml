@@ -34,7 +34,7 @@ settings: !!omap
         type: sample_sequence
         shader_runtime: true
         dimension: 2
-        default: poisson_2D_16
+        default: poisson_2D_32
         label: Sample Sequence
         description: >
             Amout and Type of samples, higher values cost more performance
@@ -44,7 +44,7 @@ settings: !!omap
         type: float
         shader_runtime: true
         range: [0.05, 1.0]
-        default: 0.5
+        default: 0.25
         label: AO Multiplier
         description: >
             Controls the ao strength, higher values produce a darker ao.
@@ -53,7 +53,7 @@ settings: !!omap
         shader_runtime: true
         type: float
         range: [0.0, 1.0]
-        default: 0.5
+        default: 0.3
         label: AO Bias
         description: >
             Miminum ambient occlusion term, to prevent total dark spots.

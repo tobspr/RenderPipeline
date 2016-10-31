@@ -13,7 +13,7 @@ settings: !!omap
     - raymarch_steps:
         type: int
         range: [16, 256]
-        default: 64
+        default: 160
         label: Raymarch Steps
         shader_runtime: true
         description: >

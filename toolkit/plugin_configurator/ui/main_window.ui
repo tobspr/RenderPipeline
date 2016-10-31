@@ -89,12 +89,13 @@ QScrollBar:vertical {
     </property>
     <property name="styleSheet">
      <string notr="true">QListWidget::item {
-padding: 7px 7px 6px;
+padding: 8px 7px 5px;
 background: #ddd;
 outline: 0 !important;
 margin-bottom: 1px;
 margin-right: 10px;
 color: #777;
+font-weight: 500;
 border: 0;
 border-radius: 0;
 }
@@ -1510,7 +1511,7 @@ a website or so.</string>
      <property name="geometry">
       <rect>
        <x>520</x>
-       <y>60</y>
+       <y>20</y>
        <width>180</width>
        <height>31</height>
       </rect>

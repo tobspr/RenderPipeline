@@ -40,7 +40,7 @@ settings: !!omap
         display_if: {tonemap_operator: "exponential"}
         type: float
         range: [0.01, 5.0]
-        default: 0.5
+        default: 1.0
         shader_runtime: true
         label: Exponential factor
         description: >
@@ -135,7 +135,7 @@ settings: !!omap
     - vignette_strength:
         type: float
         range: [0.0, 1.0]
-        default: 0.5
+        default: 0.35
         shader_runtime: true
         label: Vignette Strength
         description: >
@@ -183,7 +183,7 @@ settings: !!omap
         display_if: {use_chromatic_aberration: true}
         type: float
         range: [0.009, 2.0]
-        default: 1.0
+        default: 0.5
         shader_runtime: true
         label: Chromatic Aberration Strength
         description: >
@@ -217,7 +217,7 @@ settings: !!omap
     - min_exposure_value:
         display_if: {manual_camera_parameters: false}
         type: float
-        range: [0.0, 0.2]
+        range: [0.0, 0.1]
         default: 0.01
         label: Minimum Exposure
         shader_runtime: true
@@ -252,7 +252,7 @@ settings: !!omap
         display_if: {manual_camera_parameters: false}
         type: float
         range: [0.01, 5.0]
-        default: 2.0
+        default: 3.6
         shader_runtime: true
         label: Brightness Adaption Rate
         description: >
@@ -263,7 +263,7 @@ settings: !!omap
         display_if: {manual_camera_parameters: false}
         type: float
         range: [0.01, 5.0]
-        default: 1.0
+        default: 0.7
         shader_runtime: true
         label: Darkness Adaption Rate
         description: >
@@ -293,7 +293,7 @@ settings: !!omap
     - sharpen_twice:
         display_if: {use_sharpen: true}
         type: bool
-        default: true
+        default: false
         label: Double-Sharpen
         description: >
             If this setting is true, the sharpen filter will be executed twice,

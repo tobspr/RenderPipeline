@@ -45,7 +45,7 @@ settings: !!omap
         display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [0.5, 5.0]
-        default: 1.2
+        default: 1.3
         shader_runtime: true
         label: Mie height scale
         description: >
@@ -55,7 +55,7 @@ settings: !!omap
         display_if: {scattering_method: "eric_bruneton"}
         type: float
         range: [0.1, 0.9999]
-        default: 0.8
+        default: 0.3
         shader_runtime: true
         label: Mie Phase
         description: >
@@ -74,7 +74,7 @@ settings: !!omap
 
     - enable_godrays:
         type: bool
-        default: true
+        default: false
         label: Enable Godrays (experimental!)
         description: >
             This enables the experimental support for godrays.
