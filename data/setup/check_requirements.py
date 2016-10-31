@@ -35,7 +35,7 @@ def _error(msg):
     print("\n" * 4, file=sys.stderr)
     print("ERROR:", msg, file=sys.stderr)
     print("\n" * 4, file=sys.stderr)
-    sys.exit(-1)
+    sys.exit(1)
 
 class Application(ShowBase):
     def __init__(self):

@@ -33,6 +33,7 @@ from __future__ import print_function
 import os
 import sys
 import subprocess
+import webbrowser
 import gzip
 import shutil
 import argparse
@@ -49,17 +50,9 @@ sys.path.insert(0, ".")
 from rplibs.six.moves import input # pylint: disable=import-error
 
 # Load and init colorama, used to color the output
-if sys.version_info.major == 2:
-    from rplibs.colorama import init as init_colorama
-    from rplibs.colorama import Fore, Style
-    init_colorama()
-else:
-    # Colorama seems not to work in Py3, work arround it
-    class Dummy(object):
-        def __getattr__(self, key):
-            return ""
-    Fore = Dummy()
-    Style = Dummy()
+from rplibs.colorama import init as init_colorama
+from rplibs.colorama import Fore, Style
+init_colorama()
 
 def parse_cmd_args():
     """ Parses the command line arguments """
@@ -93,7 +86,17 @@ def print_step(title):
     CURRENT_STEP += 1
     print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.CYAN + Style.BRIGHT))
 
-def exec_python_file(pth, args=None):
+def ask_for_troubleshoot(url):
+    if not url:
+        print("\nSorry, no troubleshooting options are available.\n")
+        return
+
+    query = "\nIt seems the setup failed, do you want to open the troubleshooting page for this step? (y/n):"
+    if get_user_choice(query):
+        print("OK, opening", url,"\n")
+        webbrowser.open(url, new=2)
+
+def exec_python_file(pth, args=None, troubleshoot=None):
     """ Executes a python file and checks the return value """
     basedir = os.path.dirname(os.path.abspath(os.path.join(SETUP_DIR, pth))) + "/"
     print("\tRunning script:", Fore.YELLOW + Style.BRIGHT + pth + Style.RESET_ALL)
@@ -108,9 +111,11 @@ def exec_python_file(pth, args=None):
     except subprocess.CalledProcessError as msg:
         print(color("Failed to execute '" + pth + "'", Fore.YELLOW + Style.BRIGHT))
         print("Output:", msg, "\n", msg.output.decode("utf-8", errors="ignore"))
+        ask_for_troubleshoot(troubleshoot)
         error("Python script didn't return properly!")
     except IOError as msg:
         print("Python script error:", msg)
+        ask_for_troubleshoot(troubleshoot)
         error("Error during script execution")
     if CMD_ARGS.verbose:
         print(output.decode("utf-8", errors="ignore"))
@@ -150,7 +155,8 @@ def get_user_choice(query):
     query = color(query, Fore.GREEN + Style.BRIGHT) + " "
 
     while True:
-        user_choice = input(query).strip().lower()
+        print(query, end="")
+        user_choice = input().strip().lower()
 
         if user_choice in ["y", "yes", "1"]:
             return True
@@ -204,7 +210,7 @@ def setup():
     print("-" * 79)
 
     print_step("Checking Panda3D Modules")
-    # Make sure this python build is using panda3D
+    # Make sure this python build is using Panda3D
     try:
         from panda3d.core import NodePath
     except ImportError:
@@ -215,7 +221,8 @@ def setup():
 
     check_panda_version()
     print_step("Checking requirements ..")
-    exec_python_file("data/setup/check_requirements.py")
+    exec_python_file("data/setup/check_requirements.py",
+        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#requirements-check")
 
 
     if not CMD_ARGS.skip_native:
@@ -233,31 +240,35 @@ def setup():
 
             if not CMD_ARGS.skip_update:
                 print_step("Downloading the module builder ...")
-                exec_python_file("rpcore/native/update_module_builder.py")
+                exec_python_file("rpcore/native/update_module_builder.py",
+                    troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#downloading-module-builder")
 
             print_step("Building the native code .. (This might take a while!)")
-            exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [])
+            exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [],
+                troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#building-the-native-code")
 
         else:
             write_flag("rpcore/native/use_cxx.flag", False)
 
-    print_step("Extracting .gz files ...")
-    extract_gz_files(os.path.join(SETUP_DIR, "data/"))
-
     print_step("Generating .txo files ...")
-    exec_python_file("data/generate_txo_files.py")
+    exec_python_file("data/generate_txo_files.py",
+        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#extracting-txo-files")
 
     print_step("Filtering default cubemap ..")
-    exec_python_file("data/default_cubemap/filter.py")
+    exec_python_file("data/default_cubemap/filter.py",
+        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#filtering-default-cubemap")
 
     print_step("Precomputing film grain .. ")
-    exec_python_file("data/film_grain/generate.py")
+    exec_python_file("data/film_grain/generate.py",
+        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-film-grain")
 
     print_step("Running shader scripts .. ")
-    exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py")
+    exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py",
+        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#running-shader-scripts")
 
     print_step("Precomputing clouds ..")
-    exec_python_file("rpplugins/clouds/resources/precompute.py")
+    exec_python_file("rpplugins/clouds/resources/precompute.py",
+        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-clouds")
 
     write_flag("data/install.flag", True)
 
