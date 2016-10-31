@@ -17,7 +17,7 @@ enabled:
     - ssr
     # - clouds
     # - dof
-    # - env_probes
+    - env_probes
     # - fxaa
     # - volumetrics
     # - vxgi

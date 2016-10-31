@@ -41,52 +41,56 @@ class MotionBlurStage(RenderStage):
         return {"ShadedScene": self.target_cam_blur.color_tex}
 
     def create(self):
-        self.tile_size = 32
-        self.tile_target = self.create_target("FetchVertDominantVelocity")
-        self.tile_target.size = -1, -self.tile_size
-        self.tile_target.add_color_attachment(bits=(16, 16, 0))
-        self.tile_target.prepare_buffer()
 
-        self.tile_target_horiz = self.create_target("FetchHorizDominantVelocity")
-        self.tile_target_horiz.size = -self.tile_size
-        self.tile_target_horiz.add_color_attachment(bits=(16, 16, 0))
-        self.tile_target_horiz.prepare_buffer()
-        self.tile_target_horiz.set_shader_input("SourceTex", self.tile_target.color_tex)
+        if self.per_object_blur:
+            self.tile_target = self.create_target("FetchVertDominantVelocity")
+            self.tile_target.size = -1, -self.tile_size
+            self.tile_target.add_color_attachment(bits=(16, 16, 0))
+            self.tile_target.prepare_buffer()
 
-        self.minmax_target = self.create_target("NeighborMinMax")
-        self.minmax_target.size = -self.tile_size
-        self.minmax_target.add_color_attachment(bits=(16, 16, 0))
-        self.minmax_target.prepare_buffer()
-        self.minmax_target.set_shader_input("TileMinMax", self.tile_target_horiz.color_tex)
+            self.tile_target_horiz = self.create_target("FetchHorizDominantVelocity")
+            self.tile_target_horiz.size = -self.tile_size
+            self.tile_target_horiz.add_color_attachment(bits=(16, 16, 0))
+            self.tile_target_horiz.prepare_buffer()
+            self.tile_target_horiz.set_shader_input("SourceTex", self.tile_target.color_tex)
 
-        self.pack_target = self.create_target("PackBlurData")
-        self.pack_target.add_color_attachment(bits=(16, 16, 0))
-        self.pack_target.prepare_buffer()
+            self.minmax_target = self.create_target("NeighborMinMax")
+            self.minmax_target.size = -self.tile_size
+            self.minmax_target.add_color_attachment(bits=(16, 16, 0))
+            self.minmax_target.prepare_buffer()
+            self.minmax_target.set_shader_input("TileMinMax", self.tile_target_horiz.color_tex)
 
-        self.target = self.create_target("ObjectMotionBlur")
-        self.target.add_color_attachment(bits=16)
-        self.target.prepare_buffer()
-        self.target.set_shader_input("NeighborMinMax", self.minmax_target.color_tex)
-        self.target.set_shader_input("PackedSceneData", self.pack_target.color_tex)
+            self.pack_target = self.create_target("PackBlurData")
+            self.pack_target.add_color_attachment(bits=(16, 16, 0))
+            self.pack_target.prepare_buffer()
 
-        self.target.color_tex.set_wrap_u(SamplerState.WM_clamp)
-        self.target.color_tex.set_wrap_v(SamplerState.WM_clamp)
+            self.target = self.create_target("ObjectMotionBlur")
+            self.target.add_color_attachment(bits=16)
+            self.target.prepare_buffer()
+            self.target.set_shader_input("NeighborMinMax", self.minmax_target.color_tex)
+            self.target.set_shader_input("PackedSceneData", self.pack_target.color_tex)
+
+            self.target.color_tex.set_wrap_u(SamplerState.WM_clamp)
+            self.target.color_tex.set_wrap_v(SamplerState.WM_clamp)
 
         self.target_cam_blur = self.create_target("CameraMotionBlur")
         self.target_cam_blur.add_color_attachment(bits=16)
         self.target_cam_blur.prepare_buffer()
-        self.target_cam_blur.set_shader_input("SourceTex", self.target.color_tex)
+
+        if self.per_object_blur:
+            self.target_cam_blur.set_shader_input("SourceTex", self.target.color_tex)
 
     def reload_shaders(self):
-        self.tile_target.shader = self.load_plugin_shader(
-            "fetch_dominant_velocity.frag.glsl")
-        self.tile_target_horiz.shader = self.load_plugin_shader(
-            "fetch_dominant_velocity_horiz.frag.glsl")
-        self.minmax_target.shader = self.load_plugin_shader(
-            "neighbor_minmax.frag.glsl")
-        self.pack_target.shader = self.load_plugin_shader(
-            "pack_blur_data.frag.glsl")
-        self.target.shader = self.load_plugin_shader(
-            "apply_motion_blur.frag.glsl")
+        if self.per_object_blur:
+            self.tile_target.shader = self.load_plugin_shader(
+                "fetch_dominant_velocity.frag.glsl")
+            self.tile_target_horiz.shader = self.load_plugin_shader(
+                "fetch_dominant_velocity_horiz.frag.glsl")
+            self.minmax_target.shader = self.load_plugin_shader(
+                "neighbor_minmax.frag.glsl")
+            self.pack_target.shader = self.load_plugin_shader(
+                "pack_blur_data.frag.glsl")
+            self.target.shader = self.load_plugin_shader(
+                "apply_motion_blur.frag.glsl")
         self.target_cam_blur.shader = self.load_plugin_shader(
             "camera_motion_blur.frag.glsl")

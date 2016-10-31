@@ -33,7 +33,15 @@
 
 #pragma optionNV (unroll all)
 
+#if GET_SETTING(motion_blur, enable_object_blur)
 uniform sampler2D SourceTex;
+#define SOURCE SourceTex
+#else
+uniform sampler2D ShadedScene;
+#define SOURCE ShadedScene
+#endif
+
+
 uniform sampler2D CombinedVelocity;
 out vec3 result;
 
@@ -47,7 +55,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     #if DEBUG_MODE
-        result = textureLod(SourceTex, texcoord, 0).xyz;
+        result = textureLod(SOURCE, texcoord, 0).xyz;
         return;
     #endif
 
@@ -71,7 +79,7 @@ void main() {
 
     // We can abort early when no velocity is present
     if (velocity_len < min_velocity) {
-        result = textureLod(SourceTex, texcoord, 0).xyz;
+        result = textureLod(SOURCE, texcoord, 0).xyz;
         return;
     }
 
@@ -84,7 +92,7 @@ void main() {
     // Weight the center sample by a small bit to make sure we always have a weight.
     // However, we don't weight it too much to make the blur not look weird.
     float weights = 1e-3;
-    vec3 accum = textureLod(SourceTex, texcoord, 0).xyz * weights;
+    vec3 accum = textureLod(SOURCE, texcoord, 0).xyz * weights;
     float jitter = rand(texcoord);
 
     // Blur in both directions
@@ -94,7 +102,7 @@ void main() {
         // Prevent bleeding when rotating - that is, objects moving into different directions
         vec2 sample_velocity = textureLod(CombinedVelocity, texcoord + offs, 0).xy;
         float weight = saturate(dot(sample_velocity, velocity) * WINDOW_WIDTH * 3);
-        accum += textureLod(SourceTex, texcoord + offs, 0).xyz * weight;
+        accum += textureLod(SOURCE, texcoord + offs, 0).xyz * weight;
         weights += weight;
     }
 

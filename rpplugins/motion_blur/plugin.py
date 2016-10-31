@@ -40,3 +40,4 @@ class Plugin(BasePlugin):
     def on_stage_setup(self):
         self.stage = self.create_stage(MotionBlurStage)
         self.stage.tile_size = self.get_setting("tile_size")
+        self.stage.per_object_blur = self.get_setting("enable_object_blur")

@@ -79,14 +79,17 @@ void main() {
     #endif
 
     vec3 intersected_color = textureLod(Previous_PostAmbientScene, last_coord, 0).xyz;
+    
+    #if HAVE_PLUGIN(color_correction)
+        // Prevent super bright spots by clamping to a reasonable high color.
+        // Otherwise very bright highlights lead to artifacts.
+        // Since this heavily depends on the scene brightness, we base this on
+        // the exposure. Basically the color is only allowed to be twice as bright
+        // as the average screen brightness.
 
-    // Prevent super bright spots by clamping to a reasonable high color.
-    // Otherwise very bright highlights lead to artifacts.
-    // Since this heavily depends on the scene brightness, we base this on
-    // the exposure. Basically the color is only allowed to be twice as bright
-    // as the average screen brightness.
-    float current_ev = 1.0 / texelFetch(Exposure, 0).x;
-    intersected_color = clamp(intersected_color, 0.0, 2 * current_ev);
+        float current_ev = 1.0 / texelFetch(Exposure, 0).x;
+        intersected_color = clamp(intersected_color, 0.0, 2 * current_ev);
+    #endif
 
     // Finally store the result in the mip-chian
     result = vec4(intersected_color, 1) * fade;
