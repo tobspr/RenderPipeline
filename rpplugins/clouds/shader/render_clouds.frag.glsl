@@ -48,8 +48,8 @@ const float METER = 1.0;
 
 const float earth_radius = 6371.0 * KM;
 const vec3 earth_mid = vec3(0, 0, -earth_radius);
-const float cloud_start = earth_radius + 1.5 * KM;
-const float cloud_end = earth_radius + 4.0 * KM;
+const float cloud_start = earth_radius + 1.3 * KM;
+const float cloud_end = earth_radius + 25.0 * KM;
 
 
 float GetHeightFractionForPoint(vec3 inPosition, vec2 inCloudMinMax)
@@ -100,7 +100,8 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
     // base_cloud = mix(high_frequency_noises.y * base_cloud, 1, base_cloud);
 
     base_cloud -= high_frequency_noises.y * 0.23 * (1 - base_cloud);
-    base_cloud *= 3.0;
+    // base_cloud *= 3.0;
+    base_cloud *= 125.0 * 256.0 / GET_SETTING(clouds, raymarch_steps);
 
     return saturate(base_cloud);
 }
@@ -108,7 +109,7 @@ float SampleCloudDensity(vec3 p, vec3 weather_data, float mip_level)
 
 vec2 get_cloud_coord(vec3 pos) {
     vec2 xy_coord = pos.xy / (cloud_end - cloud_start);
-    xy_coord.xy /= 1.0 + 0.05 * length(xy_coord);
+    xy_coord.xy /= 1.0 + 0.1 * length(xy_coord);
     // xy_coord.xy += 0.5;
     // xy_coord *= 0.5;
     return xy_coord;
@@ -122,11 +123,11 @@ float HenyeyGreenstein(vec3 inLightVector, vec3 inViewVector, float inG)
 }
 
 void main() {
-    // int num_samples = GET_SETTING(clouds, raymarch_steps);
-    int num_samples = 256;
+    int num_samples = GET_SETTING(clouds, raymarch_steps);
+    // int num_samples = 256;
 
     vec2 texcoord = get_half_texcoord();
-    vec3 wind_offs = vec3(0.2, 0.3, 0) * 0.022 * MainSceneData.frame_time;
+    vec3 wind_offs = vec3(0.2, 0.3, 0) * 0.052 * MainSceneData.frame_time;
 
     vec3 pos = get_gbuffer_position(GBuffer, texcoord);
     vec3 ray_start = MainSceneData.camera_pos;
@@ -169,7 +170,9 @@ void main() {
     int zero_density_sample_count = 0;
     float mip_level = 0;
 
-    vec3 p = trace_start + trace_step;
+    float jitter = abs(rand(ivec2(gl_FragCoord.xy)));
+
+    vec3 p = trace_start + (1 + jitter) * trace_step;
 
     vec3 accum_color = vec3(0);
 
@@ -213,7 +216,7 @@ void main() {
 
 
     // Don't render clouds at obligue angles
-    float horizon = pow(saturate(ray_dir.z * 1.0), 0.3);
+    float horizon = pow(saturate(ray_dir.z * 1.0), 0.1);
     accum_color *= horizon;
     accum_weight *= horizon;
 

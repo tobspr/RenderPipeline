@@ -53,8 +53,8 @@ class MountManager(RPObject):
         self._mounted = False
         self._do_cleanup = True
         self._config_dir = None
-        self.debug("Auto-Detected base path to", self._base_path)
 
+        self.debug("Auto-Detected base path to", self._base_path)
         atexit.register(self._on_exit_cleanup)
 
     @property

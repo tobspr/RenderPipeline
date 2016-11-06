@@ -25,7 +25,7 @@ if PYQT_VERSION == 4:
     from PyQt4.QtCore import *
 
     def qt_connect(obj, signal_name, handler):
-        obj.connect(SIGNAL(signal_name), handler)
+        QObject.connect(obj, SIGNAL(signal_name), handler)
 
 elif PYQT_VERSION == 5:
     from PyQt5.QtGui import *

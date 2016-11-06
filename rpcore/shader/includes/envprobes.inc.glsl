@@ -142,7 +142,7 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
     float roughness = get_effective_roughness(m);
 
     float factor = 0.0;
-    float mipmap = m.linear_roughness * 30.0;
+    float mipmap = m.linear_roughness * 10.0;
     float intersection_distance = 1.0;
 
     Cubemap map = get_cubemap(id);
@@ -169,7 +169,7 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
             mipmap *= 0.1;
         }
     #else
-        mipmap *= 0.1;
+        // mipmap *= 0.1;
     #endif
 
 

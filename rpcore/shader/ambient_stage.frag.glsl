@@ -122,10 +122,8 @@ void main() {
 
             // Prevent total dark ao term
             sky_ao_factor = max(0.2, sky_ao_factor);
-
-
-            // occlusion *= min(occlusion, sky_ao_factor);
-            // occlusion *= sky_ao_factor;
+        #else
+            float sky_ao_factor = 1.0;
         #endif
 
         // Get reflection directory

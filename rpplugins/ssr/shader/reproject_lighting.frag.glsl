@@ -91,6 +91,6 @@ void main() {
         intersected_color = clamp(intersected_color, 0.0, 2 * current_ev);
     #endif
 
-    // Finally store the result in the mip-chian
+    // Finally store the result in the mip-chain
     result = vec4(intersected_color, 1) * fade;
 }
