@@ -31,7 +31,7 @@ import math
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties
+from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties, GeomTristrips
 
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
@@ -304,15 +304,33 @@ class RenderPipeline(RPObject):
             np.remove_node()
             envprobes.append(probe)
 
+        tristrips_warning_emitted = False
         transparent_objects = []
         for geom_np in scene.find_all_matches("**/+GeomNode"):
             geom_node = geom_np.node()
             geom_count = geom_node.get_num_geoms()
             for i in range(geom_count):
                 state = geom_node.get_geom_state(i)
+                geom = geom_node.get_geom(i)
+
+                needs_conversion = False
+                for prim in geom.get_primitives():
+                    if isinstance(prim, GeomTristrips):
+                        needs_conversion = True
+                        if not tristrips_warning_emitted:
+                            self.warn("At least one GeomNode (", geom_node.get_name(), "and possible more..) contains tristrips.")
+                            self.warn("Due to a NVIDIA Driver bug, we have to convert them to triangles now.")
+                            self.warn("Consider exporting your models with the Bam Exporter to avoid this.")
+                            tristrips_warning_emitted = True
+                            break
+
+                if needs_conversion:
+                    geom_node.modify_geom(i).decompose_in_place()
+
                 if not state.has_attrib(MaterialAttrib):
-                    self.warn("Geom", geom_node, "has no material!")
+                    self.warn("Geom", geom_node, "has no material! Please fix this.")
                     continue
+
                 material = state.get_attrib(MaterialAttrib).get_material()
                 shading_model = material.emission.x
 
