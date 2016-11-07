@@ -56,7 +56,7 @@ init_colorama()
 
 def parse_cmd_args():
     """ Parses the command line arguments """
-    parser = argparse.ArgumentParser(description="Render Pipeline setup")
+    parser = argparse.ArgumentParser(description="Render Pipeline Setup")
     parser.add_argument(
         "--clean", help="Clean rebuild of the native modules", action="store_true")
     parser.add_argument(
@@ -65,6 +65,8 @@ def parse_cmd_args():
         "--skip-update", help="Skip updating the module builder to avoid overriding changes", action="store_true")
     parser.add_argument(
         "--skip-native", help="Skip native module compilation", action="store_true")
+    parser.add_argument(
+        "--ci-build", help="Skip setup steps requiring gpu drivers, only for travis ci", action="store_true")
     return parser.parse_args()
 
 CMD_ARGS = parse_cmd_args()
@@ -199,7 +201,7 @@ def check_panda_version():
         print("\n")
         print("It seems your Panda3D version is outdated. Please get the newest version ")
         print("from", color("https://github.com/panda3d/panda3d", Fore.MAGENTA + Style.BRIGHT),
-              "(you have to build from source).")
+              "(you can also build from source).")
         error("Panda3D version outdated")
 
 def setup():
@@ -220,9 +222,11 @@ def setup():
         error("Failed to import Panda3D modules")
 
     check_panda_version()
-    print_step("Checking requirements ..")
-    exec_python_file("data/setup/check_requirements.py",
-        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#requirements-check")
+
+    if not CMD_ARGS.ci_build:
+        print_step("Checking requirements ..")
+        exec_python_file("data/setup/check_requirements.py",
+            troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#requirements-check")
 
 
     if not CMD_ARGS.skip_native:
@@ -233,9 +237,8 @@ def setup():
                  "fallback (e.g. PSSM). Do you want to compile the C++ modules? (y/n):")
 
         # Dont install the c++ modules when using travis
-        if get_user_choice(query):
+        if CMD_ARGS.ci_build or get_user_choice(query):
             check_cmake()
-
             write_flag("rpcore/native/use_cxx.flag", True)
 
             if not CMD_ARGS.skip_update:
@@ -254,21 +257,24 @@ def setup():
     exec_python_file("data/generate_txo_files.py",
         troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#extracting-txo-files")
 
-    print_step("Filtering default cubemap ..")
-    exec_python_file("data/default_cubemap/filter.py",
-        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#filtering-default-cubemap")
+    if not CMD_ARGS.ci_build:
+        print_step("Filtering default cubemap ..")
+        exec_python_file("data/default_cubemap/filter.py",
+            troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#filtering-default-cubemap")
 
-    print_step("Precomputing film grain .. ")
-    exec_python_file("data/film_grain/generate.py",
-        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-film-grain")
+        print_step("Precomputing film grain .. ")
+        exec_python_file("data/film_grain/generate.py",
+            troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-film-grain")
 
     print_step("Running shader scripts .. ")
     exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py",
         troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#running-shader-scripts")
 
-    print_step("Precomputing clouds ..")
-    exec_python_file("rpplugins/clouds/resources/precompute.py",
-        troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-clouds")
+
+    if not CMD_ARGS.ci_build:
+        print_step("Precomputing clouds ..")
+        exec_python_file("rpplugins/clouds/resources/precompute.py",
+            troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-clouds")
 
     write_flag("data/install.flag", True)
 
@@ -276,7 +282,9 @@ def setup():
 
     print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))
 
-    ask_download_samples()
+    if not CMD_ARGS.ci_build:
+        ask_download_samples()
+
 
 if __name__ == "__main__":
     setup()

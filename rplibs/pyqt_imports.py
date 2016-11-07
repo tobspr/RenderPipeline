@@ -7,15 +7,15 @@ Wrapper script to import all qt classes
 from __future__ import print_function
 import sys
 
-PYQT_VERSION = 4
+PYQT_VERSION = 5
 
 try:
-    import PyQt4
+    import PyQt5
 except ImportError:
-    print("Could not import PyQt4, trying to import PyQt5")
+    print("Could not import PyQt5, trying to import PyQt4")
     try:
-        import PyQt5
-        PYQT_VERSION = 5
+        import PyQt4
+        PYQT_VERSION = 4
     except ImportError:
         print("Failed to import either PyQt4 or PyQt5!")
         sys.exit(-1)
@@ -46,7 +46,6 @@ elif PYQT_VERSION == 5:
                     "double": float,
                     "QListWidgetItem": QListWidgetItem
                 }[handler_type]
-                # print(getattr(obj, slot_name).items())
                 getattr(obj, slot_name)[py_type].connect(handler)
         else:
             getattr(obj, signal_name).connect(handler)

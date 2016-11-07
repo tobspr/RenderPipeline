@@ -1,0 +1,13 @@
+language: cpp
+sudo: required
+dist: trusty
+compiler: gcc
+script:
+    - wget http://buildbot.panda3d.org/downloads/e9a43a21fa63f535fe48c6a92078ad752fc3b34f/panda3d1.10_1.10.0~20161103-ge9a43a2~trusty_amd64.deb
+    - sudo dpkg -i *.deb
+    - sudo apt-get -f install
+    - sudo apt-get install libeigen3-dev
+    - sudo apt-get -f install
+    - export PYTHONPATH=${PYTHONPATH}:/usr/lib/python2.7/dist-packages
+    - echo -e "generate_pdb=1\nmodule_name=native_\nuse_lib_eigen=1\nuse_lib_freetype=0\nvc_version=Visual Studio 14 2015" > rpcore/native/config.ini
+    - python2.7 setup.py --ci-build
