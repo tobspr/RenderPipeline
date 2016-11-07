@@ -9,7 +9,7 @@ script:
     - sudo apt-get install libeigen3-dev
     - sudo apt-get -f install
     - export PYTHONPATH=${PYTHONPATH}:/usr/lib/python2.7/dist-packages
-    - export PYTHONPATH=${PYTHONPATH}:/usr/lib/python2.7/dist-packages/panda3d
+    - export PYTHONPATH=${PYTHONPATH}:/usr/share/panda3d
     - echo -e "generate_pdb=1\nmodule_name=native_\nuse_lib_eigen=1\nuse_lib_freetype=0\nvc_version=Visual Studio 14 2015" > rpcore/native/config.ini
     - python2.7 setup.py --ci-build
     - ls -a /usr/lib/python2.7/dist-packages
