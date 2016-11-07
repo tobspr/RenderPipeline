@@ -208,8 +208,13 @@ def setup():
     """ Main setup routine """
 
     print("-" * 79)
-    print("\nRender Pipeline Setup 1.2\n")
+    print("\nRender Pipeline Setup 1.3\n")
     print("-" * 79)
+
+
+    if CMD_ARGS.ci_build:
+        print()
+        print(color("Running CI setup without steps requiring a GPU", Fore.BLUE + Style.BRIGHT))
 
     print_step("Checking Panda3D Modules")
     # Make sure this python build is using Panda3D
