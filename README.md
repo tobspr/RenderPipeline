@@ -1,4 +1,5 @@
-[![Join the chat at https://gitter.im/tobspr/RenderPipeline](https://badges.gitter.im/tobspr/RenderPipeline.svg)](https://gitter.im/tobspr/RenderPipeline?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/tobspr/RenderPipeline](https://badges.gitter.im/tobspr/RenderPipeline.svg)](https://gitter.im/tobspr/RenderPipeline?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
+[![Build Status](https://travis-ci.org/tobspr/RenderPipeline.svg?branch=master)](https://travis-ci.org/tobspr/RenderPipeline)
 <!-- # Render Pipeline -->
 
 <img src="http://i.imgur.com/PO4OK4a.png" alt="Deferred Rendering Pipeline with Physically Based Shading" />
