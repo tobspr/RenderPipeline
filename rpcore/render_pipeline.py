@@ -82,6 +82,7 @@ class RenderPipeline(RPObject):
         self._analyze_system()
         self.mount_mgr = MountManager(self)
         self.settings = {}
+        self._applied_effects = []
         self._pre_showbase_initialized = False
         self._first_frame = None
         self.set_loading_screen_image("/$$rp/data/gui/loading_screen_bg.txo")
@@ -113,6 +114,14 @@ class RenderPipeline(RPObject):
         self.plugin_mgr.trigger_hook("shader_reload")
         if self.settings["pipeline.display_debugger"]:
             self.debugger.set_reload_hint_visible(False)
+        self._apply_custom_shaders()
+
+    def _apply_custom_shaders(self):
+        """ Re-applies all custom shaders the user applied, to avoid them getting
+        removed when the shaders are reloaded """
+        self.debug("Re-applying", len(self._applied_effects), "custom shaders")
+        for args in self._applied_effects:
+            self._internal_set_effect(*args)
 
     def pre_showbase_init(self):
         """ Setups all required pipeline settings and configuration which have
@@ -203,7 +212,7 @@ class RenderPipeline(RPObject):
         can be used to set an ies profile on a light """
         return self.ies_loader.load(filename)
 
-    def set_effect(self, nodepath, effect_src, options=None, sort=30):
+    def _internal_set_effect(self, nodepath, effect_src, options=None, sort=30):
         """ Sets an effect to the given object, using the specified options.
         Check out the effect documentation for more information about possible
         options and configurations. The object should be a nodepath, and the
@@ -230,6 +239,12 @@ class RenderPipeline(RPObject):
             self.error("You cannot render an object forward and deferred at the "
                        "same time! Either use render_gbuffer or use render_forward, "
                        "but not both.")
+
+    def set_effect(self, nodepath, effect_src, options=None, sort=30):
+        """ See _internal_set_effect. """
+        args = (nodepath, effect_src, options, sort)
+        self._applied_effects.append(args)
+        self._internal_set_effect(*args)
 
     def add_environment_probe(self):
         """ Constructs a new environment probe and returns the handle, so that

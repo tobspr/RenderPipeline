@@ -55,7 +55,7 @@ void main() {
         // Since dot() returns the cosine, we can just pow it to get a physically
         // correct vignette.
         float cos_angle = dot(cam_dir, material_dir);
-        float vignette = pow(cos_angle, 4.0);
+        float vignette = pow(cos_angle, 2.0);
 
         // Chromatic abberation
         #if GET_SETTING(color_correction, use_chromatic_aberration)

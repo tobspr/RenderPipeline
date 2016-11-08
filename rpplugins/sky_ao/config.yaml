@@ -3,7 +3,7 @@ settings: !!omap
 
     - sample_radius:
         type: float
-        range: [0.1, 20.0]
+        range: [0.1, 50.0]
         default: 6.0
         shader_runtime: true
         label: Sample radius
@@ -13,7 +13,7 @@ settings: !!omap
   
     - max_radius:
         type: float
-        range: [10, 500.0]
+        range: [10, 2000.0]
         default: 200.0
         label: Maximum Radius
         description: >
@@ -43,7 +43,7 @@ settings: !!omap
     - ao_multiplier:
         type: float
         shader_runtime: true
-        range: [0.05, 1.0]
+        range: [0.05, 5.0]
         default: 0.25
         label: AO Multiplier
         description: >

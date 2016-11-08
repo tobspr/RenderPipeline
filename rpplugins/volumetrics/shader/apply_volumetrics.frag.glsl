@@ -63,6 +63,7 @@ void main() {
 
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     vec3 merged_color = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
+    // vec3 merged_color = volumetrics.x * scene_color;
 
     float fog_factor = 1;
 
