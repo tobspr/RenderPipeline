@@ -205,9 +205,11 @@ class Debugger(RPObject):
         if not self.fullscreen_node.is_hidden():
             self.fullscreen_node.hide()
             self.overlay_node.hide()
+            self.error_msg_handler.hide()
         else:
             self.fullscreen_node.show()
             self.overlay_node.show()
+            self.error_msg_handler.show()
 
     def toggle_keybindings_visible(self):
         """ Shows / Hides the FPS graph """

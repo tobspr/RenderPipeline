@@ -44,18 +44,9 @@ void main() {
 
     #if !DEBUG_MODE
 
-        // Physically correct vignette, using the cos4 law.
-        // Get the angle between the camera direction and the view direction
-        vec3 material_dir = normalize(MainSceneData.camera_pos -
-            calculate_surface_pos(1, texcoord));
-        vec3 cam_dir = normalize(MainSceneData.camera_pos -
-            calculate_surface_pos(1, vec2(0.5)));
 
-        // According to the cos4 law, the brightness at angle alpha is cos^4(alpha).
-        // Since dot() returns the cosine, we can just pow it to get a physically
-        // correct vignette.
-        float cos_angle = dot(cam_dir, material_dir);
-        float vignette = pow(cos_angle, 2.0);
+        vec2 ccord = (texcoord - 0.5) * vec2(1.0, ASPECT_RATIO);
+        float vignette = 1 - saturate(length(ccord));
 
         // Chromatic abberation
         #if GET_SETTING(color_correction, use_chromatic_aberration)
@@ -82,6 +73,7 @@ void main() {
     #else
         vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif // !DEBUG_MODE
+
 
     result = vec4(scene_color, 1);
 }

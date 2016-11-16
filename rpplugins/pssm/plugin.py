@@ -110,10 +110,14 @@ class Plugin(BasePlugin):
         Globals.base.accept("u", self.toggle_update_enabled)
 
         # Set inputs
-        self.pssm_stage.set_shader_input("pssm_split_count", self.get_setting("split_count"))
         self.pssm_stage.set_shader_input("pssm_mvps", self.camera_rig.get_mvp_array())
         self.pssm_stage.set_shader_input("pssm_nearfar", self.camera_rig.get_nearfar_array())
-        self.pssm_stage.set_shader_input("pssm_sun_vector", self.pta_sun_vector)
+
+        if self.is_plugin_enabled("volumetrics"):
+            handle = self.get_plugin_instance("volumetrics")
+            handle.stage.set_shader_input("pssm_mvps", self.camera_rig.get_mvp_array())
+            handle.stage.set_shader_input("pssm_nearfar", self.camera_rig.get_nearfar_array())
+
 
     def on_pre_render_update(self):
         sun_vector = self.get_plugin_instance("scattering").sun_vector

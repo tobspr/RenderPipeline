@@ -93,3 +93,9 @@ class ErrorMessageDisplay(RPObject):
         """ Clears all messages / removes them """
         self._error_node.node().remove_all_children()
         self._num_errors = 0
+
+    def show(self):
+        self._error_node.show()
+
+    def hide(self):
+        self._error_node.hide()

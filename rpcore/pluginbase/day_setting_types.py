@@ -91,7 +91,7 @@ class ScalarType(BaseType):
 
     def __init__(self, data):
         BaseType.__init__(self, data)
-        self.unit = data.pop("unit")
+        self.unit = data.pop("unit", "none")
         self.minvalue, self.maxvalue = data.pop("range")
         self.logarithmic_factor = data.pop("logarithmic_factor", 1.0)
         if self.unit not in ("degree", "meter", "percent", "klux", "none"):

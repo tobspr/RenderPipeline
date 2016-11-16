@@ -44,9 +44,9 @@ void main() {
     // Apply dirt
     vec3 lens_dirt = textureLod(LensDirtTex, texcoord, 0).xyz;
     float base_dirt_factor = GET_SETTING(bloom, lens_dirt_factor);
-    float dirt_factor = saturate(2.0 * get_luminance(bloom_result) - 0.05) * 4.0;
-    dirt_factor *= base_dirt_factor;
-    bloom_result *= 0.5 + 0.5 * (1 - base_dirt_factor) + dirt_factor * pow(lens_dirt, vec3(2.0));
+    vec3 dirt_factor = pow(lens_dirt, vec3(1.0));
+
+    bloom_result = mix(bloom_result, bloom_result * dirt_factor, base_dirt_factor);
 
     // Blend scene color and bloom color
     result = scene_result + bloom_result;

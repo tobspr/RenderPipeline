@@ -173,6 +173,7 @@ class RenderPipeline(RPObject):
         self._init_debugger()
 
         self.plugin_mgr.trigger_hook("stage_setup")
+        self.plugin_mgr.trigger_hook("post_stage_setup")
 
         self._create_common_defines()
         self._initialize_managers()

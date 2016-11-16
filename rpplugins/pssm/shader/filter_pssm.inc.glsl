@@ -24,19 +24,40 @@
  *
  */
 
-#version 430
 
-#define USE_GBUFFER_EXTENSIONS
-#pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma once
 
-#pragma include "sky_ao.inc.glsl"
 
-out vec4 result;
-
-void main() {
-
-    vec2 texcoord = get_half_texcoord();
-    Material m = unpack_material(GBuffer, texcoord);
-    result = vec4(compute_sky_ao(m.position, m.normal));
+vec2 get_split_coord(vec2 local_coord, int split_index) {
+    local_coord.x = (local_coord.x + split_index) / float(GET_SETTING(pssm, split_count));
+    return local_coord;
 }
+
+float get_shadow(vec2 coord, float refz) {
+    #if GET_SETTING(pssm, use_pcf)
+        return textureLod(PSSMShadowAtlasPCF, vec3(coord, refz), 0);
+    #else
+        float depth_sample = textureLod(PSSMShadowAtlas, coord, 0).x;
+        return step(refz, depth_sample);
+    #endif
+}
+
+float get_fixed_bias(int split) {
+    return GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 1.5 * split);
+}
+
+vec3 get_pssm_split_biased_position(vec3 pos, vec3 normal, vec3 sun_vector, int split) {
+
+    // Compute the biased position based on the normal and slope scaled
+    // bias.
+    float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
+    const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
+    
+    // Compute the biased position based on the normal and slope scaled
+    // bias.
+    vec3 biased_pos = get_biased_position(pos, slope_bias, normal_bias, normal, sun_vector);
+
+    return biased_pos;
+}
+
+

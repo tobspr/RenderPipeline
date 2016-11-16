@@ -50,5 +50,11 @@ class Plugin(BasePlugin):
         # Make the stages use our output
         AmbientStage.required_pipes.append("SkyAO")
 
+    def on_post_stage_setup(self):
+        if self.is_plugin_enabled("env_probes"):
+            self.get_plugin_instance("env_probes").capture_stage.required_inputs.append("SkyAOCapturePosition")
+            self.get_plugin_instance("env_probes").capture_stage.required_pipes.append("SkyAOHeight")
+
+
     def on_pipeline_created(self):
         pass

@@ -86,12 +86,8 @@ void main() {
     } else {
         inscattered_light *= 70.0;
         float dist = distance(m.position, MainSceneData.camera_pos);
-        float extinction = exp(- dist / TimeOfDay.scattering.extinction);
-
-        #if !DEBUG_MODE
-            result.xyz *= extinction;
-            result.w = extinction;
-        #endif
+        float extinction = saturate(dist / TimeOfDay.scattering.extinction * 10.0);
+        inscattered_light *= extinction;
     }
 
     #if !DEBUG_MODE

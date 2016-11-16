@@ -211,7 +211,7 @@ class MovementController(object):
 
         # z-force is inddpendent of camera direction
         translated_direction.add_z(
-            self.movement[2] * delta * 40.0 * self.speed)
+            self.movement[2] * delta * 120.0 * self.speed)
 
         self.velocity += translated_direction * 0.15
 

@@ -89,7 +89,7 @@ void main() {
     // Backface shading for foliage, not physically correct but a nice
     // approximation
     float foliage_factor = m.shading_model == SHADING_MODEL_FOLIAGE ? 1.0 : 0.0;
-    lighting_result += foliage_factor * prefiltered_shadow * sun_color * m.basecolor * 0.1;
+    lighting_result += foliage_factor * prefiltered_shadow * sun_color * m.basecolor * 0.12 * saturate(3.0 * dot(v, -sun_vector));
 
     #if DEBUG_MODE
         lighting_result *= 0;

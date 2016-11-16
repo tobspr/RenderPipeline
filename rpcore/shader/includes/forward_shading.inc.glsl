@@ -55,6 +55,9 @@ uniform int maxLightIndex;
     uniform mat4 PSSMSceneSunShadowMVP;
 #endif
 
+#if HAVE_PLUGIN(sky_ao) 
+    #pragma include "/$$rp/rpplugins/sky_ao/shader/sky_ao.inc.glsl"
+#endif
 
 #if VIEWSPACE_SHADING
 
@@ -148,7 +151,22 @@ uniform int maxLightIndex;
                 DEFAULT_ENVMAP_BRIGHTNESS;
         #endif
 
-        shading_result += (0.1 + 0.3 * m.basecolor) * diff_env;
+        #if HAVE_PLUGIN(env_probes)
+            const float sky_ambient_factor = TimeOfDay.env_probes.sky_ambient_scale;
+            const float ambient_factor = TimeOfDay.env_probes.ambient_scale;    
+        #else
+            const float sky_ambient_factor = 0.05;
+            const float ambient_factor = 0.1;
+        #endif
+
+        #if HAVE_PLUGIN(sky_ao)
+            float sky_ao = compute_sky_ao(m.position, m.normal);
+        #else
+            float sky_ao = 1.0;
+        #endif
+        shading_result += (sky_ambient_factor + ambient_factor * sqrt(m.basecolor)) * sky_ao * diff_env;
+
+
 
         // Emission
         if (m.shading_model == SHADING_MODEL_EMISSIVE) {
@@ -218,7 +236,6 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
         // float shadow = get_sun_shadow_factor(m.position, m.normal);
 
         float shadow = 1.0;
-
         return apply_light(m, view_vector, l, sun_color, 1.0, shadow, vec3(1));
 
 
@@ -234,6 +251,7 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
     // sun shadows
     vec3 get_sun_shading(Material m) {
         #if HAVE_PLUGIN(scattering)
+            float shadow = 0.0;
             vec3 shading_result = vec3(0);
             vec3 sun_vector = get_sun_vector();
             vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
@@ -241,11 +259,15 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
             if (sun_vector.z >= SUN_VECTOR_HORIZON) {
                 float NxL = saturate(dot(sun_vector, m.normal));
                 if (NxL > 0.0) {
-                    float shadow_term = get_sun_shadow_factor(m.position, m.normal);
-                    shading_result += NxL * sun_color * shadow_term * m.basecolor;
+                    shadow = NxL * get_sun_shadow_factor(m.position, m.normal);
                 }
             }
-            return shading_result;
+            #if HAVE_PLUGIN(env_probes)
+                const float factor = TimeOfDay.env_probes.sun_ambient_scale;
+            #else
+                const float factor = 1.0;
+            #endif
+            return shadow * sun_color * factor * m.basecolor;
         #else
             return vec3(0);
         #endif

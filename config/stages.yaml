@@ -14,9 +14,9 @@ global_stage_order:
   - PSSMDistShadowStage
   - PSSMSceneShadowStage
   - ScatteringEnvmapStage
+  - SkyAOCaptureStage
   - EnvironmentCaptureStage
   - VoxelizationStage
-  - SkyAOCaptureStage
 
   # Main scene
   - GBufferStage

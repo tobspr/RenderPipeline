@@ -33,16 +33,24 @@
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 
-#pragma optionNV (unroll all)
+
+#if GET_SETTING(pssm, use_pcf)
+    uniform sampler2DShadow PSSMShadowAtlasPCF;
+#else
+    uniform sampler2D PSSMShadowAtlas;
+#endif
+
+
+#pragma include "/$$rp/rpplugins/pssm/shader/filter_pssm.inc.glsl"
 
 uniform sampler2D ShadedScene;
 
-#if HAVE_PLUGIN(pssm)
-uniform mat4 PSSMDistSunShadowMapMVP;
-uniform sampler2D PSSMDistSunShadowMap;
-#endif
+uniform sampler2D PSSMShadowAtlas;
+uniform mat4 pssm_mvps[GET_SETTING(pssm, split_count)];
+uniform vec2 pssm_nearfar[GET_SETTING(pssm, split_count)];
 
 out vec4 result;
+
 
 void main() {
 
@@ -56,76 +64,70 @@ void main() {
     vec3 start_pos = MainSceneData.camera_pos;
     vec3 end_pos = get_gbuffer_position(GBuffer, texcoord);
 
+    // Looks weird
     // if (is_skybox(end_pos, MainSceneData.camera_pos))
     // {
     //     result = vec4(0);
     //     return;
     // }
 
-    float max_distance = 80.0;
+    float max_distance = GET_SETTING(volumetrics, volumetric_max_distance);
 
-    vec3 step_vector = (end_pos - start_pos);
+    vec3 step_vector = end_pos - start_pos;
     if (length(step_vector) > max_distance) {
         step_vector = normalize(step_vector) * max_distance;
     }
 
+    float total_distance = length(step_vector);
+
     end_pos = start_pos + step_vector;
 
     float jitter = rand(ivec2(gl_FragCoord.xy) % 2);
+    jitter = 0;
 
-
-    const int num_steps = 50;
+    const int num_steps = GET_SETTING(volumetrics, volumetric_num_steps);
     vec3 step_offs = step_vector / num_steps;
 
     float volumetrics = 0.0;
-    // float volume_density = 0.001 * GET_SETTING(volumetrics, volumetric_shadow_intensity);
-    float volume_density = 0.0;
 
     vec3 sun_vector = get_sun_vector();
     vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
 
-    const float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * 2;
-    const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
+    const float distance_fade = GET_SETTING(volumetrics, volumetric_shadow_fadein_distance);
+
+    int start_split = 0;
     const float fixed_bias = 0.0005;
 
     for (int i = 0; i < num_steps; ++i) {
-
         vec3 pos = start_pos + (i + jitter) * step_offs;
+        vec3 proj = project(pssm_mvps[start_split], pos);
 
-        // Compute the biased position based on the normal and slope scaled
-        // bias.
-        vec3 biased_pos = get_biased_position(pos,
-            slope_bias, normal_bias, vec3(0, 0, 1), sun_vector);
-        vec3 proj = project(PSSMDistSunShadowMapMVP, biased_pos);
-        proj.z -= fixed_bias;
-
-        float shadow_term = 0;
-        if (!out_of_unit_box(proj)) {
-            // break;
-
-            const float esm_factor = 5.0;
-            float depth_sample = textureLod(PSSMDistSunShadowMap, proj.xy, 0).x;
-            shadow_term = saturate(exp(-esm_factor * proj.z) * depth_sample);
-            shadow_term = pow(shadow_term, 1e2);
+        // Check if out of split
+        while (out_of_screen(proj.xy) && start_split < GET_SETTING(pssm, split_count) - 1) {
+            ++start_split;
+            proj = project(pssm_mvps[start_split], pos);
         }
 
-        volumetrics += saturate(shadow_term);
+        if (out_of_screen(proj.xy)) {
+            // Out of pssm range
+            break;
+        }
+
+        float sun_influence = get_shadow(get_split_coord(proj.xy, start_split), proj.z - get_fixed_bias(start_split));
+
+        // Apply distance fade
+        float d = float(i) / float(num_steps) * total_distance;
+        volumetrics += 0.02 * sun_influence * smoothstep(0, 1, d / distance_fade) * (1 - volumetrics);
     }
 
-    volumetrics /= float(num_steps);
-    // volumetrics = 1 - volumetrics;
-    // volumetrics = pow(volumetrics, 3.0);
-    // volumetrics *= 3.0;
-    volumetrics = saturate(volumetrics);
-    // volumetrics.xyz = pow(volumetrics.xyz, vec3(2.0));
-    // volumetrics *= 0.1 * sun_color;
-    // volumetrics.xyz *= 0.27 * sun_color;
 
-    result = vec4(sun_color * 0.08, 1.2) * volumetrics;
-    // volumetrics.xyz = pow(volumetrics.xyz, vec3(2.0));
-    // volumetrics.xyz *= sun_color;
-    // volumetrics.w *= 10.0;
-    // volumetrics.w = saturate(volumetrics.w);
+    // volumetrics /= float(num_steps);
+    volumetrics = saturate(volumetrics);
+    volumetrics = pow(volumetrics, GET_SETTING(volumetrics, volumetric_shadow_pow));
+
+    vec3 color = sun_color * 0.5 * GET_SETTING(volumetrics, volumetric_shadow_brightness);
+    result = vec4(color, 0.01 * GET_SETTING(volumetrics, volumetric_shadow_intensity)) * volumetrics;
+    result.w = saturate(result.w);
 
 
 

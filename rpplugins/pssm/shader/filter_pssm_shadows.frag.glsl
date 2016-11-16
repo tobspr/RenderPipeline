@@ -48,26 +48,14 @@ uniform sampler2D PSSMShadowAtlas;
 
 uniform mat4 pssm_mvps[GET_SETTING(pssm, split_count)];
 uniform vec2 pssm_nearfar[GET_SETTING(pssm, split_count)];
-uniform vec3 pssm_sun_vector;
 
 #if GET_SETTING(pssm, use_distant_shadows)
     uniform mat4 PSSMDistSunShadowMapMVP;
     uniform sampler2D PSSMDistSunShadowMap;
 #endif
 
-vec2 get_split_coord(vec2 local_coord, int split_index) {
-    local_coord.x = (local_coord.x + split_index) / float(GET_SETTING(pssm, split_count));
-    return local_coord;
-}
+#pragma include "filter_pssm.inc.glsl"
 
-float get_shadow(vec2 coord, float refz) {
-    #if GET_SETTING(pssm, use_pcf)
-        return textureLod(PSSMShadowAtlasPCF, vec3(coord, refz), 0);
-    #else
-        float depth_sample = textureLod(PSSMShadowAtlas, coord, 0).x;
-        return step(refz, depth_sample);
-    #endif
-}
 
 void main() {
     vec3 sun_vector = get_sun_vector();
@@ -140,27 +128,22 @@ void main() {
 
         float rotation = interleaved_gradient_noise(
             gl_FragCoord.xy + (MainSceneData.frame_index % 4) / 3.0 );
+
+        // XXX: Pretty noisy
         // mat2 rotation_mat = make_rotation_mat(rotation);
         mat2 rotation_mat = mat2(1, 0, 0, 1);
 
-        // Get the plugin settings
-        float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
-        float fixed_bias = GET_SETTING(pssm, fixed_bias) * 0.001 * (1 + 1.5 * split);
-        const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
         const float filter_radius = GET_SETTING(pssm, filter_radius) /
             GET_SETTING(pssm, resolution);
 
-        // Compute the biased position based on the normal and slope scaled
-        // bias.
-        vec3 biased_pos = get_biased_position(m.position,
-            slope_bias, normal_bias, m.normal, sun_vector);
+        vec3 biased_pos = get_pssm_split_biased_position(m.position, m.normal, sun_vector, split);
 
         // Project the current pixel to the view of the light
         vec3 projected = project(mvp, biased_pos);
         vec2 projected_coord = get_split_coord(projected.xy, split);
 
         // Compute the fixed bias
-        float ref_depth = projected.z - fixed_bias;
+        float ref_depth = projected.z - get_fixed_bias(split);
 
         // Find filter size
         vec2 filter_size = find_filter_size(mvp, sun_vector, filter_radius);

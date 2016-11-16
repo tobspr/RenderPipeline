@@ -39,13 +39,16 @@ uniform sampler2D ShadedScene;
 
 out vec3 result;
 
-const float fog_start = 0.0;
-const float fog_end = TimeOfDay.volumetrics.height_fog_scale;
-
-bool is_in_fog(vec3 pos) {
-    const float hfog_lower_bounds = fog_start;
-    const float hfog_upper_bounds = fog_end;
-    return pos.z >= hfog_lower_bounds && pos.z <= hfog_upper_bounds;
+float compute_fog(vec3 ray_start, vec3 ray_end)
+{
+    float dist = length(ray_start - ray_end);
+    vec3 ray_dir = (ray_start - ray_end) / dist;
+    const float c = 1.0 * TimeOfDay.volumetrics.fog_intensity;
+    const float b = 0.2 / TimeOfDay.volumetrics.fog_ramp_size;
+    ray_dir.z = -ray_dir.z;
+    if (abs(ray_dir.z) < 1e-2)
+        ray_dir.z = 1e-2;
+    return saturate(c * exp(-ray_start.z * b) * (1.0 - exp(-dist * ray_dir.z * b)) / ray_dir.z);
 }
 
 void main() {
@@ -54,7 +57,6 @@ void main() {
     float depth = get_depth_at(texcoord);
     vec3 surface_pos = calculate_surface_pos(depth, texcoord);
 
-
     #if GET_SETTING(volumetrics, enable_volumetric_shadows)
         vec4 volumetrics = textureLod(VolumetricsTex, texcoord, 0);
     #else
@@ -62,63 +64,18 @@ void main() {
     #endif
 
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-    vec3 merged_color = volumetrics.xyz + scene_color * saturate(1 - volumetrics.w);
-    // vec3 merged_color = volumetrics.x * scene_color;
+    
 
-    float fog_factor = 1;
+    vec3 fog_color = TimeOfDay.volumetrics.fog_color * 4.5 * TimeOfDay.volumetrics.fog_brightness * TimeOfDay.scattering.sun_intensity;
 
-    // if (is_skybox(surface_pos)) {
-    //     result = scene_color;
-    //     return;
-    // }
-
-    vec3 fog_color = TimeOfDay.volumetrics.fog_color * 10.0 * TimeOfDay.volumetrics.fog_brightness;
-
-    float fog_weight = 0.0;
-    float fog_ramp = TimeOfDay.volumetrics.fog_ramp_size * 3;
-    float ground_fog_factor = TimeOfDay.volumetrics.height_fog_scale;
-
-    const float hfog_lower_bounds = fog_start;
-    const float hfog_upper_bounds = fog_end;
-
-    vec3 start_pos, end_pos;
     vec3 ray_dir = normalize(MainSceneData.camera_pos - surface_pos);
 
-    if (surface_pos.z > MainSceneData.camera_pos.z) {
-        // Flip start and end pos if surface above camera
-        start_pos = surface_pos;
-        end_pos = MainSceneData.camera_pos;
-        ray_dir = -ray_dir;
-    } else {
-        start_pos = MainSceneData.camera_pos;
-        end_pos = surface_pos;
-    }
+    float fog_weight = compute_fog(MainSceneData.camera_pos, surface_pos);
 
-    float dist_to_surface = distance(MainSceneData.camera_pos, surface_pos);
-
-    // Prevent NaN's
-    if (abs(ray_dir.z) < 1e-3) ray_dir.z = 1e-3;
-
-    // Clamp to bounds
-    if (!is_in_fog(start_pos)) {
-        float advance_start = (start_pos.z - hfog_upper_bounds) / ray_dir.z;
-        advance_start = min(advance_start, dist_to_surface);
-        start_pos = start_pos - advance_start * ray_dir;
-    }
-
-    // Clamp to bounds
-    if (!is_in_fog(end_pos)) {
-        float advance_end = (end_pos.z - hfog_lower_bounds) / ray_dir.z;
-        advance_end = min(advance_end, dist_to_surface);
-        // end_pos = end_pos + advance_end * ray_dir;
-
-    }
-
-    // fog_weight = saturate(1.0 - exp(-distance(start_pos, end_pos) / fog_ramp));
-    fog_weight = saturate(distance(start_pos, end_pos) / fog_ramp);
-
+    vec3 merged_color = scene_color;
     #if !DEBUG_MODE
-        merged_color = mix(merged_color, fog_color, fog_weight);
+        merged_color = mix(scene_color, fog_color, fog_weight);
+        merged_color = mix(merged_color, volumetrics.xyz, volumetrics.w);
     #endif
 
 

@@ -37,4 +37,36 @@ settings: !!omap
             Controlls how many probes can overlay at a given location.
             If you get artifacts at probe transitions, try increasing this.
 
-daytime_settings:
+daytime_settings: !!omap
+
+    - ambient_scale:
+        type: scalar
+        range: [0.0, 2.0]
+        default: 0.2
+        label: Ambient scale
+        description: >
+            Controls the ambient scale for the enviroment probes, since no
+            full rendering is performed, this is an approximation
+
+    - sky_ambient_scale:
+        type: scalar
+        range: [0.0, 2.0]
+        default: 0.1
+        label: Sky Ambient scale
+        description: >
+            Controls the sky ambient scale for the enviroment probes, since no
+            full rendering is performed, this is an approximation
+
+    - sun_ambient_scale:
+        type: scalar
+        range: [0.0, 2.0]
+        default: 0.1
+        label: Sun Ambient scale
+        description: >
+            Controls the sun ambient scale for the enviroment probes, since no
+            full rendering is performed, this is an approximation
+
+
+
+
+

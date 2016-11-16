@@ -39,6 +39,9 @@ class Plugin(BasePlugin):
 
     def on_stage_setup(self):
         self.stage = self.create_stage(VolumetricsStage)
-        self.stage.required_inputs.append("PSSMDistSunShadowMapMVP")
-        self.stage.required_pipes.append("PSSMDistSunShadowMap")
         self.stage.enable_volumetric_shadows = self.get_setting("enable_volumetric_shadows")
+
+        if self.get_plugin_instance("pssm").get_setting("use_pcf"):
+            self.stage.required_pipes.append("PSSMShadowAtlasPCF")
+        else:
+            self.stage.required_pipes.append("PSSMShadowAtlas")
