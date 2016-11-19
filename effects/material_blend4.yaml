@@ -83,7 +83,7 @@ fragment:
     m.shading_model = mInput.shading_model;
     m.basecolor = m_base;
     m.normal = apply_normal_map(vOutput.normal, m_nrm, mInput.normalfactor);
-    m.specular_ior = blend_ior(spec, mInput.specular_ior);
+    m.specular_ior = blend_ior(mInput.specular_ior, spec);
     m.roughness = mInput.roughness;
     m.metallic = mInput.metallic;
     m.shading_model_param0 = mInput.arbitrary0;

@@ -82,7 +82,13 @@ void main() {
     #endif
 
     #if MODE_ACTIVE(SPECULAR)
-        result.xyz = vec3(m.specular);
+
+        // Multiply specular on diffuse materials to make it visible
+        result.xyz = vec3(mix(
+            m.specular / 0.18,
+            m.specular,
+            m.metallic
+            ));
     #endif
 
     #if MODE_ACTIVE(NORMAL)

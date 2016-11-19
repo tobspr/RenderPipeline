@@ -166,7 +166,7 @@ class Debugger(RPObject):
         screen. """
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
-        self.gui_scale = min(1.0, Globals.native_resolution.x / 1920.0)
+        self.gui_scale = max(0.65, min(1.0, Globals.native_resolution.x / 1920.0))
         self.fullscreen_node.set_scale(self.gui_scale)
 
         if self.advanced_info:

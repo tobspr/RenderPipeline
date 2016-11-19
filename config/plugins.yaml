@@ -60,7 +60,7 @@ overrides:
         raymarch_steps: 160
 
     color_correction:
-        tonemap_operator: exponential2
+        tonemap_operator: optimized
         reinhard_version: rgb
         exponential_factor: 1.23
         uc2t_shoulder_strength: 0.3352
@@ -72,7 +72,7 @@ overrides:
         uc2t_reference_white: 10.05
         vignette_strength: 0.1286
         film_grain_strength: 0.1286
-        color_lut: film_luts/saturation_lut.png
+        color_lut: film_luts/default_lut.png
         use_chromatic_aberration: True
         chromatic_aberration_strength: 0.019
         chromatic_aberration_samples: 2
@@ -185,7 +185,7 @@ overrides:
     volumetrics:
         enable_volumetric_shadows: True
         volumetric_shadow_intensity: 8.31
-        volumetric_shadow_brightness: 0.36
+        volumetric_shadow_brightness: 1.66
         volumetric_shadow_pow: 1.15999
         volumetric_max_distance: 79.41429
         volumetric_shadow_fadein_distance: 9.49
