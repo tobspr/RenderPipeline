@@ -171,7 +171,6 @@ class MovementController(object):
         # Hotkeys to connect to pstats and reset the initial position
         self.showbase.accept("1", PStatClient.connect)
         self.showbase.accept("3", self.reset_to_initial)
-        self.showbase.accept("m", self.start_material_editor)
 
     def print_position(self):
         """ Prints the camera position and hpr """
@@ -179,14 +178,6 @@ class MovementController(object):
         hpr = self.showbase.cam.get_hpr(self.showbase.render)
         print("(Vec3({}, {}, {}), Vec3({}, {}, {})),".format(
             pos.x, pos.y, pos.z, hpr.x, hpr.y, hpr.z))
-
-    def start_material_editor(self):
-        print("Starting material editor")
-        pth = sys.executable
-        editor = os.path.dirname(os.path.realpath(__file__))
-        editor = os.path.join(editor, "..", "..", "toolkit", "material_editor", "main.py")
-        subprocess.Popen([pth, editor], shell=True)        
-
 
     def update(self, task):
         """ Internal update method """
