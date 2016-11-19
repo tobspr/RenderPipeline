@@ -640,12 +640,17 @@ class RenderPipeline(RPObject):
             self._upscale_stage = UpscaleStage(self)
             add_stage(self._upscale_stage)
 
+
     def export_materials(self, pth):
         """ Exports a list of all materials found in the current scene in a
         serialized format to the given path """
 
         with open(pth, "w") as handle:
             for i, material in enumerate(Globals.render.find_all_materials()):
+                if not material.has_base_color() or not material.has_roughness() or not material.has_refractive_index():
+                    print("Skipping non-pbr material:", material.name)
+                    continue
+
                 handle.write(("{} " * 11).format(
                     material.get_name() or ("unnamed" + str(i)),
                     material.base_color.x,
