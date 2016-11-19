@@ -37,6 +37,7 @@ class NetworkCommunication(RPObject):
 
     CONFIG_PORT = 63324
     DAYTIME_PORT = 63325
+    MATERIAL_PORT = 63326
 
     @classmethod
     def send_async(cls, port, message):
@@ -87,20 +88,27 @@ class NetworkCommunication(RPObject):
         self._pipeline = pipeline
         self._config_updates = set()
         self._daytime_updates = set()
+        self._material_updates = set()
         self._config_thread = self.listen_threaded(
             self.CONFIG_PORT, self._config_updates.add)
         self._daytime_thread = self.listen_threaded(
             self.DAYTIME_PORT, self._daytime_updates.add)
+        self._material_thread = self.listen_threaded(
+            self.MATERIAL_PORT, self._material_updates.add)
+
 
     def update(self):
         """ Update task which gets called every frame and executes the changes.
         This takes the incoming scheduled commands and processes one at a time."""
-        if self._config_updates:
+        while self._config_updates:
             cmd = self._config_updates.pop()
             self._handle_config_command(cmd)
-        if self._daytime_updates:
+        while self._daytime_updates:
             cmd = self._daytime_updates.pop()
             self._handle_daytime_command(cmd)
+        while self._material_updates:
+            cmd = self._material_updates.pop()
+            self._handle_material_command(cmd)
 
     def _handle_daytime_command(self, cmd):
         """ Handles a daytime command. This could either be a command to set
@@ -115,12 +123,28 @@ class NetworkCommunication(RPObject):
             self.warn("Recieved unkown daytime command:", cmd)
 
     def _handle_config_command(self, cmd):
-        """ Handles an inconming configuration command. Currently this can only
+        """ Handles an incomming configuration command. Currently this can only
         be an update of a plugin setting """
         if cmd.startswith("setval "):
             parts = cmd.split()
             setting_parts = parts[1].split(".")
             self._pipeline.plugin_mgr.on_setting_changed(
                 setting_parts[0], setting_parts[1], parts[2])
+        else:
+            self.warn("Recieved unkown plugin command:", cmd)
+
+    def _handle_material_command(self, cmd):
+        """ Handles an incomming material command """
+        if cmd.startswith("dump_materials"):
+            path = cmd[len("dump_materials "):].strip()
+            self.debug("Writing materials to", path)
+            self._pipeline.export_materials(path)
+
+        elif cmd.startswith("update_material"):
+            
+            data = cmd[len("update_material "):].strip()
+            parts = data.split()
+            self._pipeline.update_serialized_material(parts)
+
         else:
             self.warn("Recieved unkown plugin command:", cmd)

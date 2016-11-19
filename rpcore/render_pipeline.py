@@ -31,7 +31,8 @@ import math
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties, GeomTristrips
+from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties
+from panda3d.core import GeomTristrips, Vec4
 
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile
@@ -638,3 +639,41 @@ class RenderPipeline(RPObject):
         if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.005:
             self._upscale_stage = UpscaleStage(self)
             add_stage(self._upscale_stage)
+
+    def export_materials(self, pth):
+        """ Exports a list of all materials found in the current scene in a
+        serialized format to the given path """
+
+        with open(pth, "w") as handle:
+            for i, material in enumerate(Globals.render.find_all_materials()):
+                handle.write(("{} " * 11).format(
+                    material.get_name() or ("unnamed" + str(i)),
+                    material.base_color.x,
+                    material.base_color.y,
+                    material.base_color.z,
+                    material.roughness,
+                    material.refractive_index,
+                    material.metallic,
+                    material.emission.x, # shading model
+                    material.emission.y, # normal strength
+                    material.emission.z, # arbitrary 0
+                    material.emission.w, # arbitrary 1
+                ) + "\n")
+
+        self.debug("Wrote materials to", pth)
+
+    def update_serialized_material(self, data):
+        name = data[0]
+
+        for i, material in enumerate(Globals.render.find_all_materials()):
+            if material.get_name() == name or "unnamed" + str(i) == name:
+                material.set_base_color(Vec4(float(data[1]), float(data[2]), float(data[3]), 1.0))
+                material.set_roughness(float(data[4]))
+                material.set_refractive_index(float(data[5]))
+                material.set_metallic(float(data[6]))
+                material.set_emission(Vec4(
+                    float(data[7]),
+                    float(data[8]),
+                    float(data[9]),
+                    float(data[10]),
+                ))
