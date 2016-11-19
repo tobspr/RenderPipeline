@@ -640,7 +640,6 @@ class RenderPipeline(RPObject):
             self._upscale_stage = UpscaleStage(self)
             add_stage(self._upscale_stage)
 
-
     def export_materials(self, pth):
         """ Exports a list of all materials found in the current scene in a
         serialized format to the given path """
@@ -652,7 +651,7 @@ class RenderPipeline(RPObject):
                     continue
 
                 handle.write(("{} " * 11).format(
-                    material.get_name() or ("unnamed" + str(i)),
+                    (material.get_name().replace(" ", "") or "unnamed") + str(i),
                     material.base_color.x,
                     material.base_color.y,
                     material.base_color.z,
@@ -671,7 +670,7 @@ class RenderPipeline(RPObject):
         name = data[0]
 
         for i, material in enumerate(Globals.render.find_all_materials()):
-            if material.get_name() == name or "unnamed" + str(i) == name:
+            if (material.get_name().replace(" ", "") or "unnamed") + str(i) == name:
                 material.set_base_color(Vec4(float(data[1]), float(data[2]), float(data[3]), 1.0))
                 material.set_roughness(float(data[4]))
                 material.set_refractive_index(float(data[5]))
