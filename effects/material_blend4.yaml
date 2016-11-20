@@ -81,7 +81,7 @@ fragment:
 
     // Material properties
     m.shading_model = mInput.shading_model;
-    m.basecolor = m_base;
+    m.basecolor = m_base * mInput.color;
     m.normal = apply_normal_map(vOutput.normal, m_nrm, mInput.normalfactor);
     m.specular_ior = blend_ior(mInput.specular_ior, spec);
     m.roughness = mInput.roughness;

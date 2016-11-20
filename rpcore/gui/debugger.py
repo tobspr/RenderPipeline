@@ -26,6 +26,10 @@ THE SOFTWARE.
 
 from __future__ import division
 
+import os
+import sys
+import subprocess
+
 from rplibs.six.moves import range  # pylint: disable=import-error
 
 from panda3d.core import Vec4, Vec3, Vec2, RenderState, TransformState
@@ -198,6 +202,15 @@ class Debugger(RPObject):
         Globals.base.accept("f5", self.toggle_gui_visible)
         Globals.base.accept("f6", self.toggle_keybindings_visible)
         Globals.base.accept("r", self.pipeline.reload_shaders)
+        Globals.base.accept("m", self.start_material_editor)
+
+    def start_material_editor(self):
+        """ Starts the material editor """
+        self.debug("Starting material editor")
+        pth = sys.executable
+        editor = os.path.dirname(os.path.realpath(__file__))
+        editor = os.path.join(editor, "..", "..", "toolkit", "material_editor", "main.py")
+        subprocess.Popen([pth, editor], shell=True)        
 
     def toggle_gui_visible(self):
         """ Shows / Hides the gui """

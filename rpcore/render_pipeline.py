@@ -640,6 +640,10 @@ class RenderPipeline(RPObject):
             self._upscale_stage = UpscaleStage(self)
             add_stage(self._upscale_stage)
 
+    def _get_serialized_material_name(self, material, index=0):
+        """ Returns a serializable material name """
+        return str(index) + "-" + (material.get_name().replace(" ", "").strip() or "unnamed")
+
     def export_materials(self, pth):
         """ Exports a list of all materials found in the current scene in a
         serialized format to the given path """
@@ -651,7 +655,7 @@ class RenderPipeline(RPObject):
                     continue
 
                 handle.write(("{} " * 11).format(
-                    (material.get_name().replace(" ", "") or "unnamed") + str(i),
+                    self._get_serialized_material_name(material, i),
                     material.base_color.x,
                     material.base_color.y,
                     material.base_color.z,
@@ -667,10 +671,11 @@ class RenderPipeline(RPObject):
         self.debug("Wrote materials to", pth)
 
     def update_serialized_material(self, data):
+        """ Internal method to update a material from a given serialized material """
         name = data[0]
 
         for i, material in enumerate(Globals.render.find_all_materials()):
-            if (material.get_name().replace(" ", "") or "unnamed") + str(i) == name:
+            if self._get_serialized_material_name(material, i) == name:
                 material.set_base_color(Vec4(float(data[1]), float(data[2]), float(data[3]), 1.0))
                 material.set_roughness(float(data[4]))
                 material.set_refractive_index(float(data[5]))
@@ -681,3 +686,5 @@ class RenderPipeline(RPObject):
                     float(data[9]),
                     float(data[10]),
                 ))
+
+        RenderState.clear_cache()

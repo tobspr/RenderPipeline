@@ -110,16 +110,18 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         self.set_material()
 
     def update_sliders(self):
-        for slider, lbl, start, end, prop in self.sliders:
-            val = (slider.value() / 100.0) * (end - start) + start
-            lbl.setText("{:0.2f}".format(val))
-            setattr(self.material, prop, val)
+        if not self.in_update:
+            self.send_update()
 
-        self.lbl_color_preview.setStyleSheet("background: rgb({}, {}, {});".format(
-            int(self.material.basecolor_r * 255),
-            int(self.material.basecolor_g * 255),
-            int(self.material.basecolor_b * 255)))
-        self.send_update()
+            for slider, lbl, start, end, prop in self.sliders:
+                val = (slider.value() / 100.0) * (end - start) + start
+                lbl.setText("{:0.2f}".format(val))
+                setattr(self.material, prop, val)
+
+            self.lbl_color_preview.setStyleSheet("background: rgb({}, {}, {});".format(
+                int(self.material.basecolor_r * 255),
+                int(self.material.basecolor_g * 255),
+                int(self.material.basecolor_b * 255)))
 
     def update_material_list(self):
         temp_path = os.path.join(tempfile.gettempdir(), "rp_materials.data")
@@ -160,18 +162,21 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
                 material.shading_model_param1 = float(parts[9])
                 material.shading_model_param2 = float(parts[10])
                 self.materials.append(material)
+                print("Materials[] =", material.name)
                 self.cb_material.addItem(material.name)
-        self.update_sliders()
         self.in_update = False
         print("Loaded material list")
 
     def set_material(self):
+        if self.in_update:
+            return
         index = self.cb_material.currentIndex()
-        if index >= len(self.materials) - 1:
-            print("invalid material.")
+        if index >= len(self.materials):
+            print("Invalid material with index", index, "only have", len(self.materials), "materials")
             return
         self.in_update = True
         material = self.materials[index]
+        print("Loaded material", material.name)
         self.cb_shading_model.setCurrentIndex(material.shading_model)
         self.cb_metallic.setChecked(material.metallic)
         self.slider_roughness.setValue(material.roughness * 100.0)
@@ -181,35 +186,39 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         self.basecolor_g.setValue(material.basecolor_g * 100)
         self.basecolor_b.setValue(material.basecolor_b * 100)
         self.slider_param1.setValue(material.shading_model_param1 * 100)
-
         self.material = material
-        self.update_sliders()
         self.in_update = False
+        self.update_sliders()
+        self.set_metallic()
+        self.set_shading_model()
 
     def set_metallic(self):
-        self.material.metallic = self.cb_metallic.isChecked()
-        self.slider_specular.setEnabled(not self.material.metallic)
-        self.send_update()
+        if not self.in_update:
+            self.material.metallic = self.cb_metallic.isChecked()
+            self.slider_specular.setEnabled(not self.material.metallic)
+            self.send_update()
 
     def send_update(self):
-        if self.in_update:
-            return
-        serialized = ("{} " * 11).format(
-            self.material.name,
-            self.material.basecolor_r,
-            self.material.basecolor_g,
-            self.material.basecolor_b,
-            self.material.roughness,
-            self.material.specular,
-            1.0 if self.material.metallic else 0.0,
-            self.material.shading_model,
-            self.material.normal_strength,
-            self.material.shading_model_param1,
-            self.material.shading_model_param2,
-        )
-        NetworkCommunication.send_async(NetworkCommunication.MATERIAL_PORT, "update_material " + serialized)
+        if not self.in_update:
+            serialized = ("{} " * 11).format(
+                self.material.name,
+                self.material.basecolor_r,
+                self.material.basecolor_g,
+                self.material.basecolor_b,
+                self.material.roughness,
+                self.material.specular,
+                1.0 if self.material.metallic else 0.0,
+                self.material.shading_model,
+                self.material.normal_strength,
+                self.material.shading_model_param1,
+                self.material.shading_model_param2,
+            )
+            NetworkCommunication.send_async(NetworkCommunication.MATERIAL_PORT, "update_material " + serialized)
 
     def set_shading_model(self):
+        if self.in_update:
+            return
+
         name, val, optional_param = self.SHADING_MODELS[self.cb_shading_model.currentIndex()]
         if optional_param is None:
             self.slider_param1.setEnabled(False)
@@ -237,8 +246,6 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         elif name == "Foliage":
             self.cb_metallic.hide()
             
-        
-
         self.material.shading_model = val
         self.send_update()
 
