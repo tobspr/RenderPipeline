@@ -148,7 +148,7 @@ def check_file_exists(fpath):
 
 def ask_download_samples():
     """ Asks the user if he wants to download the samples """
-    query = "\nDo you want to download the Render Pipeline samples? (y/n):"
+    query = "\nDo you want to download the Render Pipeline samples (~450MB)? (y/n):"
 
     if get_user_choice(query):
         print_step("Downloading samples (Might take a while, depending on your "
