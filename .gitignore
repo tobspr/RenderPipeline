@@ -57,3 +57,4 @@ toolkit/bake_gi/resources/*.bam
 toolkit/bake_gi/resources/*.blend
 toolkit/bake_gi/scene
 
+.vscode

@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>262</width>
-    <height>556</height>
+    <height>608</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>262</width>
-    <height>556</height>
+    <height>608</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>262</width>
-    <height>556</height>
+    <height>5560</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@ QSlider::groove:horizontal {
 
 QSlider::handle:horizonal {
 	background: #666;
-	width: 9px;
+	width: 8px;
 	margin: -6px 0;
 }
 
@@ -48,7 +48,26 @@ QSlider::groove:horizontal:disabled {
 	background: rgba(0, 0, 0, 8);
 }
 
+QRadioButton {
+	background: #fafafa;
+	padding: 4px 6px 3px;
+   font-size: 12px;
+	color: #333;
+}
 
+QRadioButton::indicator {
+	width: 15px;
+	height: 15px;
+	margin-top: -1px;
+}
+
+QRadioButton:checked {
+background: #eee;
+}
+
+QRadioButton:hover {
+background: #eaeaea;
+}
 
 QComboBox {
 border: 0;
@@ -261,9 +280,9 @@ font-weight: 600;</string>
         <widget class="QWidget" name="horizontalLayoutWidget_3">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>200</y>
-           <width>221</width>
+           <x>30</x>
+           <y>240</y>
+           <width>201</width>
            <height>73</height>
           </rect>
          </property>
@@ -273,8 +292,8 @@ font-weight: 600;</string>
           </property>
           <item>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="1">
-             <widget class="QLabel" name="lbl_basecolor_g">
+            <item row="1" column="2">
+             <widget class="QLabel" name="lbl_basecolor_val2">
               <property name="minimumSize">
                <size>
                 <width>30</width>
@@ -288,7 +307,7 @@ font-weight: 600;</string>
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: green;background: transparent;</string>
+               <string notr="true">background: transparent;</string>
               </property>
               <property name="text">
                <string>0.43</string>
@@ -298,36 +317,8 @@ font-weight: 600;</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="lbl_basecolor_r">
-              <property name="minimumSize">
-               <size>
-                <width>30</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>30</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">color: red; background: transparent;</string>
-              </property>
-              <property name="text">
-               <string>0.12</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QSlider" name="basecolor_b">
-              <property name="styleSheet">
-               <string notr="true">QSlider::handle:horizontal { background: blue; }</string>
-              </property>
+            <item row="2" column="1">
+             <widget class="QSlider" name="basecolor_3">
               <property name="maximum">
                <number>100</number>
               </property>
@@ -339,11 +330,8 @@ font-weight: 600;</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QSlider" name="basecolor_r">
-              <property name="styleSheet">
-               <string notr="true">QSlider::handle:horizontal { background: red; }</string>
-              </property>
+            <item row="0" column="1">
+             <widget class="QSlider" name="basecolor_1">
               <property name="maximum">
                <number>100</number>
               </property>
@@ -355,11 +343,8 @@ font-weight: 600;</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QSlider" name="basecolor_g">
-              <property name="styleSheet">
-               <string notr="true">QSlider::handle:horizontal { background: green; }</string>
-              </property>
+            <item row="1" column="1">
+             <widget class="QSlider" name="basecolor_2">
               <property name="maximum">
                <number>100</number>
               </property>
@@ -371,8 +356,8 @@ font-weight: 600;</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="lbl_basecolor_b">
+            <item row="2" column="2">
+             <widget class="QLabel" name="lbl_basecolor_val3">
               <property name="minimumSize">
                <size>
                 <width>30</width>
@@ -386,13 +371,86 @@ font-weight: 600;</string>
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: blue;background: transparent;</string>
+               <string notr="true">background: transparent;</string>
               </property>
               <property name="text">
                <string>0.53</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="lbl_basecolor_val1">
+              <property name="minimumSize">
+               <size>
+                <width>30</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>30</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: transparent;</string>
+              </property>
+              <property name="text">
+               <string>0.12</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="lbl_basecolor1">
+              <property name="minimumSize">
+               <size>
+                <width>11</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: transparent; color: #555; </string>
+              </property>
+              <property name="text">
+               <string>R</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="lbl_basecolor2">
+              <property name="minimumSize">
+               <size>
+                <width>11</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: transparent; color: #555; </string>
+              </property>
+              <property name="text">
+               <string>G</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="lbl_basecolor3">
+              <property name="minimumSize">
+               <size>
+                <width>11</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: transparent; color: #555; </string>
+              </property>
+              <property name="text">
+               <string>B</string>
               </property>
              </widget>
             </item>
@@ -439,7 +497,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>290</y>
+           <y>340</y>
            <width>131</width>
            <height>16</height>
           </rect>
@@ -452,7 +510,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>310</y>
+           <y>360</y>
            <width>191</width>
            <height>19</height>
           </rect>
@@ -471,7 +529,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>340</y>
+           <y>390</y>
            <width>131</width>
            <height>16</height>
           </rect>
@@ -484,7 +542,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>360</y>
+           <y>410</y>
            <width>191</width>
            <height>19</height>
           </rect>
@@ -503,7 +561,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>390</y>
+           <y>440</y>
            <width>131</width>
            <height>16</height>
           </rect>
@@ -516,7 +574,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>410</y>
+           <y>460</y>
            <width>191</width>
            <height>19</height>
           </rect>
@@ -535,7 +593,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>220</x>
-           <y>310</y>
+           <y>360</y>
            <width>31</width>
            <height>20</height>
           </rect>
@@ -551,7 +609,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>220</x>
-           <y>360</y>
+           <y>410</y>
            <width>31</width>
            <height>20</height>
           </rect>
@@ -567,7 +625,7 @@ font-weight: 600;</string>
          <property name="geometry">
           <rect>
            <x>220</x>
-           <y>409</y>
+           <y>459</y>
            <width>31</width>
            <height>20</height>
           </rect>
@@ -585,7 +643,7 @@ font-weight: 600;</string>
            <x>-10</x>
            <y>166</y>
            <width>311</width>
-           <height>341</height>
+           <height>561</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -601,7 +659,7 @@ font-weight: 600;</string>
           <property name="geometry">
            <rect>
             <x>230</x>
-            <y>289</y>
+            <y>339</y>
             <width>31</width>
             <height>20</height>
            </rect>
@@ -620,7 +678,7 @@ font-weight: 600;</string>
           <property name="geometry">
            <rect>
             <x>30</x>
-            <y>290</y>
+            <y>340</y>
             <width>191</width>
             <height>19</height>
            </rect>
@@ -639,7 +697,7 @@ font-weight: 600;</string>
           <property name="geometry">
            <rect>
             <x>30</x>
-            <y>270</y>
+            <y>320</y>
             <width>141</width>
             <height>16</height>
            </rect>
@@ -648,6 +706,75 @@ font-weight: 600;</string>
            <string>Shading-model-param</string>
           </property>
          </widget>
+         <widget class="QRadioButton" name="cb_rgb">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>34</y>
+            <width>60</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>RGB</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="cb_srgb">
+          <property name="geometry">
+           <rect>
+            <x>92</x>
+            <y>34</y>
+            <width>71</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>SRGB</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="cb_hsv">
+          <property name="geometry">
+           <rect>
+            <x>165</x>
+            <y>34</y>
+            <width>62</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>HSV</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="frame_3">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>59</y>
+            <width>220</width>
+            <height>96</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QFrame { background: #eee; }</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+         </widget>
+         <zorder>lbl_param1</zorder>
+         <zorder>slider_param1</zorder>
+         <zorder>lbl_shading_model_param1</zorder>
+         <zorder>cb_rgb</zorder>
+         <zorder>cb_srgb</zorder>
+         <zorder>lbl_basecolor_val1</zorder>
+         <zorder>cb_hsv</zorder>
+         <zorder>frame_3</zorder>
         </widget>
         <zorder>frame_2</zorder>
         <zorder>label_2</zorder>

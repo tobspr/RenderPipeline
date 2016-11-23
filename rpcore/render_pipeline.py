@@ -668,8 +668,6 @@ class RenderPipeline(RPObject):
                     material.emission.w, # arbitrary 1
                 ) + "\n")
 
-        self.debug("Wrote materials to", pth)
-
     def update_serialized_material(self, data):
         """ Internal method to update a material from a given serialized material """
         name = data[0]
