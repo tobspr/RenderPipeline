@@ -9,9 +9,20 @@ uniform sampler2D ShadowMap;
 uniform mat4 shadowMVP;
 uniform vec3 sunVector;
 
+
+// Pandas material representation
+struct Panda3DMaterial {
+    vec4 baseColor;
+    vec4 emission;
+    float roughness;
+    float metallic;
+    float refractiveIndex;
+};
+uniform Panda3DMaterial p3d_Material;
+
 out vec4 color;
 
-const vec3 sun_color = vec3(1.4, 1.1, 1.0) * 1;
+const vec3 sun_color = vec3(1.4, 1.2, 1.0);
 
 void main() {
     vec4 projected = shadowMVP * vec4(ws_position, 1);
@@ -23,7 +34,7 @@ void main() {
     float shadow = actual_depth >= shadow_space_pos.z - bias ? 1.0 : 0.0;
 
     float NxL = max(0.0, dot(ws_normal, sunVector));
-    vec3 basecolor = texture(p3d_Texture0, ws_uv).xyz;
+    vec3 basecolor = texture(p3d_Texture0, ws_uv).xyz * p3d_Material.baseColor.xyz;
     // basecolor = vec3(0.8);
 
     vec3 ambient = vec3(0.0001) * basecolor;

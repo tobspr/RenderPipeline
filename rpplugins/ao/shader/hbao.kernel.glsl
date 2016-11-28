@@ -27,7 +27,7 @@
 
 
 
-const float sample_radius = GET_SETTING(ao, hbao_sample_radius);
+const float sample_radius = GET_SETTING(ao, hbao_sample_radius) * 2;
 const int num_angles = GET_SETTING(ao, hbao_ray_count);
 const int num_ray_steps = GET_SETTING(ao, hbao_ray_steps);
 const float tangent_bias = GET_SETTING(ao, hbao_tangent_bias);
@@ -62,7 +62,7 @@ for (int i = 0; i < num_angles; ++i) {
         vec3 view_pos = get_view_pos_at(texc);
         vec3 diff = view_pos - pixel_view_pos;
 
-        if(length(diff) < max_sample_distance) {
+        if (length(diff) < max_sample_distance) {
 
             // Compute actual angle
             float sample_angle = atan(diff.z / length(diff.xy));

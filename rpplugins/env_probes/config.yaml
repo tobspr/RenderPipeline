@@ -30,7 +30,7 @@ settings: !!omap
 
     - max_probes_per_cell:
         type: int
-        range: [1, 16]
+        range: [1, 32]
         default: 3
         label: Max overlapping probes
         description: >

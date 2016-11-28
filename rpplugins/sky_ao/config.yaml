@@ -3,7 +3,7 @@ settings: !!omap
 
     - sample_radius:
         type: float
-        range: [0.1, 50.0]
+        range: [0.1, 100.0]
         default: 6.0
         shader_runtime: true
         label: Sample radius
@@ -33,17 +33,26 @@ settings: !!omap
     - sample_sequence:
         type: sample_sequence
         shader_runtime: true
-        dimension: 2
-        default: poisson_2D_32
+        dimension: 3
+        default: poisson_3D_32
         label: Sample Sequence
         description: >
             Amout and Type of samples, higher values cost more performance
             but provide smoother results.
+    
+    - trace_steps:
+        type: int
+        shader_runtime: true
+        range: [1, 16]
+        default: 4
+        label: Trace steps
+        description: >
+            Controls how many steps to perform for each ray.
 
     - ao_multiplier:
         type: float
         shader_runtime: true
-        range: [0.05, 5.0]
+        range: [0.02, 1.0]
         default: 0.25
         label: AO Multiplier
         description: >

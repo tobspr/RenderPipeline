@@ -64,18 +64,23 @@ void main() {
         return;
     }
 
-    // vec3 view_vector = normalize(pixel_world_pos - MainSceneData.camera_pos);
     float view_dist = pixel_distance;
 
-    vec3 noise_vec = rand_rgb(coord % 8 +
+
+    float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
+
+    vec3 noise_vec = rand_rgb(coord % 16 +
         0.05 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
+    float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
+    mat2 rotation_mat = make_rotation_mat(rotation_factor);
+    float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.1 * t)));
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
 
     // float kernel_scale = 10.0 / get_linear_z_from_z(pixel_depth);
-    float kernel_scale = min(5.0, 10.0 / view_dist);
+    float kernel_scale = 10.0 / view_dist;
 
     // Include the appropriate kernel
     #if ENUM_V_ACTIVE(ao, technique, SSAO)

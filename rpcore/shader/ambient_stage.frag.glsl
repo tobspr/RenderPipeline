@@ -112,16 +112,15 @@ void main() {
                 #endif
             #endif
 
-            return;
+            #if !DEBUG_MODE
+                return;
+            #endif
         }
 
 
         #if HAVE_PLUGIN(sky_ao)
             float sky_ao_factor = textureLod(SkyAO, texcoord, 0).x;
             sky_ao_factor = pow(sky_ao_factor, 3.0);
-
-            // Prevent total dark ao term
-            sky_ao_factor = max(0.2, sky_ao_factor);
         #else
             float sky_ao_factor = 1.0;
         #endif
@@ -138,18 +137,17 @@ void main() {
 
         // Sample default environment map
         vec3 ibl_specular = textureLod(DefaultEnvmap,
-            fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+            fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
 
         // Get cheap irradiance by sampling low levels of the environment map
         float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
         vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal),
-            ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+            ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
 
         // Scattering specific code
         #if HAVE_PLUGIN(scattering)
             float scat_mipmap = m.shading_model == SHADING_MODEL_CLEARCOAT ?
                 CLEARCOAT_ROUGHNESS : get_specular_mipmap(m);
-
             ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz * sky_ao_factor;
             ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz * sky_ao_factor;
         #endif

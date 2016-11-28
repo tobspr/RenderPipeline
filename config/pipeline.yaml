@@ -15,6 +15,11 @@ pipeline:
     # Has no effect when display_debugger is set to false.
     advanced_debugging_info: true
 
+    # Whether to automatically check each second whether any plugin shader changed,
+    # and if so, reload it automatically. Requires the 'watchdog' python package,
+    # e.g. 'ppython -m pip install watchdog'
+    auto_reload_plugin_shaders: true
+
     # Whether to use the GL_R11F_G11F_B10F texture format to save memory
     # and bandwidth. Usually you want to enable this, however it can
     # cause banding sometimes, in which case you can disable this setting.

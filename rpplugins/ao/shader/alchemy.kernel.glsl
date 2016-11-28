@@ -68,4 +68,5 @@ END_ITERATE_SEQUENCE();
 
 // Normalize values
 accum /= max(1.0, float(accum_count));
+accum *= 0.5;
 result = 1 - accum;

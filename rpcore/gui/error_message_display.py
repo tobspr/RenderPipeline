@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 """
 
-from __future__ import print_function
-
 from panda3d.core import Notify, LineStream, Vec3
 
 from rpcore.globals import Globals

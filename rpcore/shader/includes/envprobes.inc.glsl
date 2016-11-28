@@ -85,7 +85,6 @@ Cubemap get_cubemap(int index) {
 float correct_parallax(Cubemap map, Material m, vec3 vector, out float factor) {
     // Intersection with OBB, convert to unit box space
     // Transform in local unit parallax cube space (scaled and rotated)
-    vec3 ray_ls = (map.transform * vec4(vector, 0)).xyz;
     vec3 position_ls = (map.transform * vec4(m.position, 1)).xyz;
 
     // Get fading factor
@@ -95,6 +94,9 @@ float correct_parallax(Cubemap map, Material m, vec3 vector, out float factor) {
     if (!map.use_parallax) {
         return 1e10;
     }
+
+
+    vec3 ray_ls = (map.transform * vec4(vector, 0)).xyz;
 
     // Intersect with unit box
     vec3 first_plane = (1.0 - position_ls) / ray_ls;
@@ -154,7 +156,8 @@ void apply_cubemap(int id, Material m, out vec4 diffuse, out vec4 specular,
 
     // float normal_blend_factor = saturate(0.1 + 1 * dot(vector_to_source, m.normal));
     float normal_blend_factor = saturate(3.0 * dot(vector_to_source, m.normal));
-    float blend = saturate((1 - factor) / max(1e-10, map.border_smoothness));
+    // float blend = saturate((1 - factor) / max(1e-10, map.border_smoothness));
+    float blend = saturate((1 - factor) / 1e-10);
     blend *= normal_blend_factor;
 
     // Make sure the gradient looks right after tonemapping

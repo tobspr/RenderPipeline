@@ -31,13 +31,13 @@
 #pragma include "includes/gbuffer.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform sampler2D DefaultSkydome;
 
 uniform GBufferData GBuffer;
 
 out vec4 result;
 
 #pragma include "scattering_method.inc.glsl"
+#pragma include "merge_scattering.inc.glsl"
 
 void main() {
 
@@ -53,7 +53,7 @@ void main() {
 
     // Prevent a way too dark horizon by clamping the view vector
     if (is_skybox(m)) {
-        view_vector.z = max(view_vector.z, 0.05);
+        view_vector.z = max(view_vector.z, 0.14);
     }
 
     vec3 inscattered_light = DoScattering(m.position, view_vector, sky_clip)
@@ -62,17 +62,9 @@ void main() {
     result.xyz = textureLod(ShadedScene, texcoord, 0).xyz;
     result.w = 1;
 
-    // Cloud color
     if (is_skybox(m)) {
 
-        inscattered_light *= M_PI; // XXX: This makes it look better, but has no physical background.
-
-        #if !HAVE_PLUGIN(clouds)
-            vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(orig_view_vector), 0).xyz;
-            // inscattered_light = 15 * cloud_color * M_PI;
-            cloud_color = mix(vec3(0.5), cloud_color, saturate(orig_view_vector.z / 0.05));
-            inscattered_light *= 0.5 + 1 * cloud_color;
-        #endif
+        inscattered_light = get_merged_scattering(orig_view_vector, inscattered_light);
 
         // Sun disk
         vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) *

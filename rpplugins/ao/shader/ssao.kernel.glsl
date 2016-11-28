@@ -47,8 +47,12 @@ sample_offset /= 0.8 * kernel_scale;
 
 START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
 
-    offset = mix(offset, noise_vec, 0.5);
-    offset *= 0.6;
+    offset.xy = rotation_mat * offset.xy;
+    offset *= scale_factor;
+
+    // Since poisson disks have more samples to the outer, but this
+    // is does not match the ao definition, move the samples closer to the pixel
+    offset = pow(abs(offset), vec3(2.0)) * sign(offset);
 
     // Flip offset in case it faces away from the normal
     offset = face_forward(offset, pixel_view_normal);
@@ -58,6 +62,9 @@ START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
 
     // Project offset position to screen space
     vec3 projected = view_to_screen(offset_pos);
+
+    if (out_of_unit_box(projected))
+        continue;
 
     // Fetch the expected depth
     float sample_depth = get_linear_depth_at(projected.xy);

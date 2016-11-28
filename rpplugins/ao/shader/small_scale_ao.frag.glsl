@@ -31,7 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/sampling_sequences.inc.glsl"
 
 out float result;
 
@@ -47,7 +47,6 @@ float get_linear_depth_at(vec2 coord) {
 }
 
 void main() {
-
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     // Provide some variables to the kernel
@@ -59,35 +58,47 @@ void main() {
     // Merge with previous ao result
     float prev_result = textureLod(AOResult, texcoord, 0).x;
 
-    // Fade out small scale ao
+    // Fade out small scale ao at great distances
     if (pixel_z > 150.0) {
         result = prev_result;
         return;
     }
 
+    // Compute noise components
+    float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
+    float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
+    mat2 rotation_mat = make_rotation_mat(rotation_factor);
+    float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.05 * t)));
     vec3 noise_vec = rand_rgb(coord % 4 +
         0.01 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
 
+    // Determina AO params
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
 
-    float kernel_scale = min(5.0, 10.0 / pixel_z);
+    float kernel_scale = 10.0 / pixel_z;
     const float sample_radius = 6.0;
 
     const int num_samples = 4;
     const float bias = 0.0005 + 0.01 / kernel_scale;
-    float max_range = 0.2;
+    float max_range = GET_SETTING(ao, sc_occlusion_max_dist) * 5;
 
-    float sample_offset = sample_radius * pixel_size.x * 30.0;
+    float sample_offset = sample_radius * pixel_size.x * 5 * GET_SETTING(ao, sc_occlusion_range);
     float range_accum = 0.0;
     float accum = 0.0;
 
     sample_offset /= kernel_scale;
+    sample_offset *= scale_factor;
 
+    // Collect samples
     for (int i = 0; i < num_samples; ++i) {
-        vec3 offset = poisson_3D_16[4 * i];
-        // offset = mix(offset, noise_vec, 0.5);
-        offset = normalize(offset + noise_vec);
+        vec3 offset = halton_3D_4[i];
+
+        offset.xy = rotation_mat * offset.xy;
+
+        // Since poisson disks have more samples to the outer, but this
+        // is does not match the ao definition, move the samples closer to the pixel
+        offset = pow(abs(offset), vec3(2.0)) * sign(offset);
 
         // Flip offset in case it faces away from the normal
         offset = face_forward(offset, pixel_view_normal);
@@ -98,26 +109,34 @@ void main() {
         // Project offset position to screen space
         vec3 projected = view_to_screen(offset_pos);
 
+        if (out_of_unit_box(projected))
+            continue;
+
         // Fetch the expected depth
         float sample_depth = get_linear_depth_at(projected.xy);
-        // float sample_depth = get_linear_z_from_z(get_depth_at(projected.xy));
 
         // Linearize both depths
         float linz_a = get_linear_z_from_z(projected.z);
         float linz_b = sample_depth;
 
         // Compare both depths by distance to find the AO factor
-        float modifier = step(distance(linz_a, linz_b), max_range);
+        float modifier = step(distance(linz_a, linz_b), max_range * 0.2);
         range_accum += fma(modifier, 0.5, 0.5);
         modifier *= step(linz_b + bias, linz_a);
         accum += modifier;
     }
 
     // Normalize samples
-    accum /= max(0.1, range_accum);
+    accum /= max(0.01, range_accum);
     accum = 1 - accum;
-    accum = pow(accum, 5.0);
+    accum = pow(accum, GET_SETTING(ao, sc_occlusion_strength));
     prev_result *= accum;
-    // prev_result = pow(accum, 9.0);
-    result = prev_result;
+    // prev_result = accum;
+
+    // Fade out AO at obligue angles
+    vec3 view_dir = normalize(pixel_view_pos);
+    float NxV = saturate(dot(view_dir, -pixel_view_normal));
+    float fade = 1 - saturate(4 * NxV);
+
+    result = prev_result * (1 - fade) + fade;
 }

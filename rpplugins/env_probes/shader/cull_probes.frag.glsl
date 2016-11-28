@@ -56,7 +56,7 @@ void main() {
     unpack_cell_data(packed_cell_data, cell_x, cell_y, cell_slice);
 
     float distance_bias = 0.01;
-    float bsphere_bias = 0.05;
+    float bsphere_bias = 0.1;
     // Find the tiles minimum and maximum distance
     float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
     float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
@@ -83,6 +83,9 @@ void main() {
             visible = visible || viewspace_ray_sphere_distance_intersection(
                 sphere, local_ray_dirs[k], min_distance, max_distance);
         }
+
+        // Uncomment this to check for issues in during culling
+        // visible = true;
 
         if (visible) {
             imageStore(PerCellProbes, storage_offset + probes_written, ivec4(1 + i));

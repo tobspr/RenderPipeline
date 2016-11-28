@@ -46,7 +46,7 @@ void main() {
 
     // Apply dithering to prevent banding, since we are converting from 16 bit
     // precision to 8 bit precision here
-    #if !REFERENCE_MODE
+    #if !REFERENCE_MODE && !DEBUG_MODE
         vec3 dither = (rand_rgb(texcoord) + rand_rgb(texcoord + 0.5787)) * 0.5 - 0.4;
         scene_color += dither / 128.0;
     #endif

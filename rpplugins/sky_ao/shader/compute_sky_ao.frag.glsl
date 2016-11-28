@@ -32,11 +32,14 @@
 
 #pragma include "sky_ao.inc.glsl"
 
-out vec4 result;
+out float result;
 
 void main() {
-
     vec2 texcoord = get_half_texcoord();
     Material m = unpack_material(GBuffer, texcoord);
-    result = vec4(compute_sky_ao(m.position, m.normal));
+    if (is_skybox(m)) {
+        result = 1;
+        return;
+    }
+    result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(gl_FragCoord.xy));
 }

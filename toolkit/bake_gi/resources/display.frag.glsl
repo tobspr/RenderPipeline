@@ -15,6 +15,18 @@ uniform vec3 sunVector;
 
 out vec3 color;
 
+
+// Pandas material representation
+struct Panda3DMaterial {
+    vec4 baseColor;
+    vec4 emission;
+    float roughness;
+    float metallic;
+    float refractiveIndex;
+};
+uniform Panda3DMaterial p3d_Material;
+
+
 vec3 get_probe_at(ivec3 coord, vec3 nrm) {
         int offs = coord.x + coord.y * bake_mesh_probecount.x +
                     coord.z * bake_mesh_probecount.y * bake_mesh_probecount.x;
@@ -73,7 +85,7 @@ void main() {
 
     vec3 precomputed_gi = mix(lerp_bottom, lerp_top, fract_coord.z);
 
-    vec3 basecolor = textureLod(p3d_Texture0, ms_uv, 0).xyz;
+    vec3 basecolor = textureLod(p3d_Texture0, ms_uv, 0).xyz * p3d_Material.baseColor.xyz;
     // basecolor = vec3(0.8);
 
 

@@ -42,6 +42,10 @@ void main() {
     vec4 offset;
     SMAANeighborhoodBlendingVS(texcoord, offset);
 
-    // Actual Fragment shader
-    result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
+    #if DEBUG_MODE
+        result = textureLod(ShadedScene, texcoord, 0);
+    #else
+        // Actual Fragment shader
+        result = SMAANeighborhoodBlendingPS(texcoord, offset, ShadedScene, BlendTex);
+    #endif
 }

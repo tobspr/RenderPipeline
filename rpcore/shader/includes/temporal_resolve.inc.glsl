@@ -139,12 +139,18 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
             vec3 last_pos = calculate_surface_pos(
                 last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
+
             // Weight by distance
             float max_distance = RS_DISTANCE_SCALE;
-            max_distance *= distance(curr_pos, MainSceneData.camera_pos) / 10.0;
+            // max_distance *= distance(curr_pos, MainSceneData.camera_pos) / 10.0;
 
             float weight = 1.0 - saturate(distance(curr_pos, last_pos) / max_distance);
             weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
+            
+            #ifdef RS_FADE_BORDERS
+                float fade = compute_fade_factor(last_coord, RS_FADE_BORDERS);
+                weight *= fade;
+            #endif
 
             vec4 last_m = textureLod(last_tex, last_coord, 0);
             return mix(curr_m, last_m, weight);

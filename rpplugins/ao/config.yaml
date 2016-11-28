@@ -10,29 +10,7 @@ settings: !!omap
             Controls the quality of the post-ao blur, higher values produce smoother
             ambient occlusion, but also cost more performance. 
 
-    # General settings
-    - blur_normal_factor:
-        type: float
-        range: [0.1, 10.0]
-        default: 1.2
-        shader_runtime: true
-        label: Bilateral Blur Normal Factor
-        description: >
-            This setting controls the normal influence for the bilateral blur.
-            A value of 0.0 means a normal blur, and a higher value will prevent
-            blurring over normals.
-
-    - blur_depth_factor:
-        type: float
-        range: [0.1, 10.0]
-        default: 0.9
-        shader_runtime: true
-        label: Biliteral Blur Depth Factor
-        description: >
-            This setting controls the depth influence for the bilateral blur.
-            If a pixel exceeds the distance to the mid pixel by this amount, it
-            will not get weighted.
-
+    # Occlusion sttings
     - occlusion_strength:
         type: float
         range: [0.1, 6.0]
@@ -45,6 +23,17 @@ settings: !!omap
             noticeable. You most likely will have to adjust it differently for
             every technique.
 
+    - border_fade:
+        type: float
+        range: [0.01, 0.3]
+        default: 0.06
+        shader_runtime: true
+        label: Border Fade
+        description: >
+            Fades out the ambient occlusion term at the borders, to avoid artifacts
+            with temporal resolve. If you don't use the history buffer, you can
+            set this fairly low.
+
     - clip_length:
         type: int
         range: [1, 16]
@@ -56,12 +45,55 @@ settings: !!omap
             will produce a smoother effect but might also produce artifacts,
             especially when moving.
 
+    # Small scale ao settings
+    - enable_small_scale_ao:
+        type: bool
+        default: true
+        label: Enable Small Scale Occlusion
+        description: >
+            Enables whether to enable small scale occlusion, which adds details
+            to the medium-scale occlusion.
+
+    - sc_occlusion_strength:
+        display_if: {enable_small_scale_ao: true}
+        type: float
+        range: [0.1, 12.0]
+        default: 8.0
+        shader_runtime: true
+        label: SSO Strength
+        description: >
+            This controls the strength of the small scale occlusion. The small
+            scale occlusion adds more details to the occlusion.
+
+    - sc_occlusion_range:
+        display_if: {enable_small_scale_ao: true}
+        type: float
+        range: [0.2, 50.0]
+        default: 7.5
+        shader_runtime: true
+        label: SSO Size
+        description: >
+            Controls the size of the small scale occlusion, should be lower than
+            the size of the ambient occlusion.
+
+    - sc_occlusion_max_dist:
+        display_if: {enable_small_scale_ao: true}
+        type: float
+        range: [0.01, 0.9]
+        default: 0.375
+        shader_runtime: true
+        label: SSO Max Range
+        description: >
+            Controls the maximum distance of the small scale occlusion to avoid
+            halos and artifacts.
+
+    # Per technique settings
     - technique:
         type: enum
         values: ["SSAO", "HBAO", "SSVO", "ALCHEMY", "UE4AO"]
         default: SSAO
         shader_runtime: true
-        label: Technique
+        label: Occlusion Kernel
         description: >
             The kernel to use for computing ambient occlusion. The settings below
             depend on the kernel, so choose a kernel first!

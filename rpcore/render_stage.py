@@ -24,11 +24,14 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import Vec4
+
 from rplibs.six import itervalues, iteritems
 
 from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
 from rpcore.loader import RPLoader
+from rpcore.image import Image
 
 
 class RenderStage(RPObject):
@@ -140,9 +143,21 @@ class RenderStage(RPObject):
     def _get_plugin_id(self):
         """ Returns the id of the plugin which created this stage. This is done
         by extracting the name of the plugin from the module name """
+
+        # Stages which are contained in the rpcore module instead of the
+        # plugin directory are marked as internal (builtin) stages.
         if "rpcore.stages" in self.__class__.__module__:
-            return "render_pipeline_internal"
+            return "rp_internal"
+
         return str(self.__class__.__module__).split(".")[-2]
+
+    def _prepare_upscaler(self, max_invalid_pixels=2048):
+        """ Prepares the two textures required for processing invalid pixels
+        after executing the upscale pass """
+        counter = Image.create_counter(self.stage_id + "-BadPixelsCounter")
+        counter.set_clear_color(Vec4(0))
+        buf = Image.create_buffer(self.stage_id + "-BadPixels", max_invalid_pixels, "R32I")
+        return counter, buf
 
     def load_shader(self, *args):
         """ Loads a shader from the given args. If only one argument is passed,

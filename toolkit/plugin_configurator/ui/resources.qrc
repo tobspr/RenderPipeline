@@ -4,6 +4,7 @@
     <file>res/icon.png</file>
   </qresource>
   <qresource prefix="res">
-    <file>res/plugin_configurator_logo.png</file>
-  </qresource>
+    <file>res/reset.png</file>
+    <file>res/description.png</file>
+  </qresource>  
 </RCC>

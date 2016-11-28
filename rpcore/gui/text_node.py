@@ -38,12 +38,12 @@ class TextNode(RPObject):
     """ Interface for the Panda3D TextNode. """
 
     def __init__(self, font="/$$rp/data/font/Roboto-Bold.ttf", pixel_size=16, align="left",
-                 pos=Vec2(0), color=Vec3(1), parent=None):
+                 pos=Vec2(0), color=Vec3(1), parent=None, text=""):
         """ Constructs a new text node, forwaring the parameters to the internal
         panda3d implementation """
         RPObject.__init__(self)
         self._node = TextNodeImpl('FTN')
-        self._node.set_text("")
+        self._node.set_text(text)
         self._node.set_align(getattr(TextNodeImpl, "A_" + align))
         self._node.set_text_color(color.x, color.y, color.z, 1)
 
@@ -61,6 +61,11 @@ class TextNode(RPObject):
         font.set_bg(Vec4(0, 0, 0, 0))
         self._node.set_font(font)
         self.set_pixel_size(pixel_size)
+
+    @property
+    def np(self):
+        """ Returns the node path of the text """
+        return self._nodepath
 
     @property
     def text(self):

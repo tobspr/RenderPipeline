@@ -56,6 +56,8 @@ class PixelInspector(RPObject):
     def show(self):
         """ Shows the inspector """
         self._node.show()
+        if Globals.base.render2d.is_hidden():
+            Globals.base.render2d.show()
 
     def hide(self):
         """ Shows the inspector """

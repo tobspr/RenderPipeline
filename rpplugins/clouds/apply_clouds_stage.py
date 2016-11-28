@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec2
+from panda3d.core import Vec4
 
 from rpcore.render_stage import RenderStage
 
@@ -51,7 +51,8 @@ class ApplyCloudsStage(RenderStage):
         self.upscale_target = self.create_target("UpscaleTarget")
         self.upscale_target.add_color_attachment(bits=16, alpha=True)
         self.upscale_target.prepare_buffer()
-        self.upscale_target.set_shader_input("upscaleWeights", Vec2(0.05, 0.2))
+        self.upscale_target.set_shader_input("skipSkybox", False)
+        self.upscale_target.set_shader_input("skyboxColor", Vec4(1))
         self.upscale_target.set_shader_input("SourceTex", self.render_target.color_tex)
 
         self.target_apply_clouds = self.create_target("MergeWithScene")

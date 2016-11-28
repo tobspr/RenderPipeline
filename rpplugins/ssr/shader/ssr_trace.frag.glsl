@@ -146,7 +146,7 @@ void main()
         return;
     }
 
-    float max_ray_len = 1.0 * pixeldist;
+    float max_ray_len = 5.0 * pixeldist;
 
     // Clip ray to near plane
     #if 1

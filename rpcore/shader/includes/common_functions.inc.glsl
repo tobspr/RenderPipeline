@@ -309,12 +309,30 @@ mat2 make_rotation_mat(float rotation) {
     return mat2(r_cos, -r_sin, r_sin, r_cos);
 }
 
+// Computes a fade factor to fade out the given coordinates once
+// they reach 0 / 1 on each component
+float compute_fade_factor(vec2 coords, float fade_range) {
+    float fade = 1.0;
+    fade *= saturate(min(coords.x, 1 - coords.x) / fade_range);
+    fade *= saturate(min(coords.y, 1 - coords.y) / fade_range);
+    return fade;
+}
+
+// See compute_fade_factor, but takes aspect ratio into account
+float compute_screen_fade_factor(vec2 coords, float fade_range) {
+    float fade = 1.0;
+    fade *= saturate(min(coords.x, 1 - coords.x) / fade_range);
+    fade *= saturate(min(coords.y, 1 - coords.y) / fade_range * ASPECT_RATIO);
+    return fade;
+}   
+
 // Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
 #define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity)
 #define get_sun_color_scale(_v) saturate(square((_v.z) / 0.15))
 
-#if !HAVE_PLUGIN(color_correction)
-    #undef get_sun_color
-    #define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity)
+#if REFERENCE_MODE
+    #define SKYBOX_DIST 1000.0
+#else
+    #define SKYBOX_DIST 20000.0
 #endif

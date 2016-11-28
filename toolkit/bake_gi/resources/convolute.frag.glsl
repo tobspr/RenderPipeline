@@ -26,6 +26,12 @@ vec3 get_sky_color(vec3 v) {
     return vec3(51, 137, 233) / 255.0 * max(0, v.z) * 0.5;
 }
 
+
+float rand(vec2 co){
+    return abs(fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453)) * 2 - 1;
+}
+
+
 void main() {
     int offs = int(gl_FragCoord.x);
     vec3 direction = vec3(0);
@@ -38,7 +44,9 @@ void main() {
         case 5: direction = vec3(0, 0, -1); break;
     }
 
-    const int num_samples = 512;
+    const int num_samples = 64;
+
+    float noise = rand(vec2(gl_FragCoord.xy + storeCoord.xy));
 
     // Find tangent / binormal
     vec3 v0 = abs(direction.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0);
@@ -49,6 +57,7 @@ void main() {
 
     for (uint i = 0; i < num_samples; ++i) {
         vec2 xi = hammersley(i, num_samples);
+        xi.x += 3.0 * noise / num_samples;
         vec3 h = importance_sample_lambert(xi);
         h = normalize(h.x * tangent + h.y * bitangent + h.z * direction);
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>680</height>
+    <width>786</width>
+    <height>631</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>1000</width>
-    <height>680</height>
+    <width>786</width>
+    <height>631</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1000</width>
-    <height>680</height>
+    <width>786</width>
+    <height>631</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -40,18 +40,18 @@
 *, QLabel { font-family: Roboto; font-weight: 300; }
 
 QScrollBar {
-	background: #eee;
+	background: #f3f3f3;
 }
 
 
 QScrollBar:vertical {
-                        width: 9px;
+                        width: 7px;
 	margin: 0;
                       }
 
                       QScrollBar::handle:vertical {
                         min-height: 15px;
-						background: #aaa;
+						background: #bbb;
 
                       }
 
@@ -69,11 +69,11 @@ QScrollBar:vertical {
 
 
                       QScrollBar::add-page:vertical {
-                        background: #ddd;
+                        background: #eee;
 
                       }
                       QScrollBar::sub-page:vertical {
-                        background: #ddd;
+                        background: #eee;
 					}
 </string>
   </property>
@@ -82,30 +82,38 @@ QScrollBar:vertical {
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
-      <width>251</width>
-      <height>531</height>
+      <y>60</y>
+      <width>241</width>
+      <height>521</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QListWidget::item {
-padding: 8px 7px 5px;
-background: #ddd;
+padding: 7px 7px 6px;
+background: #eee;
 outline: 0 !important;
 margin-bottom: 1px;
 margin-right: 10px;
 color: #777;
 font-weight: 500;
+
 border: 0;
+font-size: 9px;
 border-radius: 0;
 }
 
 QListWidget::item:hover {
-background: #ccc;
+background: #ddd;
 }
 
+QListWidget::indicator {
+height: 14px;
+width: 14px;
+}
+
+
 QListWidget::item:selected {
-background: #555;
+background: #666;
 color: #eee;
 }
 
@@ -191,6 +199,9 @@ outline: 0;
      <property name="text">
       <string>Skin Shading</string>
      </property>
+     <property name="checkState">
+      <enum>PartiallyChecked</enum>
+     </property>
     </item>
     <item>
      <property name="text">
@@ -231,10 +242,10 @@ outline: 0;
    <widget class="QFrame" name="frame_details">
     <property name="geometry">
      <rect>
-      <x>281</x>
-      <y>60</y>
-      <width>721</width>
-      <height>621</height>
+      <x>271</x>
+      <y>0</y>
+      <width>561</width>
+      <height>631</height>
      </rect>
     </property>
     <property name="palette">
@@ -252,9 +263,9 @@ outline: 0;
        <colorrole role="Button">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
@@ -324,18 +335,18 @@ outline: 0;
        <colorrole role="Base">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
        <colorrole role="Window">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
@@ -389,9 +400,9 @@ outline: 0;
        <colorrole role="Button">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
@@ -461,18 +472,18 @@ outline: 0;
        <colorrole role="Base">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
        <colorrole role="Window">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
@@ -526,9 +537,9 @@ outline: 0;
        <colorrole role="Button">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
@@ -598,18 +609,18 @@ outline: 0;
        <colorrole role="Base">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
        <colorrole role="Window">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
-          <red>229</red>
-          <green>229</green>
-          <blue>229</blue>
+          <red>243</red>
+          <green>243</green>
+          <blue>243</blue>
          </color>
         </brush>
        </colorrole>
@@ -656,7 +667,7 @@ outline: 0;
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">#frame_details { background: #e5e5e5; }</string>
+     <string notr="true">#frame_details { background: #f3f3f3; }</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::NoFrame</enum>
@@ -873,7 +884,7 @@ outline: 0;
       <rect>
        <x>20</x>
        <y>60</y>
-       <width>441</width>
+       <width>311</width>
        <height>51</height>
       </rect>
      </property>
@@ -900,8 +911,8 @@ a website or so.</string>
       <rect>
        <x>20</x>
        <y>110</y>
-       <width>681</width>
-       <height>491</height>
+       <width>481</width>
+       <height>509</height>
       </rect>
      </property>
      <property name="palette">
@@ -1328,7 +1339,7 @@ a website or so.</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">QTableWidget { border: 1px solid #ccc; font-family: Roboto; font-size: 11px; }</string>
+      <string notr="true">QTableWidget { border: 1px solid #ddd; font-family: Roboto; font-size: 11px; }</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -1441,7 +1452,7 @@ a website or so.</string>
      </column>
      <column>
       <property name="text">
-       <string>Description</string>
+       <string/>
       </property>
      </column>
      <item row="0" column="0">
@@ -1498,7 +1509,7 @@ a website or so.</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: #555; border: 0;  font-size: 15px;</string>
+      <string notr="true">color: #555; border: 0;  font-size: 15px; text-transform: uppercase;</string>
      </property>
      <property name="text">
       <string>Ambient Occlusion</string>
@@ -1510,7 +1521,7 @@ a website or so.</string>
     <widget class="QPushButton" name="btn_reset_plugin_settings">
      <property name="geometry">
       <rect>
-       <x>520</x>
+       <x>320</x>
        <y>20</y>
        <width>180</width>
        <height>31</height>
@@ -1541,15 +1552,12 @@ QPushButton:pressed {
      <rect>
       <x>0</x>
       <y>60</y>
-      <width>281</width>
-      <height>621</height>
+      <width>271</width>
+      <height>571</height>
      </rect>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QFrame {background: #eee;}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -1561,8 +1569,8 @@ QPushButton:pressed {
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>560</y>
-       <width>251</width>
+       <y>520</y>
+       <width>241</width>
        <height>51</height>
       </rect>
      </property>
@@ -1741,6 +1749,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Roboto</family>
+       <pointsize>7</pointsize>
        <weight>37</weight>
        <bold>false</bold>
       </font>
@@ -1764,36 +1773,28 @@ QPushButton:pressed {
       <bool>true</bool>
      </property>
     </widget>
-   </widget>
-   <widget class="QLabel" name="lbl_restart_pipeline">
-    <property name="geometry">
-     <rect>
-      <x>687</x>
-      <y>18</y>
-      <width>294</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Roboto</family>
-      <pointsize>-1</pointsize>
-      <weight>37</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background: #ff9719; color: #eee; padding: 5px; border: 0; font-size: 12px;</string>
-    </property>
-    <property name="text">
-     <string>Pipeline needs to be restarted to apply all changes!</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
+    <widget class="QLabel" name="lbl_restart_pipeline">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>530</y>
+       <width>231</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: #ff9719; color: #eee; padding: 5px; border: 0; font-size: 11px;</string>
+     </property>
+     <property name="text">
+      <string>Restart pipeline to apply all changes!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -1832,7 +1833,6 @@ font-weight: 600;</string>
    </widget>
    <zorder>frame</zorder>
    <zorder>lst_plugins</zorder>
-   <zorder>lbl_restart_pipeline</zorder>
    <zorder>frame_details</zorder>
    <zorder>label</zorder>
    <zorder>label_9</zorder>

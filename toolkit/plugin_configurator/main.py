@@ -72,7 +72,8 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
 
-
+        self._reset_pixmap = QIcon(":/res/res/reset.png")
+        self._desc_pixmap = QIcon(":/res/res/description.png")
 
         self._current_plugin = None
         self._current_plugin_instance = None
@@ -90,7 +91,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         self._load_plugin_list()
 
         # Adjust column widths
-        self.table_plugin_settings.setColumnWidth(0, 140)
+        self.table_plugin_settings.setColumnWidth(0, 137)
         self.table_plugin_settings.setColumnWidth(1, 105)
         self.table_plugin_settings.setColumnWidth(2, 160)
 
@@ -190,12 +191,14 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         """ Renders the current plugin settings """
         settings = self._plugin_mgr.settings[self._current_plugin]
 
+        self._setting_ids_to_reset_buttons = {}
+
         # remove all rows
         while self.table_plugin_settings.rowCount() > 0:
             self.table_plugin_settings.removeRow(0)
 
         label_font = QFont()
-        label_font.setPointSize(10)
+        label_font.setPointSize(8)
         label_font.setFamily("Roboto")
 
         desc_font = QFont()
@@ -218,9 +221,12 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
             if not (handle.shader_runtime or handle.runtime ):
                 label.setStyleSheet("color: #999;")
+            else:
+                label.setStyleSheet("color: #555;")
 
             if handle.display_conditions:
                 label.setStyleSheet(label.styleSheet() + "padding-left: 10px;")
+                label.setText(" - " + label.text())
 
             label.setMargin(10)
 
@@ -234,23 +240,69 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
             setting_widget = self._get_widget_for_setting(name, handle)
             self.table_plugin_settings.setCellWidget(row_index, 2, setting_widget)
 
-            label_desc = QLabel()
-            label_desc.setText(handle.description)
-            label_desc.setWordWrap(True)
-            label_desc.setFont(desc_font)
-            label_desc.setStyleSheet("color: #555;padding: 5px;")
+            # label_desc = QLabel()
+            # label_desc.setText(handle.description)
+            # label_desc.setWordWrap(True)
+            # label_desc.setFont(desc_font)
+            # label_desc.setStyleSheet("color: #555;padding: 5px;")
 
-            self.table_plugin_settings.setCellWidget(row_index, 3, label_desc)
+            actions_widget = QWidget()
+            actions_widget.setMaximumWidth(62)
+            actions_widget.setMinimumWidth(62)
+            actions_layout = QHBoxLayout()
+            actions_layout.setSpacing(0)
+            actions_widget.setLayout(actions_layout)
 
-    def _do_update_setting(self, setting_id, value):
+            btn_reset = QPushButton(self._reset_pixmap, "")
+            btn_reset.setIconSize(QSize(12, 12))
+            btn_reset.setMaximumWidth(24)
+            btn_reset.setMinimumSize(QSize(24, 24))
+            btn_reset.setMaximumSize(QSize(24, 24))
+            btn_reset.setToolTip("Reset setting")
+            qt_connect(btn_reset, "clicked", partial(self._reset_setting, name, handle))
+            actions_layout.addWidget(btn_reset)
+
+            if handle.value == handle.default:
+                btn_reset.setEnabled(False)
+
+            self._setting_ids_to_reset_buttons[name] = btn_reset
+
+            btn_show_info = QPushButton(self._desc_pixmap, "")
+            btn_show_info.setMaximumWidth(24)
+            btn_show_info.setIconSize(QSize(16, 16))
+            btn_show_info.setMinimumSize(QSize(24, 24))
+            btn_show_info.setMaximumSize(QSize(24, 24))
+            btn_show_info.setToolTip("Show description")
+
+
+            qt_connect(btn_show_info, "clicked", partial(self._show_setting_desc, handle.label, handle.description))
+            actions_layout.addWidget(btn_show_info)
+
+            self.table_plugin_settings.setCellWidget(row_index, 3, actions_widget)
+
+    def _reset_setting(self, setting_id, handle):
+        """ Resets a given setting """
+        handle.value = handle.default
+        self._do_update_setting(setting_id, handle.default, force_redraw=True)
+
+
+
+    def _show_setting_desc(self, label, description):
+        """ Shows the description of a given setting """
+        QMessageBox.information(self, "Setting: " + label, description, QMessageBox.Ok)
+
+    def _do_update_setting(self, setting_id, value, force_redraw=False):
         """ Updates a setting of the current plugin """
 
         # Check whether the setting is a runtime setting
         setting_handle = self._plugin_mgr.get_setting_handle(
             self._current_plugin, setting_id)
 
+        if setting_id in self._setting_ids_to_reset_buttons:
+            self._setting_ids_to_reset_buttons[setting_id].setEnabled(value != setting_handle.default)
+
         # Skip the setting in case the value is equal
-        if setting_handle.value == value:
+        if setting_handle.value == value and not force_redraw:
             return
 
         # Otherwise set the new value
@@ -267,7 +319,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
         # Update GUI, but only in case of enum and bool values, since they can trigger
         # display conditions:
-        if setting_handle.type == "enum" or setting_handle.type == "bool":
+        if force_redraw or setting_handle.type == "enum" or setting_handle.type == "bool":
             self._render_current_settings()
 
     def _on_setting_bool_changed(self, setting_id, value):
@@ -468,7 +520,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
         item_font = QFont()
         item_font.setBold(False)
-        item_font.setPointSize(10)
+        item_font.setPointSize(9)
 
         for plugin_id, instance in plugins:
 

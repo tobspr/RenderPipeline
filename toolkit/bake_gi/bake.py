@@ -38,18 +38,32 @@ class Application(ShowBase):
             multisamples 0
             gl-cube-map-seamless #t
             gl-force-fbo-color #f
+            gl-debug #f
+            gl-debug-object-labels #f
+            #threading-model App/Cull/Draw
+
+            texture-anisotropic-degree 16
+            texture-magfilter linear
+            texture-minfilter linear
+            texture-quality-level fastest
+
+            gl-finish #f
+            gl-force-no-error #t
+            gl-check-errors #f
+            gl-force-no-flush #t
+            gl-force-no-scissor #t
         """)
 
         ShowBase.__init__(self)
         Globals.load(self)
         Globals.resolution = LVecBase2i(1600, 900)
-        sun_vector = Vec3(0.2, 0.5, 1.2).normalized()
+        sun_vector = Vec3(-0.4, 0.2, 0.8).normalized()
         capture_resolution = 32
-        sun_shadow_map_resolution = 2048
-        num_probes = LVecBase3i(64)
+        sun_shadow_map_resolution = 512
+        num_probes = LVecBase3i(128, 128, 32)
         divisor = 128
-        num_bakers = 8
-        padding = 0.5
+        num_bakers = 16
+        padding = 2.0
 
         for region in self.win.get_display_regions():
             region.set_active(False)
@@ -105,9 +119,9 @@ class Application(ShowBase):
         store_shader = Shader.load(Shader.SL_GLSL, "resources/default.vert.glsl", "resources/copy_cubemap.frag.glsl")
         convolute_shader = Shader.load(Shader.SL_GLSL, "resources/default.vert.glsl", "resources/convolute.frag.glsl")
 
-        for worked_id in range(num_bakers):
+        for worker_id in range(num_bakers):
             probe_position = Vec3(0, 0, 4)
-            capture_target = RenderTarget()
+            capture_target = RenderTarget(name="Capture::W" + str(worker_id))
             capture_target.size = capture_resolution * 6, capture_resolution
             capture_target.add_depth_attachment(bits=16)
             capture_target.add_color_attachment(bits=16, alpha=True)
@@ -160,7 +174,7 @@ class Application(ShowBase):
             destination_cubemap.setup_cube_map(capture_resolution, Texture.T_float, Texture.F_rgba16)
 
             # Target to convert the FBO to a cubemap
-            target_store_cubemap = RenderTarget()
+            target_store_cubemap = RenderTarget("FBO2Cubemap::W" + str(worker_id))
             target_store_cubemap.size = capture_resolution * 6, capture_resolution
             target_store_cubemap.prepare_buffer()
             target_store_cubemap.set_shader_input("SourceTex", capture_target.color_tex)
@@ -170,7 +184,7 @@ class Application(ShowBase):
 
             # Target to filter the data
             store_pta = PTALVecBase2i.empty_array(1)
-            target_convolute = RenderTarget()
+            target_convolute = RenderTarget("Convolute::W" + str(worker_id))
             target_convolute.size = 6, 1
             # target_convolute.add_color_attachment(bits=16)
             target_convolute.prepare_buffer()

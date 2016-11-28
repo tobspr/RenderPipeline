@@ -154,8 +154,13 @@ void main() {
 
     %material%
 
+
     // Emulate gbuffer pass
     Material m_out = emulate_gbuffer_pass(m, vOutput.position);
+    m_out.roughness = 0.0;
+    m_out.metallic = 1;
+    
+
 
     vec3 view_dir = normalize(m_out.position - MainSceneData.camera_pos);
     vec3 color = vec3(0);
@@ -163,13 +168,23 @@ void main() {
     float alpha = m_out.shading_model_param0;
     AmbientResult ambient = get_full_forward_ambient(m_out, view_dir);
 
-    color += ambient.diffuse;
     color += ambient.specular;
+    color += ambient.diffuse;
+    
+
     color += get_sun_shading(m_out, view_dir);
 
-    // XXX: Apply shading from lights too
+    // Glass (experimental)
+    #if 1
+        float NxV = 1 - saturate(dot(view_dir, -m_out.normal));
+        // XXX: Apply shading from lights too
+        NxV = pow(NxV, 5.0);
 
-    alpha = mix(alpha, 1.0, ambient.fresnel);
+        alpha = 0.01;
+        alpha = mix(alpha, 0.2, NxV);
+        
+
+    #endif
 
     // Refraction (experimental)
     #if 0

@@ -26,32 +26,35 @@
 
 #version 430
 
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
 
-#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length) * 2)
-#define RS_USE_POSITION_TECHNIQUE 1
-#define RS_FADE_BORDERS GET_SETTING(ao, border_fade)
-#define RS_DISTANCE_SCALE 0.05
+#pragma include "sky_ao.inc.glsl"
 
-#pragma include "includes/temporal_resolve.inc.glsl"
+out float result;
 
-uniform sampler2D CurrentTex;
-uniform sampler2D CombinedVelocity;
-uniform sampler2D Previous_AmbientOcclusion;
-
-out vec4 result;
+uniform isamplerBuffer InvalidPixelCounter;
+uniform isamplerBuffer InvalidPixelBuffer;
+layout(r8) uniform writeonly image2D DestTex;
 
 void main() {
-    vec2 texcoord = get_texcoord();
+    const int divisor = 32;
+    const int width = 8192 / divisor;
+    
+    int index = int(gl_FragCoord.x) + int(gl_FragCoord.y) * width; 
+    int max_entries = texelFetch(InvalidPixelCounter, 0).x;
+    if (index >= max_entries)
+        discard;
 
-    #if GET_SETTING(ao, clip_length) <= 1
-        // No reprojection needed without temporal ao
-        result = textureLod(CurrentTex, texcoord, 0);
-    #else
-        vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
-        vec2 last_coord = texcoord + velocity;
+    int coord_data = texelFetch(InvalidPixelBuffer, index).x;
+    int frag_x = coord_data & 0xFFFF;
+    int frag_y = coord_data >> 16;
 
-        result = resolve_temporal(
-            CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
-    #endif
+    vec2 texcoord = vec2(ivec2(frag_x, frag_y) + 0.5) / SCREEN_SIZE;
+    Material m = unpack_material(GBuffer, texcoord);
+    float result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(frag_x, frag_y));
+
+    // result = 0;
+    imageStore(DestTex, ivec2(frag_x, frag_y), vec4(result));
 }

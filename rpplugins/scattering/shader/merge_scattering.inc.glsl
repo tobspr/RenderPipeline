@@ -24,34 +24,15 @@
  *
  */
 
-#version 430
+#pragma once
 
-#pragma include "render_pipeline_base.inc.glsl"
+uniform sampler2D DefaultSkydome;
 
-#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length) * 2)
-#define RS_USE_POSITION_TECHNIQUE 1
-#define RS_FADE_BORDERS GET_SETTING(ao, border_fade)
-#define RS_DISTANCE_SCALE 0.05
-
-#pragma include "includes/temporal_resolve.inc.glsl"
-
-uniform sampler2D CurrentTex;
-uniform sampler2D CombinedVelocity;
-uniform sampler2D Previous_AmbientOcclusion;
-
-out vec4 result;
-
-void main() {
-    vec2 texcoord = get_texcoord();
-
-    #if GET_SETTING(ao, clip_length) <= 1
-        // No reprojection needed without temporal ao
-        result = textureLod(CurrentTex, texcoord, 0);
-    #else
-        vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
-        vec2 last_coord = texcoord + velocity;
-
-        result = resolve_temporal(
-            CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
-    #endif
+vec3 get_merged_scattering(vec3 view_vector, vec3 inscattered_light)
+{
+  // Render clouds to provide more variance for the cubemap
+  vec3 cloud_color = textureLod(DefaultSkydome, get_skydome_coord(view_vector), 0).xyz;
+  cloud_color = mix(vec3(0.5), cloud_color, saturate(view_vector.z / 0.05));
+  inscattered_light *= 2 + 3 * cloud_color;
+  return inscattered_light;
 }

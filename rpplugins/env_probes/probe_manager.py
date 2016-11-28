@@ -38,7 +38,7 @@ class ProbeManager(RPObject):
         """ Initializes a new probe manager """
         RPObject.__init__(self)
         self.probes = []
-        self.max_probes = 3
+        self.max_probes = 32
         self.resolution = 128
         self.diffuse_resolution = 4
 

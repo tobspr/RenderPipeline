@@ -40,25 +40,14 @@ uniform sampler2D DownscaledDepth;
 uniform GBufferData GBuffer;
 
 uniform float pixel_stretch;
-
-// Can be used to only select a specific component. Currently hardcoded and unused.
-#define ONLY_RED_COMPONENT 1
-#if ONLY_RED_COMPONENT
-    #define VALUE_TYPE float
-    #define SWIZLLE .x
-#else
-    #define VALUE_TYPE vec4
-    #define SWIZLLE .xyzw
-#endif
-
-out VALUE_TYPE result;
+out float result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec2 pixel_size = 1.0 * pixel_stretch / SCREEN_SIZE;
+    vec2 pixel_size = 2.0 * pixel_stretch / SCREEN_SIZE;
 
     // Store accumulated color
-    VALUE_TYPE accum = VALUE_TYPE(0);
+    float accum = float(0);
     float accum_w = 0.0;
 
     // Amount of samples, don't forget to change the weights array in case you change this.
@@ -71,17 +60,15 @@ void main() {
     // Blur to the right and left
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         vec2 offcoord = texcoord + pixel_size * i * blur_direction;
-        VALUE_TYPE sampled = textureLod(SourceTex, offcoord, 0) SWIZLLE;
+        float sampled = textureLod(SourceTex, offcoord, 0).x;
         vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
         float depth = textureLod(DownscaledDepth, offcoord, 0).x;
 
         float weight = gaussian_weights_7[abs(i)]; // Change this if you modify the blur size
 
         // Weight by normal and depth
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) *
-                distance(nrm, pixel_nrm) * 1.0);
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) *
-                abs(depth - pixel_depth) * 3);
+        weight *= 1.0 - saturate(2.97 * distance(nrm, pixel_nrm) * 1.0);
+        weight *= 1.0 - saturate(0.88158 * abs(depth - pixel_depth) * 3);
 
         accum += sampled * weight;
         accum_w += weight;

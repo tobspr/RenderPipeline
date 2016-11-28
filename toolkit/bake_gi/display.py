@@ -17,6 +17,7 @@ from direct.showbase.ShowBase import ShowBase
 
 from rpcore.globals import Globals
 from rpcore.render_target import RenderTarget
+from rpcore.util.movement_controller import MovementController
 
 class Application(ShowBase):
 
@@ -25,17 +26,30 @@ class Application(ShowBase):
         load_prc_file_data("", """
             textures-power-2 none
             win-size 1600 900
+            framebuffer-multisample #t
+            multisamples 8
         """)
 
         ShowBase.__init__(self)
         Globals.load(self)
         Globals.resolution = LVecBase2i(1600, 900)
+
+        self.disableMouse()
+
+
         sun_vector = Vec3(BAKE_SUN_VECTOR).normalized()
 
         diameter = (BAKE_MESH_END - BAKE_MESH_START).length()
         model_center = (BAKE_MESH_START + BAKE_MESH_END) * 0.5
         sun_shadow_map_resolution = 8192
 
+
+        self.controller = MovementController(self)
+        self.controller.set_initial_position(model_center, model_center + Vec3(5, 0, 0))
+        self.controller.setup()
+        self.camLens.setFov(80)
+
+        self.setBackgroundColor(Vec4(0.93, 0.91, 1.0, 1))
 
         # model = loader.load_model("resources/test-scene.bam")
         model = loader.load_model("scene/scene.bam")
@@ -77,17 +91,18 @@ class Application(ShowBase):
         # Render spheres distributed over the mesh
         mesh_size = BAKE_MESH_END - BAKE_MESH_START
 
-        for i in range(11):
-            for j in range(11):
-                for k in range(11):
-                    offs_x = i / 10.0 * mesh_size.x + BAKE_MESH_START.x
-                    offs_y = j / 10.0 * mesh_size.y + BAKE_MESH_START.y
-                    offs_z = k / 10.0 * mesh_size.z + BAKE_MESH_START.z
+        if False:
+            for i in range(11):
+                for j in range(11):
+                    for k in range(11):
+                        offs_x = i / 10.0 * mesh_size.x + BAKE_MESH_START.x
+                        offs_y = j / 10.0 * mesh_size.y + BAKE_MESH_START.y
+                        offs_z = k / 10.0 * mesh_size.z + BAKE_MESH_START.z
 
-                    sphere = loader.load_model("resources/sphere.bam")
-                    sphere.reparent_to(render)
-                    sphere.set_scale(0.02)
-                    sphere.set_pos(offs_x, offs_y, offs_z)
+                        sphere = loader.load_model("smiley")
+                        sphere.reparent_to(render)
+                        sphere.set_scale(0.04)
+                        sphere.set_pos(offs_x, offs_y, offs_z)
 
 
     def get_mvp(self, cam_node):

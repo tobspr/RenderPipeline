@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec2
+from panda3d.core import Vec4
 from rpcore.render_stage import RenderStage
 
 
@@ -56,7 +56,8 @@ class VolumetricsStage(RenderStage):
             self.target_upscale.prepare_buffer()
 
             self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-            self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
+            self.target_upscale.set_shader_input("skipSkybox", False)
+            self.target_upscale.set_shader_input("skyboxColor", Vec4(1))
 
         self.target_combine = self.create_target("CombineVolumetrics")
         self.target_combine.add_color_attachment(bits=16)

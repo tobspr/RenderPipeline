@@ -25,7 +25,7 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import LVecBase2i, Vec2
+from panda3d.core import LVecBase2i, Vec4
 
 from rpcore.render_stage import RenderStage
 from rpcore.stages.ambient_stage import AmbientStage
@@ -82,7 +82,8 @@ class VXGIStage(RenderStage):
         self.target_upscale_diff.add_color_attachment(bits=16)
         self.target_upscale_diff.prepare_buffer()
         self.target_upscale_diff.set_shader_input("SourceTex", self.target_blur_h.color_tex)
-        self.target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0.001))
+        self.target_upscale_diff.set_shader_input("skipSkybox", True)
+        self.target_upscale_diff.set_shader_input("skyboxColor", Vec4(1))
 
         self.target_resolve = self.create_target("ResolveVXGI")
         self.target_resolve.add_color_attachment(bits=16)

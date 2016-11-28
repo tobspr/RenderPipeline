@@ -100,10 +100,10 @@ uniform int maxLightIndex;
                 CLEARCOAT_ROUGHNESS : get_specular_mipmap(m);
 
             // Sample prefiltered scattering cubemap
-            // ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
+            ibl_specular = textureLod(ScatteringIBLSpecular, reflected_dir, scat_mipmap).xyz;
 
             // Diffuse IBL
-            // ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz;
+            ibl_diffuse = textureLod(ScatteringIBLDiffuse, m.normal, 0).xyz;
         #endif
 
         #if HAVE_PLUGIN(env_probes)
@@ -160,7 +160,7 @@ uniform int maxLightIndex;
         #endif
 
         #if HAVE_PLUGIN(sky_ao)
-            float sky_ao = compute_sky_ao(m.position, m.normal);
+            float sky_ao = compute_sky_ao(m.position, m.normal, SKYAO_LOW_QUALITY, ivec2(gl_FragCoord.xy));
         #else
             float sky_ao = 1.0;
         #endif

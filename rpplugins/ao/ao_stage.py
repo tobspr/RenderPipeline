@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import LVecBase2i, Vec2
+from panda3d.core import LVecBase2i, Vec4
 from rpcore.render_stage import RenderStage
 
 
@@ -49,12 +49,8 @@ class AOStage(RenderStage):
         self.target_upscale.prepare_buffer()
 
         self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
-
-        self.tarrget_detail_ao = self.create_target("DetailAO")
-        self.tarrget_detail_ao.add_color_attachment(bits=(8, 0, 0, 0))
-        self.tarrget_detail_ao.prepare_buffer()
-        self.tarrget_detail_ao.set_shader_input("AOResult", self.target_upscale.color_tex)
+        self.target_upscale.set_shader_input("skyboxColor", Vec4(1))
+        self.target_upscale.set_shader_input("skipSkybox", True)
 
         self.debug("Blur quality is", self.quality)
 
@@ -74,9 +70,17 @@ class AOStage(RenderStage):
 
         self.blur_targets = []
 
-        current_tex = self.tarrget_detail_ao.color_tex
+        current_tex = self.target_upscale.color_tex
 
         for i in range(blur_passes):
+            last_pass = i == blur_passes - 1
+            if last_pass and self.enable_small_scale_ao:                
+                self.target_detail_ao = self.create_target("DetailAO")
+                self.target_detail_ao.add_color_attachment(bits=(8, 0, 0, 0))
+                self.target_detail_ao.prepare_buffer()
+                self.target_detail_ao.set_shader_input("AOResult", current_tex)
+                current_tex = self.target_detail_ao.color_tex
+
             target_blur_v = self.create_target("BlurV-" + str(i))
             target_blur_v.add_color_attachment(bits=(8, 0, 0, 0))
             target_blur_v.prepare_buffer()
@@ -91,6 +95,8 @@ class AOStage(RenderStage):
             target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
             target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
 
+            if last_pass and self.enable_small_scale_ao:
+                pixel_stretch *= 0.5
             target_blur_v.set_shader_input("pixel_stretch", pixel_stretch)
             target_blur_h.set_shader_input("pixel_stretch", pixel_stretch)
 
@@ -110,5 +116,6 @@ class AOStage(RenderStage):
             "/$$rp/shader/bilateral_blur.frag.glsl")
         for target in self.blur_targets:
             target.shader = blur_shader
-        self.tarrget_detail_ao.shader = self.load_plugin_shader("small_scale_ao.frag.glsl")
+        if self.enable_small_scale_ao:
+            self.target_detail_ao.shader = self.load_plugin_shader("small_scale_ao.frag.glsl")
         self.target_resolve.shader = self.load_plugin_shader("resolve_ao.frag.glsl")

@@ -31,7 +31,10 @@
 uniform sampler2D SkyAOHeight;
 uniform vec3 SkyAOCapturePosition;
 
-float compute_sky_ao(vec3 ws_position, vec3 ws_normal) {
+#define SKYAO_LOW_QUALITY 0
+#define SKYAO_HIGH_QUALITY 1
+
+float compute_sky_ao(vec3 ws_position, vec3 ws_normal, int quality, ivec2 tc) {
 
     // Constants
     const int ao_map_resolution = GET_SETTING(sky_ao, resolution);
@@ -41,7 +44,6 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal) {
     const float fade_scale = GET_SETTING(sky_ao, blend_factor);
     const float ao_map_scale = GET_SETTING(sky_ao, max_radius); // world space
     const float film_size = ao_map_scale * 0.5;
-    
 
     vec2 local_coord = (ws_position.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5;
 
@@ -49,50 +51,52 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal) {
         return 1.0;
     }
 
-    float blend = 1.0;
-    blend *= saturate(min(local_coord.x, local_coord.y) / fade_scale);
-    blend *= saturate(min(1 - local_coord.x, 1 - local_coord.y) / fade_scale);
-
+    float blend = compute_fade_factor(local_coord, fade_scale);
 
     // Factor to convert from tex-space to world-space
     const float tc_to_ws = ao_map_scale;
 
-
     float accum = 0.0;
-    vec2 jitter = rand_rgb(ivec2(gl_FragCoord.xy) % 2).xy;
+
+    float jitter = rand(tc % 4) * 0.3;
+    jitter *= 0;
 
     // Capture samples
+    const int trace_steps = quality == SKYAO_HIGH_QUALITY ? GET_SETTING(sky_ao, trace_steps) : 4;
+    START_ITERATE_SEQUENCE(sky_ao, sample_sequence, vec3 offset)
 
-    // vec3 avg_unoccluded_normal = vec3(0);
+        offset = normalize(offset);
+        offset = face_forward(offset, ws_normal);
+        offset += ws_normal * 0.3; // Avoid flickering
+        offset *= radius;
+        offset /= float(trace_steps);
 
-    START_ITERATE_SEQUENCE(sky_ao, sample_sequence, vec2 offset)
+        bool any_hit = false;
+        float hit_dist = 0.0;
+        for (int k = 1; k <= trace_steps; ++k) {
+            float d = k + jitter.x;
+            vec3 pos = ws_position + offset * d;
+            vec2 offcoord = (pos.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5; // TODO: optimize 
 
-        offset = (offset * 0.9 + 0.1 * jitter) / ao_map_resolution * radius;
-        vec2 offcoord = local_coord + offset;
-        
-        float sample_z = textureLod(SkyAOHeight, offcoord, 0).x;
-        
+            float sample_z = textureLod(SkyAOHeight, offcoord, 0).x;
+            if (sample_z > pos.z + 0.1) {
+                any_hit = true;
+                hit_dist = d / float(trace_steps);
+                break;
+            }
+        }
 
-        accum += saturate(1.0 * (sample_z - ws_position.z));
-        // if (sample_z > ws_position.z)
-        //     accum += 1.0;
-        // Project sample in normal direction
-        // float dist = length(offset) * tc_to_ws;
-        // float proj_z = ws_position.z + dist * ws_normal.z;
-
-
-        // accum += saturate((sample_z - proj_z) * 2.0);
-        // if (proj_z >= sample_z) {
-            // accum += 1.0;
-        // }
+        if (any_hit)
+            accum += 1 - hit_dist;
 
     END_ITERATE_SEQUENCE()
 
     NORMALIZE_SEQUENCE(sky_ao, sample_sequence, accum);
 
-    accum = saturate(1 - accum + ao_bias);
-    accum = pow(accum, 0.25 * ao_multiplier);
+    accum = 1 - accum;
+    accum = max(ao_bias, accum);
+    accum = pow(accum, 3.0);
+    accum = mix(1, accum, ao_multiplier);
     accum = mix(1, accum, blend);
-
     return accum;
 }

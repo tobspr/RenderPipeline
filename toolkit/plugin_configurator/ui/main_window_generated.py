@@ -11,14 +11,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1000, 680)
+        MainWindow.resize(786, 631)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMinimumSize(QtCore.QSize(1000, 680))
-        MainWindow.setMaximumSize(QtCore.QSize(1000, 680))
+        MainWindow.setMinimumSize(QtCore.QSize(786, 631))
+        MainWindow.setMaximumSize(QtCore.QSize(786, 631))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icon/res/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -26,18 +26,18 @@ class Ui_MainWindow(object):
 "*, QLabel { font-family: Roboto; font-weight: 300; }\n"
 "\n"
 "QScrollBar {\n"
-"    background: #eee;\n"
+"    background: #f3f3f3;\n"
 "}\n"
 "\n"
 "\n"
 "QScrollBar:vertical {\n"
-"                        width: 9px;\n"
+"                        width: 7px;\n"
 "    margin: 0;\n"
 "                      }\n"
 "\n"
 "                      QScrollBar::handle:vertical {\n"
 "                        min-height: 15px;\n"
-"                        background: #aaa;\n"
+"                        background: #bbb;\n"
 "\n"
 "                      }\n"
 "\n"
@@ -55,35 +55,43 @@ class Ui_MainWindow(object):
 "\n"
 "\n"
 "                      QScrollBar::add-page:vertical {\n"
-"                        background: #ddd;\n"
+"                        background: #eee;\n"
 "\n"
 "                      }\n"
 "                      QScrollBar::sub-page:vertical {\n"
-"                        background: #ddd;\n"
+"                        background: #eee;\n"
 "                    }\n"
 "")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.lst_plugins = QtWidgets.QListWidget(self.centralwidget)
-        self.lst_plugins.setGeometry(QtCore.QRect(20, 80, 251, 531))
+        self.lst_plugins.setGeometry(QtCore.QRect(20, 60, 241, 521))
         self.lst_plugins.setStyleSheet("QListWidget::item {\n"
-"padding: 8px 7px 5px;\n"
-"background: #ddd;\n"
+"padding: 7px 7px 6px;\n"
+"background: #eee;\n"
 "outline: 0 !important;\n"
 "margin-bottom: 1px;\n"
 "margin-right: 10px;\n"
 "color: #777;\n"
 "font-weight: 500;\n"
+"\n"
 "border: 0;\n"
+"font-size: 9px;\n"
 "border-radius: 0;\n"
 "}\n"
 "\n"
 "QListWidget::item:hover {\n"
-"background: #ccc;\n"
+"background: #ddd;\n"
 "}\n"
 "\n"
+"QListWidget::indicator {\n"
+"height: 14px;\n"
+"width: 14px;\n"
+"}\n"
+"\n"
+"\n"
 "QListWidget::item:selected {\n"
-"background: #555;\n"
+"background: #666;\n"
 "color: #eee;\n"
 "}\n"
 "\n"
@@ -129,6 +137,7 @@ class Ui_MainWindow(object):
         item = QtWidgets.QListWidgetItem()
         self.lst_plugins.addItem(item)
         item = QtWidgets.QListWidgetItem()
+        item.setCheckState(QtCore.Qt.PartiallyChecked)
         self.lst_plugins.addItem(item)
         item = QtWidgets.QListWidgetItem()
         self.lst_plugins.addItem(item)
@@ -145,12 +154,12 @@ class Ui_MainWindow(object):
         item = QtWidgets.QListWidgetItem()
         self.lst_plugins.addItem(item)
         self.frame_details = QtWidgets.QFrame(self.centralwidget)
-        self.frame_details.setGeometry(QtCore.QRect(281, 60, 721, 621))
+        self.frame_details.setGeometry(QtCore.QRect(271, 0, 561, 631))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Button, brush)
         brush = QtGui.QBrush(QtGui.QColor(63, 63, 63))
@@ -174,10 +183,10 @@ class Ui_MainWindow(object):
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
@@ -195,7 +204,7 @@ class Ui_MainWindow(object):
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Button, brush)
         brush = QtGui.QBrush(QtGui.QColor(63, 63, 63))
@@ -219,10 +228,10 @@ class Ui_MainWindow(object):
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
@@ -240,7 +249,7 @@ class Ui_MainWindow(object):
         brush = QtGui.QBrush(QtGui.QColor(21, 21, 21))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Button, brush)
         brush = QtGui.QBrush(QtGui.QColor(63, 63, 63))
@@ -264,10 +273,10 @@ class Ui_MainWindow(object):
         brush = QtGui.QBrush(QtGui.QColor(21, 21, 21))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(229, 229, 229))
+        brush = QtGui.QBrush(QtGui.QColor(243, 243, 243))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
@@ -284,7 +293,7 @@ class Ui_MainWindow(object):
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, brush)
         self.frame_details.setPalette(palette)
         self.frame_details.setAutoFillBackground(False)
-        self.frame_details.setStyleSheet("#frame_details { background: #e5e5e5; }")
+        self.frame_details.setStyleSheet("#frame_details { background: #f3f3f3; }")
         self.frame_details.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_details.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame_details.setLineWidth(1)
@@ -357,14 +366,14 @@ class Ui_MainWindow(object):
         self.lbl_plugin_version.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.lbl_plugin_version.setObjectName("lbl_plugin_version")
         self.lbl_plugin_desc = QtWidgets.QLabel(self.frame_details)
-        self.lbl_plugin_desc.setGeometry(QtCore.QRect(20, 60, 441, 51))
+        self.lbl_plugin_desc.setGeometry(QtCore.QRect(20, 60, 311, 51))
         self.lbl_plugin_desc.setStyleSheet("color: #777; border: 0; font-size: 11px;")
         self.lbl_plugin_desc.setTextFormat(QtCore.Qt.PlainText)
         self.lbl_plugin_desc.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.lbl_plugin_desc.setWordWrap(True)
         self.lbl_plugin_desc.setObjectName("lbl_plugin_desc")
         self.table_plugin_settings = QtWidgets.QTableWidget(self.frame_details)
-        self.table_plugin_settings.setGeometry(QtCore.QRect(20, 110, 681, 491))
+        self.table_plugin_settings.setGeometry(QtCore.QRect(20, 110, 481, 509))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -508,7 +517,7 @@ class Ui_MainWindow(object):
         font.setBold(False)
         font.setWeight(37)
         self.table_plugin_settings.setFont(font)
-        self.table_plugin_settings.setStyleSheet("QTableWidget { border: 1px solid #ccc; font-family: Roboto; font-size: 11px; }")
+        self.table_plugin_settings.setStyleSheet("QTableWidget { border: 1px solid #ddd; font-family: Roboto; font-size: 11px; }")
         self.table_plugin_settings.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.table_plugin_settings.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.table_plugin_settings.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -574,11 +583,11 @@ class Ui_MainWindow(object):
         font.setBold(False)
         font.setWeight(37)
         self.lbl_plugin_name.setFont(font)
-        self.lbl_plugin_name.setStyleSheet("color: #555; border: 0;  font-size: 15px;")
+        self.lbl_plugin_name.setStyleSheet("color: #555; border: 0;  font-size: 15px; text-transform: uppercase;")
         self.lbl_plugin_name.setTextFormat(QtCore.Qt.RichText)
         self.lbl_plugin_name.setObjectName("lbl_plugin_name")
         self.btn_reset_plugin_settings = QtWidgets.QPushButton(self.frame_details)
-        self.btn_reset_plugin_settings.setGeometry(QtCore.QRect(520, 60, 180, 31))
+        self.btn_reset_plugin_settings.setGeometry(QtCore.QRect(320, 20, 180, 31))
         self.btn_reset_plugin_settings.setStyleSheet("QPushButton {\n"
 "color: #eee;\n"
 "background: #666;\n"
@@ -594,14 +603,13 @@ class Ui_MainWindow(object):
 "}")
         self.btn_reset_plugin_settings.setObjectName("btn_reset_plugin_settings")
         self.frame = QtWidgets.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(0, 60, 281, 621))
+        self.frame.setGeometry(QtCore.QRect(0, 60, 271, 571))
         self.frame.setAutoFillBackground(False)
-        self.frame.setStyleSheet("QFrame {background: #eee;}")
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
         self.lbl_hint_restart = QtWidgets.QLabel(self.frame)
-        self.lbl_hint_restart.setGeometry(QtCore.QRect(20, 560, 251, 51))
+        self.lbl_hint_restart.setGeometry(QtCore.QRect(20, 520, 241, 51))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(153, 153, 153))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -660,6 +668,7 @@ class Ui_MainWindow(object):
         self.lbl_hint_restart.setPalette(palette)
         font = QtGui.QFont()
         font.setFamily("Roboto")
+        font.setPointSize(7)
         font.setBold(False)
         font.setWeight(37)
         self.lbl_hint_restart.setFont(font)
@@ -669,16 +678,10 @@ class Ui_MainWindow(object):
         self.lbl_hint_restart.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.lbl_hint_restart.setWordWrap(True)
         self.lbl_hint_restart.setObjectName("lbl_hint_restart")
-        self.lbl_restart_pipeline = QtWidgets.QLabel(self.centralwidget)
-        self.lbl_restart_pipeline.setGeometry(QtCore.QRect(687, 18, 294, 28))
-        font = QtGui.QFont()
-        font.setFamily("Roboto")
-        font.setPointSize(-1)
-        font.setBold(False)
-        font.setWeight(37)
-        self.lbl_restart_pipeline.setFont(font)
+        self.lbl_restart_pipeline = QtWidgets.QLabel(self.frame)
+        self.lbl_restart_pipeline.setGeometry(QtCore.QRect(20, 530, 231, 29))
         self.lbl_restart_pipeline.setAutoFillBackground(False)
-        self.lbl_restart_pipeline.setStyleSheet("background: #ff9719; color: #eee; padding: 5px; border: 0; font-size: 12px;")
+        self.lbl_restart_pipeline.setStyleSheet("background: #ff9719; color: #eee; padding: 5px; border: 0; font-size: 11px;")
         self.lbl_restart_pipeline.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_restart_pipeline.setObjectName("lbl_restart_pipeline")
         self.label = QtWidgets.QLabel(self.centralwidget)
@@ -694,7 +697,6 @@ class Ui_MainWindow(object):
         self.label_9.setObjectName("label_9")
         self.frame.raise_()
         self.lst_plugins.raise_()
-        self.lbl_restart_pipeline.raise_()
         self.frame_details.raise_()
         self.label.raise_()
         self.label_9.raise_()
@@ -761,8 +763,6 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Default"))
         item = self.table_plugin_settings.horizontalHeaderItem(2)
         item.setText(_translate("MainWindow", "Current Value"))
-        item = self.table_plugin_settings.horizontalHeaderItem(3)
-        item.setText(_translate("MainWindow", "Description"))
         __sortingEnabled = self.table_plugin_settings.isSortingEnabled()
         self.table_plugin_settings.setSortingEnabled(False)
         item = self.table_plugin_settings.item(0, 0)
@@ -783,7 +783,7 @@ class Ui_MainWindow(object):
         self.lbl_plugin_name.setText(_translate("MainWindow", "Ambient Occlusion"))
         self.btn_reset_plugin_settings.setText(_translate("MainWindow", "Reset Settings of this Plugin"))
         self.lbl_hint_restart.setText(_translate("MainWindow", "Hint: Settings with a gray color require a pipeline restart when changed."))
-        self.lbl_restart_pipeline.setText(_translate("MainWindow", "Pipeline needs to be restarted to apply all changes!"))
+        self.lbl_restart_pipeline.setText(_translate("MainWindow", "Restart pipeline to apply all changes!"))
         self.label.setText(_translate("MainWindow", "PLUGIN CONFIGURATOR"))
         self.label_9.setText(_translate("MainWindow", "RENDER PIPELINE"))
 

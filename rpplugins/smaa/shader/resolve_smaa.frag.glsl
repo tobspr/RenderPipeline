@@ -48,5 +48,9 @@ void main() {
     vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
     vec2 last_coord = texcoord + velocity;
 
-    result = resolve_temporal(CurrentTex, Previous_SMAAPostResolve, texcoord, last_coord).xyz;
+    #if DEBUG_MODE
+        result = textureLod(CurrentTex, texcoord, 0).xyz;
+    #else
+        result = resolve_temporal(CurrentTex, Previous_SMAAPostResolve, texcoord, last_coord).xyz;
+    #endif
 }

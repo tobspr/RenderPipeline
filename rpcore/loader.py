@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 """
 
-from __future__ import print_function
-
 import time
 
 from panda3d.core import PNMImage, VirtualFileSystem, VirtualFileMountRamdisk

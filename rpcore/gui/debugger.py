@@ -29,6 +29,7 @@ from __future__ import division
 import os
 import sys
 import subprocess
+from functools import partial
 
 from rplibs.six.moves import range  # pylint: disable=import-error
 
@@ -157,6 +158,10 @@ class Debugger(RPObject):
         self.keybinding_instructions = Sprite(
             image="/$$rp/data/gui/keybindings.png",
             parent=self.fullscreen_node, any_filter=False)
+        self.keybinding_text = TextNode(
+            text="F6: View Keyboard Shortcuts",
+            color=Vec3(0.8, 0.8, 0.8))
+        self.toggle_keybindings_visible()
 
     def set_reload_hint_visible(self, flag):
         """ Sets whether the shader reload hint is visible """
@@ -180,7 +185,10 @@ class Debugger(RPObject):
         self.hint_reloading.set_pos(
             float((Globals.native_resolution.x) // 2) / self.gui_scale - 465 // 2, 220)
         self.keybinding_instructions.set_pos(
-            30, Globals.native_resolution.y // self.gui_scale - 510.0,)
+            30, Globals.native_resolution.y // self.gui_scale - 510.0)
+        self.keybinding_text.np.set_pos(-Globals.base.get_aspect_ratio() + 0.07, 0, -0.9)
+        self.keybinding_text.set_pixel_size(16 * max(0.8, self.gui_scale))
+
         self.overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         if self.python_warning:
             self.python_warning.set_pos(
@@ -196,40 +204,58 @@ class Debugger(RPObject):
 
     def init_keybindings(self):
         """ Inits the debugger keybindings """
-        Globals.base.accept("v", self.buffer_viewer.toggle)
-        Globals.base.accept("c", self.pipe_viewer.toggle)
-        Globals.base.accept("z", self.rm_selector.toggle)
+        Globals.base.accept("v", partial(self._show_and_launch, self.buffer_viewer.toggle))
+        Globals.base.accept("c", partial(self._show_and_launch, self.pipe_viewer.toggle))
+        Globals.base.accept("z", partial(self._show_and_launch, self.rm_selector.toggle))
         Globals.base.accept("f5", self.toggle_gui_visible)
-        Globals.base.accept("f6", self.toggle_keybindings_visible)
+        Globals.base.accept("f6",partial(self._show_and_launch, self.toggle_keybindings_visible))
         Globals.base.accept("r", self.pipeline.reload_shaders)
         Globals.base.accept("m", self.start_material_editor)
+        Globals.base.accept("p", self.start_plugin_editor)
+        Globals.base.accept("t", self.start_daytime_editor)
+
+    def _show_and_launch(self, method):
+        if Globals.base.render2d.is_hidden():
+            Globals.base.render2d.show()
+        method()
+
+    def _start_editor(self, name):
+        """ Starts a given editor """
+        self.debug("Starting editor:", name)
+        pth = sys.executable
+        editor = os.path.dirname(os.path.realpath(__file__))
+        editor = os.path.join(editor, "..", "..", "toolkit", name, "main.py")
+        subprocess.Popen([pth, editor], shell=True)        
 
     def start_material_editor(self):
         """ Starts the material editor """
-        self.debug("Starting material editor")
-        pth = sys.executable
-        editor = os.path.dirname(os.path.realpath(__file__))
-        editor = os.path.join(editor, "..", "..", "toolkit", "material_editor", "main.py")
-        subprocess.Popen([pth, editor], shell=True)        
+        self._start_editor("material_editor")
+
+    def start_plugin_editor(self):
+        """ Starts the material editor """
+        self._start_editor("plugin_configurator")
+        
+    def start_daytime_editor(self):
+        """ Starts the material editor """
+        self._start_editor("day_time_editor")
+
 
     def toggle_gui_visible(self):
         """ Shows / Hides the gui """
 
-        if not self.fullscreen_node.is_hidden():
-            self.fullscreen_node.hide()
-            self.overlay_node.hide()
-            self.error_msg_handler.hide()
+        if not Globals.base.render2d.is_hidden():
+            Globals.base.render2d.hide()
         else:
-            self.fullscreen_node.show()
-            self.overlay_node.show()
-            self.error_msg_handler.show()
+            Globals.base.render2d.show()
 
     def toggle_keybindings_visible(self):
         """ Shows / Hides the FPS graph """
         if not self.keybinding_instructions.is_hidden():
             self.keybinding_instructions.hide()
+            self.keybinding_text.np.show()
         else:
             self.keybinding_instructions.show()
+            self.keybinding_text.np.hide()
 
     def update_stats(self, task=None):
         """ Updates the stats overlay """

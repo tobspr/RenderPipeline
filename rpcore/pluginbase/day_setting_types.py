@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from __future__ import division, print_function
+from __future__ import division
 from math import exp, log
 
 from panda3d.core import PTAFloat, PTALVecBase3f
