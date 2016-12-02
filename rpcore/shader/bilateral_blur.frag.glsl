@@ -61,14 +61,14 @@ void main() {
     const int blur_size = 7;
 
     // Get the mid pixel normal and depth
-    vec3 pixel_nrm = get_normal(GBuffer, texcoord);
+    vec3 pixel_nrm = get_normal(texcoord);
     float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
     // Blur to the right and left
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         vec2 offcoord = texcoord + pixel_size * i * blur_direction;
         float sampled = textureLod(SourceTex, offcoord, 0).x;
-        vec3 nrm = get_normal(GBuffer, offcoord);
+        vec3 nrm = get_normal(offcoord);
         float depth = textureLod(DownscaledDepth, offcoord, 0).x;
 
         float weight = gaussian_weights_7[abs(i)]; // Change this if you modify the blur size
