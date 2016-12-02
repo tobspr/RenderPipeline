@@ -34,6 +34,7 @@
 #pragma include "includes/noise.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
+#pragma include "includes/matrix_ops.inc.glsl"
 
 uniform isampler2DArray CellIndices;
 uniform usamplerBuffer PerCellLights;
@@ -124,7 +125,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     float rotation = interleaved_gradient_noise(
         gl_FragCoord.xy + MainSceneData.frame_index % 32);
-    mat2 rotation_mat = make_rotation_mat(rotation);
+    mat2 rotation_mat = make_rotate_mat2(rotation);
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)

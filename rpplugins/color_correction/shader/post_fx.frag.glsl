@@ -38,12 +38,21 @@ uniform sampler2D ShadedScene;
 out vec4 result;
 
 
+// Blends a given color soft with the base color
+// From: https://github.com/mattdesl/glsl-blend-soft-light/blob/master/index.glsl
+vec3 blend_soft_light(vec3 base, vec3 blend) {
+    return mix(
+        sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend),
+        2.0 * base * blend + base * base * (1.0 - 2.0 * blend),
+        step(base, vec3(0.5))
+    );
+}
+
 void main() {
 
     vec2 texcoord = get_texcoord();
 
     #if !DEBUG_MODE
-
 
         vec2 ccord = (texcoord - 0.5) * vec2(1.0, ASPECT_RATIO);
         float vignette = 1 - saturate(length(ccord));

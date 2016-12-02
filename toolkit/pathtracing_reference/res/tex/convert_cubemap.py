@@ -22,7 +22,7 @@ uniform writeonly image2D DestTex;
 #define TWO_PI 6.2831853071795864769252867
 
 // Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
-vec3 spherical_to_vector(float theta, float phi) {
+vec3 spherical_to_cartesian(float theta, float phi) {
     float sin_theta = sin(theta);
     return normalize(vec3(
         sin_theta * cos(phi),
@@ -32,7 +32,7 @@ vec3 spherical_to_vector(float theta, float phi) {
 }
 
 // Fixes the cubemap direction
-vec3 fix_cubemap_coord(vec3 coord) {
+vec3 cubemap_yup_to_zup(vec3 coord) {
     return normalize(coord.xzy * vec3(1,-1,1));
 }
 
@@ -41,8 +41,8 @@ void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
     float theta = (coord.x + 0.5) / float(dimensions.x) * TWO_PI;
     float phi = (dimensions.y - coord.y - 0.5) / float(dimensions.y) * M_PI;
-    vec3 v = spherical_to_vector(phi, theta);
-    v = fix_cubemap_coord(v);
+    vec3 v = spherical_to_cartesian(phi, theta);
+    v = cubemap_yup_to_zup(v);
     vec4 color = texture(SourceTex, v);
     imageStore(DestTex, coord, vec4(color));
 }

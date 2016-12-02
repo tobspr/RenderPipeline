@@ -125,6 +125,7 @@ void main() {
             float sky_ao_factor = 1.0;
         #endif
 
+
         // Get reflection directory
         vec3 reflected_dir = get_reflection_vector(m, view_vector);
         float roughness = get_effective_roughness(m);
@@ -137,11 +138,11 @@ void main() {
 
         // Sample default environment map
         vec3 ibl_specular = textureLod(DefaultEnvmap,
-            fix_cubemap_coord(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
+            cubemap_yup_to_zup(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
 
         // Get cheap irradiance by sampling low levels of the environment map
         float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
-        vec3 ibl_diffuse = textureLod(DefaultEnvmap, fix_cubemap_coord(m.normal),
+        vec3 ibl_diffuse = textureLod(DefaultEnvmap, cubemap_yup_to_zup(m.normal),
             ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
 
         // Scattering specific code
@@ -213,7 +214,7 @@ void main() {
                     get_specular_mipmap(m)).xyz * sky_ao_factor;
             #else
                 vec3 ibl_specular_base = textureLod(
-                    DefaultEnvmap, fix_cubemap_coord(reflected_dir),
+                    DefaultEnvmap, cubemap_yup_to_zup(reflected_dir),
                     get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV)).xyz *
                         DEFAULT_ENVMAP_BRIGHTNESS;
             #endif

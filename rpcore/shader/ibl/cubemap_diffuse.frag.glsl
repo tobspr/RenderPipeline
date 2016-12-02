@@ -45,9 +45,9 @@ void main() {
     ivec2 clamped_coord; int face;
     vec3 n = texcoord_to_cubemap(cubeSize, coord, clamped_coord, face);
 
-    // Convert normal to spherical coordinates
+    // Convert cartesian to spherical coordinates
     float theta, phi;
-    vector_to_spherical(n, theta, phi);
+    cartesian_to_spherical(n, theta, phi);
 
     // Get tangent and binormal
     vec3 tangent, binormal;

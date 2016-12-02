@@ -124,7 +124,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
     vec4 curr_m = textureLod(current_tex, curr_coord, 0);
 
     // Out of screen, can early out
-    if (out_of_screen(last_coord)) {
+    if (!in_unit_rect(last_coord)) {
         return max(vec4(0.0), curr_m);
     }
 
@@ -148,7 +148,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
             weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
             
             #ifdef RS_FADE_BORDERS
-                float fade = compute_fade_factor(last_coord, RS_FADE_BORDERS);
+                float fade = compute_screen_fade_factor(last_coord, RS_FADE_BORDERS);
                 weight *= fade;
             #endif
 

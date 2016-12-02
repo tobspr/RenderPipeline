@@ -32,6 +32,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 #pragma include "includes/sampling_sequences.inc.glsl"
+#pragma include "includes/matrix_ops.inc.glsl"
 
 out float result;
 
@@ -72,7 +73,7 @@ void main() {
     vec3 noise_vec = rand_rgb(coord % 16 +
         0.05 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
     float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
-    mat2 rotation_mat = make_rotation_mat(rotation_factor);
+    mat2 rotation_mat = make_rotate_mat2(rotation_factor);
     float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.1 * t)));
 
     vec3 pixel_view_normal = get_view_normal(texcoord);

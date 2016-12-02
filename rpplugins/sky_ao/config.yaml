@@ -4,7 +4,7 @@ settings: !!omap
     - sample_radius:
         type: float
         range: [0.1, 100.0]
-        default: 6.0
+        default: 20.0
         shader_runtime: true
         label: Sample radius
         description: >
@@ -14,7 +14,7 @@ settings: !!omap
     - max_radius:
         type: float
         range: [10, 2000.0]
-        default: 200.0
+        default: 500.0
         label: Maximum Radius
         description: >
             Controls how far the sky ao is computed, in world space. The higher
@@ -43,8 +43,8 @@ settings: !!omap
     - trace_steps:
         type: int
         shader_runtime: true
-        range: [1, 16]
-        default: 4
+        range: [1, 32]
+        default: 16
         label: Trace steps
         description: >
             Controls how many steps to perform for each ray.
@@ -53,7 +53,7 @@ settings: !!omap
         type: float
         shader_runtime: true
         range: [0.02, 1.0]
-        default: 0.25
+        default: 0.5
         label: AO Multiplier
         description: >
             Controls the ao strength, higher values produce a darker ao.
@@ -62,10 +62,29 @@ settings: !!omap
         shader_runtime: true
         type: float
         range: [0.0, 1.0]
-        default: 0.3
+        default: 0.0
         label: AO Bias
         description: >
             Miminum ambient occlusion term, to prevent total dark spots.
+
+    - normal_offset:
+        shader_runtime: true
+        type: float
+        range: [0.0, 2.0]
+        default: 0.15
+        label: Normal offset
+        description: >
+            Moves the sky ao a bit along the pixel normals, to avoid self intersection.
+        
+    - noise_amount:
+        shader_runtime: true
+        type: float
+        range: [0.0, 1.0]
+        default: 0.05
+        label: Noise amount
+        description: >
+            Improves sky ao quality by adding noise, but might lead to artifacts during
+            movement.
 
     - blend_factor:
         type: float
@@ -79,7 +98,7 @@ settings: !!omap
     - capture_height:
         type: float
         range: [10, 1500.0]
-        default: 250.0
+        default: 500.0
         label: Capture height
         description: >
             Controls from which height the sky ao is captured. This should be the

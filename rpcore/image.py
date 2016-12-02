@@ -82,9 +82,13 @@ class Image(RPObject, Texture, ImageFormatTypes):
     def create_buffer(cls, name, size, component_format):
         """ Creates a new buffer texture """
         img = cls("ImgBuffer-" + name)
-        comp_type, comp_format = cls.convert_texture_format(component_format)
-        img.setup_buffer_texture(size, comp_type, comp_format, GeomEnums.UH_static)
+        img.setup_buffer(size, component_format)
         return img
+
+    def setup_buffer(self, size, component_format):
+        """ Setups a buffer texture """
+        comp_type, comp_format = self.convert_texture_format(component_format)
+        self.setup_buffer_texture(size, comp_type, comp_format, GeomEnums.UH_static)
 
     @classmethod
     def create_counter(cls, name):

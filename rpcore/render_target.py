@@ -116,14 +116,26 @@ class RenderTarget(RPObject):
         self._aux_count += count
 
     @setter
-    def size(self, *args):
+    def size(self, params):
         """ Sets the render target size. This can be either a single integer,
-        in which case it applies to both dimensions. Negative integers cause
-        the render target to be proportional to the screen size, i.e. a value
-        of -4 produces a quarter resolution target, a value of -2 a half
-        resolution target, and a value of -1 a full resolution target
-        (the default). """
-        self._size_constraint = LVecBase2i(*args)
+        in which case it applies to both dimensions, or two integers.
+        You can also pass a string containing a percentage, e.g. '25%', '50%'
+        or '100%' (the default). """
+
+        if not isinstance(params, (list, tuple)):
+            params = (params, params)
+        
+        def percent_to_number(v):
+            if isinstance(v, str):
+                return {
+                    "100%": -1,
+                    "50%": -2,
+                    "25%": -4
+                }[v]
+            return v
+
+        self._size_constraint = LVecBase2i(
+            percent_to_number(params[0]), percent_to_number(params[1]))
 
     @property
     def active(self):

@@ -32,6 +32,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 #pragma include "includes/sampling_sequences.inc.glsl"
+#pragma include "includes/matrix_ops.inc.glsl"
 
 out float result;
 
@@ -67,7 +68,7 @@ void main() {
     // Compute noise components
     float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
     float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
-    mat2 rotation_mat = make_rotation_mat(rotation_factor);
+    mat2 rotation_mat = make_rotate_mat2(rotation_factor);
     float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.05 * t)));
     vec3 noise_vec = rand_rgb(coord % 4 +
         0.01 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
@@ -109,7 +110,7 @@ void main() {
         // Project offset position to screen space
         vec3 projected = view_to_screen(offset_pos);
 
-        if (out_of_unit_box(projected))
+        if (!in_unit_box(projected))
             continue;
 
         // Fetch the expected depth

@@ -40,7 +40,7 @@ class AOStage(RenderStage):
 
     def create(self):
         self.target = self.create_target("Sample")
-        self.target.size = -2
+        self.target.size = "50%"
         self.target.add_color_attachment(bits=(8, 0, 0, 0))
         self.target.prepare_buffer()
 

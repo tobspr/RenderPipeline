@@ -158,15 +158,17 @@ overrides:
         blur_scale: 0.43
 
     sky_ao:
-        sample_radius: 21.50714
+        sample_radius: 20.0
         max_radius: 500.0
         resolution: 1024
-        sample_sequence: halton_3D_32
-        trace_steps: 5
-        ao_multiplier: 0.538
+        sample_sequence: poisson_3D_32
+        trace_steps: 16
+        ao_multiplier: 0.5
         ao_bias: 0.0
-        blend_factor: 0.052
-        capture_height: 568.75
+        normal_offset: 0.15
+        noise_amount: 0.05
+        blend_factor: 0.05
+        capture_height: 500.0
 
     smaa:
         use_reprojection: True

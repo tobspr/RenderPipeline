@@ -40,7 +40,7 @@ vec3 importance_sample_ggx(vec2 xi, float roughness)
 }
 
 // Converts a normalized spherical coordinate (r = 1) to cartesian coordinates
-vec3 spherical_to_vector(float theta, float phi) {
+vec3 spherical_to_cartesian(float theta, float phi) {
     float sin_theta = sin(theta);
     return normalize(vec3(
         sin_theta * cos(phi),

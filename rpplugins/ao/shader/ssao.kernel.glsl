@@ -63,7 +63,7 @@ START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
     // Project offset position to screen space
     vec3 projected = view_to_screen(offset_pos);
 
-    if (out_of_unit_box(projected))
+    if (!in_unit_box(projected))
         continue;
 
     // Fetch the expected depth

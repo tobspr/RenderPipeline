@@ -51,7 +51,7 @@ void main() {
     vec2 last_coord = texcoord + velocity;
 
     // Out of screen, can early out
-    if (out_of_screen(last_coord)) {
+    if (!in_unit_rect(last_coord)) {
         result = vec4(0);
         return;
     }

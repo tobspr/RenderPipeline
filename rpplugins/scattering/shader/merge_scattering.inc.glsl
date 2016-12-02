@@ -28,6 +28,14 @@
 
 uniform sampler2D DefaultSkydome;
 
+
+// Computes the skydome texcoord based on the pixels view direction
+vec2 get_skydome_coord(vec3 view_dir) {
+    float angle = (atan(view_dir.x, view_dir.y) + M_PI) / (2.0 * M_PI);
+    return vec2(angle, view_dir.z);
+}
+
+
 vec3 get_merged_scattering(vec3 view_vector, vec3 inscattered_light)
 {
   // Render clouds to provide more variance for the cubemap

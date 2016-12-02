@@ -112,6 +112,7 @@ void main() {
         #endif
     #endif
 
+
     vec3 material_nrm = vOutput.normal;
 
     #if OPT_NORMAL_MAPPING

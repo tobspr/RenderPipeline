@@ -151,14 +151,6 @@ class RenderStage(RPObject):
 
         return str(self.__class__.__module__).split(".")[-2]
 
-    def _prepare_upscaler(self, max_invalid_pixels=2048):
-        """ Prepares the two textures required for processing invalid pixels
-        after executing the upscale pass """
-        counter = Image.create_counter(self.stage_id + "-BadPixelsCounter")
-        counter.set_clear_color(Vec4(0))
-        buf = Image.create_buffer(self.stage_id + "-BadPixels", max_invalid_pixels, "R32I")
-        return counter, buf
-
     def load_shader(self, *args):
         """ Loads a shader from the given args. If only one argument is passed,
         the default template for the stage is loaded. If two arguments are

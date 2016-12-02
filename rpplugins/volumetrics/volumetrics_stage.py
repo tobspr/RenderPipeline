@@ -47,7 +47,7 @@ class VolumetricsStage(RenderStage):
 
         if self.enable_volumetric_shadows:
             self.target = self.create_target("ComputeVolumetrics")
-            self.target.size = -2
+            self.target.size = "50%"
             self.target.add_color_attachment(bits=16, alpha=True)
             self.target.prepare_buffer()
 

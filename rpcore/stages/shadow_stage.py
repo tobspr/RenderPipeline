@@ -50,6 +50,9 @@ class ShadowStage(RenderStage):
         state = SamplerState()
         state.set_minfilter(SamplerState.FT_shadow)
         state.set_magfilter(SamplerState.FT_shadow)
+        state.set_wrap_u(SamplerState.WM_clamp)
+        state.set_wrap_v(SamplerState.WM_clamp)
+        state.set_wrap_w(SamplerState.WM_clamp)
         return state
 
     @property

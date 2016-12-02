@@ -94,6 +94,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         self.table_plugin_settings.setColumnWidth(0, 137)
         self.table_plugin_settings.setColumnWidth(1, 105)
         self.table_plugin_settings.setColumnWidth(2, 160)
+        self.table_plugin_settings.setColumnWidth(3, 60)
 
         update_thread = Thread(target=self.update_thread, args=())
         update_thread.start()
@@ -250,7 +251,7 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
             actions_widget.setMaximumWidth(62)
             actions_widget.setMinimumWidth(62)
             actions_layout = QHBoxLayout()
-            actions_layout.setSpacing(0)
+            actions_layout.setSpacing(2)
             actions_widget.setLayout(actions_layout)
 
             btn_reset = QPushButton(self._reset_pixmap, "")

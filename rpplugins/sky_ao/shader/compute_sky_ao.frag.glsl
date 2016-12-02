@@ -32,14 +32,17 @@
 
 #pragma include "sky_ao.inc.glsl"
 
+
+uniform sampler2D LowPrecisionNormals;
+vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
+vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
+
+
 out float result;
 
 void main() {
-    vec2 texcoord = get_half_texcoord();
+    vec2 texcoord = get_quarter_texcoord();
     Material m = unpack_material(GBuffer, texcoord);
-    if (is_skybox(m)) {
-        result = 1;
-        return;
-    }
+    m.normal = get_normal(texcoord);
     result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(gl_FragCoord.xy));
 }

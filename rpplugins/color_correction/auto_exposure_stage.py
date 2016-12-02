@@ -46,7 +46,7 @@ class AutoExposureStage(RenderStage):
 
         # Create the target which converts the scene color to a luminance
         self.target_lum = self.create_target("GetLuminance")
-        self.target_lum.size = -4
+        self.target_lum.size = "25%"
         self.target_lum.add_color_attachment(bits=(16, 0, 0, 0))
         self.target_lum.prepare_buffer()
 

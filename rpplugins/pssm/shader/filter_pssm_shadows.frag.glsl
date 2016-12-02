@@ -35,6 +35,7 @@
 #pragma include "includes/sampling_sequences.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
+#pragma include "includes/matrix_ops.inc.glsl"
 
 out float result;
 
@@ -94,7 +95,7 @@ void main() {
         vec3 proj = project(PSSMDistSunShadowMapMVP, biased_pos);
         proj.z -= fixed_bias;
 
-        if (!out_of_unit_box(proj)) {
+        if (!!in_unit_box(proj)) {
             const float esm_factor = 5.0;
             float depth_sample = textureLod(PSSMDistSunShadowMap, proj.xy, 0).x;
             shadow_factor = saturate(exp(-esm_factor * proj.z) * depth_sample);
@@ -130,7 +131,7 @@ void main() {
             gl_FragCoord.xy + (MainSceneData.frame_index % 4) / 3.0 );
 
         // XXX: Pretty noisy
-        // mat2 rotation_mat = make_rotation_mat(rotation);
+        // mat2 rotation_mat = make_rotate_mat2(rotation);
         mat2 rotation_mat = mat2(1, 0, 0, 1);
 
         const float filter_radius = GET_SETTING(pssm, filter_radius) /

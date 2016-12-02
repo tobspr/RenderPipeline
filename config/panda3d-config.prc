@@ -44,9 +44,9 @@ show-frame-rate-meter #f
 text-minfilter linear
 text-magfilter linear
 text-page-size 512 512
-text-rwap-mode WM_border_clor
+text-wrap-mode border_color
 
-# Better text performance since rdb's patch
+# Better text performance
 text-flatten 0
 text-dynamic-merge 1
 

@@ -44,7 +44,7 @@ class ApplyCloudsStage(RenderStage):
 
     def create(self):
         self.render_target = self.create_target("RaymarchVoxels")
-        self.render_target.size = -2
+        self.render_target.size = "50%"
         self.render_target.add_color_attachment(bits=16, alpha=True)
         self.render_target.prepare_buffer()
 

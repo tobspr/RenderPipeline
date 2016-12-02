@@ -37,7 +37,7 @@ vec3 get_scattering(vec3 surface_pos) {
     surface_pos = normalize(surface_pos);
 
     float elevation, theta, radius;
-    vector_to_spherical(surface_pos, theta, elevation, radius);
+    cartesian_to_spherical(surface_pos, theta, elevation, radius);
 
     float sun_elevation = TimeOfDay.scattering.sun_altitude / 180.0 * M_PI;
     float sun_azimuth = TimeOfDay.scattering.sun_azimuth / 180.0 * M_PI;

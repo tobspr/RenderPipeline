@@ -67,6 +67,7 @@ from rpcore.stages.final_stage import FinalStage
 from rpcore.stages.downscale_z_stage import DownscaleZStage
 from rpcore.stages.combine_velocity_stage import CombineVelocityStage
 from rpcore.stages.upscale_stage import UpscaleStage
+from rpcore.stages.compute_low_precision_normals_stage import ComputeLowPrecisionNormalsStage
 
 
 class RenderPipeline(RPObject):
@@ -686,6 +687,8 @@ class RenderPipeline(RPObject):
         add_stage(self._downscale_stage)
         self._combine_velocity_stage = CombineVelocityStage(self)
         add_stage(self._combine_velocity_stage)
+        self._compute_normals = ComputeLowPrecisionNormalsStage(self)
+        add_stage(self._compute_normals)
 
         # Add an upscale/downscale stage in case we render at a different resolution
         if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.005:

@@ -26,45 +26,8 @@
 
 #version 430
 
+#define TRACK_INVALID_PIXELS 1
+#define SKIP_SKYBOX 1
+#define SKYBOX_COLOR vec4(1)
 
-#pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/poisson_disk.inc.glsl"
-#pragma include "vxgi.inc.glsl"
-
-uniform sampler2D ShadedScene;
-uniform GBufferData GBuffer;
-out vec4 result;
-
-void main() {
-
-    Material m = unpack_material(GBuffer);
-    vec3 voxel_coord = worldspace_to_voxelspace(m.position);
-
-    // Get view vector
-    vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
-    vec3 reflected_dir = reflect(-view_vector, m.normal);
-
-    if (!in_unit_box(voxel_coord))
-    {
-        result = textureLod(ScatteringIBLSpecular, reflected_dir, 7) * 0.5;
-        return;
-    }
-
-    // Trace specular cone
-    vec4 specular = trace_cone(
-        voxel_coord,
-        m.normal,
-        reflected_dir,
-        GET_SETTING(vxgi, specular_cone_steps),
-        true,
-        m.roughness * 0.17);
-
-    // specular *= 0.1;
-    // specular.xyz = pow(specular.xyz, vec3(2.2));
-    // specular.xyz *= 0.01;
-    // specular.xyz = specular.xyz / (1 - specular.xyz);
-    specular.xyz = max(vec3(0.0), specular.xyz);
-
-    result = specular;
-}
+#pragma include "bilateral_upscale.templ.glsl"

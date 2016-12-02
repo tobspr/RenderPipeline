@@ -54,20 +54,20 @@ class VXGIStage(RenderStage):
 
         # Create a target for the diffuse GI
         self.target_diff = self.create_target("DiffuseGI")
-        self.target_diff.size = -2
+        self.target_diff.size = "50%"
         self.target_diff.add_color_attachment(bits=16)
         self.target_diff.prepare_buffer()
 
         # Create the target which blurs the diffuse result
         self.target_blur_v = self.create_target("BlurV")
-        self.target_blur_v.size = -2
+        self.target_blur_v.size = "50%"
         self.target_blur_v.add_color_attachment(bits=16)
         self.target_blur_v.has_color_alpha = True
         self.target_blur_v.prepare_buffer()
         self.target_blur_v.set_shader_input("SourceTex", self.target_diff.color_tex)
 
         self.target_blur_h = self.create_target("BlurH")
-        self.target_blur_h.size = -2
+        self.target_blur_h.size = "50%"
         self.target_blur_h.add_color_attachment(bits=16)
         self.target_blur_h.has_color_alpha = True
         self.target_blur_h.prepare_buffer()

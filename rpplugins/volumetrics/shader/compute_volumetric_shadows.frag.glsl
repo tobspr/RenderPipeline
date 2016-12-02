@@ -103,12 +103,12 @@ void main() {
         vec3 proj = project(pssm_mvps[start_split], pos);
 
         // Check if out of split
-        while (out_of_screen(proj.xy) && start_split < GET_SETTING(pssm, split_count) - 1) {
+        while (!in_unit_rect(proj.xy) && start_split < GET_SETTING(pssm, split_count) - 1) {
             ++start_split;
             proj = project(pssm_mvps[start_split], pos);
         }
 
-        if (out_of_screen(proj.xy)) {
+        if (!in_unit_rect(proj.xy)) {
             // Out of pssm range
             break;
         }

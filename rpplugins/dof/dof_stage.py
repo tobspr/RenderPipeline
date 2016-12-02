@@ -41,7 +41,7 @@ class DoFStage(RenderStage):
     def create(self):
 
         self.target_prefilter = self.create_target("PrefilterDoF")
-        # self.target_prefilter.size = -2
+        # self.target_prefilter.size = "50%"
         self.target_prefilter.add_color_attachment(bits=16, alpha=True)
         self.target_prefilter.prepare_buffer()
 
@@ -72,7 +72,7 @@ class DoFStage(RenderStage):
         self.presort_target.set_shader_input("PrecomputedCoC", self.target_prefilter.color_tex)
 
         self.target = self.create_target("ComputeDoF")
-        # self.target.size = -2
+        # self.target.size = "50%"
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.prepare_buffer()
         self.target.set_shader_input("PresortResult", self.presort_target.color_tex)

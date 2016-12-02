@@ -27,6 +27,7 @@
 
 #pragma include "includes/sampling_sequences.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
+#pragma include "includes/matrix_ops.inc.glsl"
 
 uniform sampler2D SkyAOHeight;
 uniform vec3 SkyAOCapturePosition;
@@ -34,42 +35,45 @@ uniform vec3 SkyAOCapturePosition;
 #define SKYAO_LOW_QUALITY 0
 #define SKYAO_HIGH_QUALITY 1
 
-float compute_sky_ao(vec3 ws_position, vec3 ws_normal, int quality, ivec2 tc) {
+const float film_size = GET_SETTING(sky_ao, max_radius) * 0.5;
 
-    // Constants
-    const int ao_map_resolution = GET_SETTING(sky_ao, resolution);
-    const float radius = GET_SETTING(sky_ao, sample_radius);
-    const float ao_multiplier = GET_SETTING(sky_ao, ao_multiplier);
-    const float ao_bias = GET_SETTING(sky_ao, ao_bias);
-    const float fade_scale = GET_SETTING(sky_ao, blend_factor);
-    const float ao_map_scale = GET_SETTING(sky_ao, max_radius); // world space
-    const float film_size = ao_map_scale * 0.5;
+float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 tc) {
 
     vec2 local_coord = (ws_position.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5;
 
-    if (out_of_screen(local_coord)) {
+    if (!in_unit_rect(local_coord)) {
         return 1.0;
     }
 
-    float blend = compute_fade_factor(local_coord, fade_scale);
-
-    // Factor to convert from tex-space to world-space
-    const float tc_to_ws = ao_map_scale;
-
+    float blend = compute_fade_factor(local_coord, GET_SETTING(sky_ao, blend_factor));
     float accum = 0.0;
 
-    float jitter = rand(tc % 4) * 0.3;
-    jitter *= 0;
+    ivec2 seed = tc % 4 + 5;
+    
+    float noise_amount = GET_SETTING(sky_ao, noise_amount);
+    float jitter = rand(seed * 0.23423 + 0.96344) * 0.4;
+    float rot_x  = rand(seed * 0.63452 + 0.45343) * noise_amount;
+    float rot_y  = rand(seed * 0.96343 + 0.95433) * noise_amount;
+    float rot_z  = rand(seed * 0.18643 + 0.13234) * noise_amount;
+
+    mat3 combined_rotation = make_rotate_mat3(rot_x, rot_y, rot_z);
+
+    if (quality != SKYAO_HIGH_QUALITY) {
+        combined_rotation = make_ident_mat3();
+        jitter *= 0;
+    }
 
     // Capture samples
     const int trace_steps = quality == SKYAO_HIGH_QUALITY ? GET_SETTING(sky_ao, trace_steps) : 4;
+    const float position_bias = 0.1;
+
     START_ITERATE_SEQUENCE(sky_ao, sample_sequence, vec3 offset)
 
+        offset *= combined_rotation;
         offset = normalize(offset);
         offset = face_forward(offset, ws_normal);
-        offset += ws_normal * 0.3; // Avoid flickering
-        offset *= radius;
-        offset /= float(trace_steps);
+        offset += ws_normal * GET_SETTING(sky_ao, normal_offset); // Avoid flickering
+        offset *= GET_SETTING(sky_ao, sample_radius) / float(trace_steps);
 
         bool any_hit = false;
         float hit_dist = 0.0;
@@ -79,7 +83,7 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, int quality, ivec2 tc) {
             vec2 offcoord = (pos.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5; // TODO: optimize 
 
             float sample_z = textureLod(SkyAOHeight, offcoord, 0).x;
-            if (sample_z > pos.z + 0.1) {
+            if (sample_z > pos.z + position_bias) {
                 any_hit = true;
                 hit_dist = d / float(trace_steps);
                 break;
@@ -87,16 +91,15 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, int quality, ivec2 tc) {
         }
 
         if (any_hit)
-            accum += 1 - hit_dist;
+            accum += 1.0 - hit_dist;
 
     END_ITERATE_SEQUENCE()
-
     NORMALIZE_SEQUENCE(sky_ao, sample_sequence, accum);
 
-    accum = 1 - accum;
-    accum = max(ao_bias, accum);
-    accum = pow(accum, 3.0);
-    accum = mix(1, accum, ao_multiplier);
-    accum = mix(1, accum, blend);
+    accum = 1.0 - accum;
+    accum = max(GET_SETTING(sky_ao, ao_bias), accum);
+    accum = pow(accum, 5.0);
+    accum = mix(1.0, accum, float(GET_SETTING(sky_ao, ao_multiplier)));
+    accum = mix(1.0, accum, blend);
     return accum;
 }

@@ -1,0 +1,21 @@
+language: cpp
+sudo: required
+dist: trusty
+compiler: gcc
+addons:
+    apt:
+        sources:
+        - sourceline: "deb http://archive.panda3d.org/ubuntu/ trusty-dev main"
+        packages:
+            - cmake
+            - libeigen3-dev
+            - libfreetype6-dev
+            - panda3d1.10
+
+script:
+    - export PYTHONPATH=${PYTHONPATH}:/usr/lib/python2.7/dist-packages
+    - export PYTHONPATH=${PYTHONPATH}:/usr/share/panda3d
+    - echo -e "\nmodule_name=CI_TEST\n" >> config.ini
+    - python2.7 build.py
+    - python2.7 -c "import panda3d; import CI_TEST; print(dir(CI_TEST))"
+

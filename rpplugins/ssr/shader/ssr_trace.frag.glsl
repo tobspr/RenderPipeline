@@ -231,7 +231,7 @@ void main()
     intersection = truncate_coordinate(intersection);
 
     // Check if we hit something
-    if (min(intersection.x, intersection.y) <= 0.0 || out_of_screen(intersection)) {
+    if (min(intersection.x, intersection.y) <= 0.0 || !in_unit_rect(intersection)) {
         result = vec2(0);
         return;
     }

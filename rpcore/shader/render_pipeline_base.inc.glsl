@@ -121,7 +121,7 @@
     #if HAVE_PLUGIN(color_correction)
         #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
     #else
-        #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
+        #define DEFAULT_ENVMAP_BRIGHTNESS 3.0
     #endif
 #endif
 

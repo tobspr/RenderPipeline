@@ -22,6 +22,7 @@ global_stage_order:
   - GBufferStage
   - ShadowStage
   - DownscaleZStage
+  - ComputeLowPrecisionNormalsStage
   - CombineVelocityStage
 
   # Light(-culling)

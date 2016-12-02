@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3
+from __future__ import division
+
+from panda3d.core import Vec3, SamplerState
 
 from rpcore.image import Image
 from rpcore.gui.draggable_window import DraggableWindow
@@ -57,19 +59,20 @@ class TexturePreview(DraggableWindow):
 
         self.set_title(tex.get_name())
 
-        # tex.write(tex.get_name() + ".png")
-
         # Remove old content
         self._content_node.node().remove_all_children()
 
         w, h = tex.get_x_size(), tex.get_y_size()
-        if h > 1:
+        if h > 1 and w > 0:
             scale_x = (self._width - 40.0) / w
             scale_y = (self._height - 110.0) / h
             scale_f = min(scale_x, scale_y)
-            display_w = scale_f * w
-            display_h = scale_f * h
-
+            if scale_f >= 1.0:
+                # Make sure we choose a fitting scale factor to avoid
+                # crushing pixels
+                scale_f = int(scale_f)
+            display_w = int(scale_f * w)
+            display_h = int(scale_f * h)
         else:
             display_w = self._width - 40
             display_h = self._height - 110
@@ -150,8 +153,16 @@ class TexturePreview(DraggableWindow):
         image.set_shader_input("brightness", 1)
         image.set_shader_input("tonemap", False)
 
+        stage_sampler = SamplerState()
+        stage_sampler.set_minfilter(SamplerState.FT_nearest)
+        stage_sampler.set_magfilter(SamplerState.FT_nearest)
+        stage_sampler.set_wrap_u(SamplerState.WM_clamp)
+        stage_sampler.set_wrap_v(SamplerState.WM_clamp)
+        stage_sampler.set_wrap_w(SamplerState.WM_clamp)
+
         preview_shader = DisplayShaderBuilder.build(tex, display_w, display_h)
         image.set_shader(preview_shader)
+        image.set_shader_input("DisplayTex", tex, stage_sampler)
 
         self._preview_image = image
         self.show()

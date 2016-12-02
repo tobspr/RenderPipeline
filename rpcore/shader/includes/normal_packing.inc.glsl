@@ -71,6 +71,9 @@ vec2 pack_normal_octahedron(vec3 v) {
     #endif
 }
 
+vec2 pack_normal_unsigned(vec3 v) {
+    return pack_normal_octahedron(v) * 0.5 + 0.5;
+}
 
 // Unpacking from octahedron normals, input is the output from pack_normal_octahedron
 vec3 unpack_normal_octahedron(vec2 packed_nrm) {
@@ -94,4 +97,9 @@ vec3 unpack_normal_octahedron(vec2 packed_nrm) {
             v.xy = (vec2(1) - abs(v.yx)) * sign_not_zero(v.xy);
         return normalize(v);
     #endif
+}
+
+
+vec3 unpack_normal_unsigned(vec2 packed_nrm) {
+    return unpack_normal_octahedron(packed_nrm * 2 - 1);
 }

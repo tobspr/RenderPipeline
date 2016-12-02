@@ -239,11 +239,11 @@ class BufferViewer(DraggableWindow):
             preview = Sprite(
                 image=stage_tex, w=scale_factor * w, h=scale_factor * h,
                 any_filter=False, parent=node, x=7, y=40, transparent=False)
-
             preview.set_shader_input("mipmap", 0)
             preview.set_shader_input("slice", 0)
             preview.set_shader_input("brightness", 1)
             preview.set_shader_input("tonemap", False)
+            preview.set_shader_input("DisplayTex", stage_tex)
 
             preview_shader = DisplayShaderBuilder.build(
                 stage_tex, scale_factor * w, scale_factor * h)

@@ -78,7 +78,7 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
             uniform int slice;
             uniform float brightness;
             uniform bool tonemap;
-            uniform """ + sampler_type + """ p3d_Texture0;
+            uniform """ + sampler_type + """ DisplayTex;
             void main() {
                 int view_width = """ + str(view_width) + """;
                 int view_height = """ + str(view_height) + """;
@@ -105,8 +105,8 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
         comp_type = texture.get_component_type()
 
         # Useful snippets
-        int_coord = "ivec2 int_coord = ivec2(texcoord * textureSize(p3d_Texture0, mipmap).xy);"
-        slice_count = "int slice_count = textureSize(p3d_Texture0, 0).z;"
+        int_coord = "ivec2 int_coord = ivec2(texcoord * textureSize(DisplayTex, mipmap).xy);"
+        slice_count = "int slice_count = textureSize(DisplayTex, 0).z;"
 
         float_types = [Image.T_float, Image.T_unsigned_byte]
         int_types = [Image.T_int, Image.T_unsigned_short, Image.T_unsigned_int_24_8]
@@ -121,52 +121,52 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
         if texture_type == Image.TT_2d_texture:
 
             if comp_type in float_types:
-                result = "result = textureLod(p3d_Texture0, texcoord, mipmap).xyz;", "sampler2D"
+                result = "result = textureLod(DisplayTex, texcoord, mipmap).xyz;", "sampler2D"
 
             elif comp_type in int_types:
-                result = int_coord + "result = texelFetch(p3d_Texture0, int_coord, mipmap).xyz / 10.0;", "isampler2D"  # noqa
+                result = int_coord + "result = texelFetch(DisplayTex, int_coord, mipmap).xyz / 10.0;", "isampler2D"  # noqa
 
         # Buffer Textures
         elif texture_type == Image.TT_buffer_texture:
 
             def range_check(code):
-                return "if (int_index < textureSize(p3d_Texture0)) {" + code + "} else { result = vec3(1.0, 0.6, 0.2);};"  # noqa
+                return "if (int_index < textureSize(DisplayTex)) {" + code + "} else { result = vec3(1.0, 0.6, 0.2);};"  # noqa
 
             if comp_type in float_types:
-                result = range_check("result = texelFetch(p3d_Texture0, int_index).xyz;"), "samplerBuffer"  # noqa
+                result = range_check("result = texelFetch(DisplayTex, int_index).xyz;"), "samplerBuffer"  # noqa
 
             elif comp_type in int_types:
-                result = range_check("result = texelFetch(p3d_Texture0, int_index).xyz / 10.0;"), "isamplerBuffer"  # noqa
+                result = range_check("result = texelFetch(DisplayTex, int_index).xyz / 10.0;"), "isamplerBuffer"  # noqa
 
         # 3D Textures
         elif texture_type == Image.TT_3d_texture:
 
             if comp_type in float_types:
-                result = slice_count + "result = textureLod(p3d_Texture0, vec3(texcoord, (0.5 + slice) / slice_count), mipmap).xyz;", "sampler3D"  # noqa
+                result = slice_count + "result = textureLod(DisplayTex, vec3(texcoord, (0.5 + slice) / slice_count), mipmap).xyz;", "sampler3D"  # noqa
 
             elif comp_type in int_types:
-                result = int_coord + "result = texelFetch(p3d_Texture0, ivec3(int_coord, slice), mipmap).xyz / 10.0;", "isampler3D"  # noqa
+                result = int_coord + "result = texelFetch(DisplayTex, ivec3(int_coord, slice), mipmap).xyz / 10.0;", "isampler3D"  # noqa
 
         # 2D Texture Array
         elif texture_type == Image.TT_2d_texture_array:
 
             if comp_type in float_types:
-                result = "result = textureLod(p3d_Texture0, vec3(texcoord, slice), mipmap).xyz;", "sampler2DArray"  # noqa
+                result = "result = textureLod(DisplayTex, vec3(texcoord, slice), mipmap).xyz;", "sampler2DArray"  # noqa
 
             elif comp_type in int_types:
-                result = int_coord + "result = texelFetch(p3d_Texture0, ivec3(int_coord, slice), mipmap).xyz / 10.0;", "isampler2DArray"  # noqa
+                result = int_coord + "result = texelFetch(DisplayTex, ivec3(int_coord, slice), mipmap).xyz / 10.0;", "isampler2DArray"  # noqa
 
         # Cubemap
         elif texture_type == Image.TT_cube_map:
 
             code = "vec3 sample_dir = get_cubemap_coordinate(slice, texcoord*2-1);\n"
-            code += "result = textureLod(p3d_Texture0, sample_dir, mipmap).xyz;"
+            code += "result = textureLod(DisplayTex, sample_dir, mipmap).xyz;"
             result = code, "samplerCube"
 
         # Cubemap array
         elif texture_type == Image.TT_cube_map_array:
             code = "vec3 sample_dir = get_cubemap_coordinate(slice % 6, texcoord*2-1);\n"
-            code += "result = textureLod(p3d_Texture0, vec4(sample_dir, slice / 6), mipmap).xyz;"
+            code += "result = textureLod(DisplayTex, vec4(sample_dir, slice / 6), mipmap).xyz;"
             result = code, "samplerCubeArray"
 
         else:

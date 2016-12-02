@@ -33,6 +33,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/gaussian_weights.inc.glsl"
+#pragma include "includes/normal_packing.inc.glsl"
 
 uniform ivec2 blur_direction;
 uniform sampler2D SourceTex;
@@ -41,6 +42,12 @@ uniform GBufferData GBuffer;
 
 uniform float pixel_stretch;
 out float result;
+
+
+uniform sampler2D LowPrecisionNormals;
+vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
+vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
+
 
 void main() {
     vec2 texcoord = get_texcoord();
@@ -54,21 +61,21 @@ void main() {
     const int blur_size = 7;
 
     // Get the mid pixel normal and depth
-    vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
+    vec3 pixel_nrm = get_normal(GBuffer, texcoord);
     float pixel_depth = textureLod(DownscaledDepth, texcoord, 0).x;
 
     // Blur to the right and left
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         vec2 offcoord = texcoord + pixel_size * i * blur_direction;
         float sampled = textureLod(SourceTex, offcoord, 0).x;
-        vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
+        vec3 nrm = get_normal(GBuffer, offcoord);
         float depth = textureLod(DownscaledDepth, offcoord, 0).x;
 
         float weight = gaussian_weights_7[abs(i)]; // Change this if you modify the blur size
 
         // Weight by normal and depth
-        weight *= 1.0 - saturate(2.97 * distance(nrm, pixel_nrm) * 1.0);
-        weight *= 1.0 - saturate(0.88158 * abs(depth - pixel_depth) * 3);
+        weight *= 1.0 - saturate(2.5 * distance(nrm, pixel_nrm));
+        weight *= 1.0 - saturate(2.4 * abs(depth - pixel_depth));
 
         accum += sampled * weight;
         accum_w += weight;

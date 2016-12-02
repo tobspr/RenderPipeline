@@ -140,6 +140,14 @@ uniform mat4 p3d_ProjectionMatrix;
         return calculate_surface_pos(depth, coord);
     }
 
+    // Returns the world space position at a given texcoord
+    vec3 get_gbuffer_position(GBufferData data, ivec2 coord) {
+        float depth = get_gbuffer_depth(data, coord);
+        vec2 tcoord = (coord + 0.5) / SCREEN_SIZE;
+        return calculate_surface_pos(depth, tcoord);
+    }
+
+
     // Returns the world space normal at a given texcoord
     vec3 get_gbuffer_normal(GBufferData data, vec2 coord) {
         vec2 packed_normal = textureLod(data.Data1, coord, 0).xy;
@@ -231,7 +239,6 @@ uniform mat4 p3d_ProjectionMatrix;
             return calculate_view_pos(get_depth_at(coord), coord);
         }
 
-
         // Returns the world space position at a given texcoord
         vec3 get_world_pos_at(vec2 coord) {
             return calculate_surface_pos(get_depth_at(coord), coord);
@@ -249,15 +256,7 @@ uniform mat4 p3d_ProjectionMatrix;
         // Returns the view space normal at a given texcoord. This tries to find
         // a good fit normal, but thus is quite expensive.
         // It does not include normal mapping, since it uses the depth buffer as source.
-        vec3 get_view_normal(vec2 coord) {
-
-            // OPTIONAL: Just recover it from the world space normal.
-            // This has the advantage that it does include normal mapping.
-            #if 1
-                vec3 world_normal = get_gbuffer_normal(GBuffer, coord);
-                return world_normal_to_view(world_normal);
-            #endif
-
+        vec3 get_view_normal_from_depth(vec2 coord) {
             vec2 pixel_size = 1.0 / SCREEN_SIZE;
             vec3 view_pos = get_view_pos_at(coord);
 
@@ -275,6 +274,22 @@ uniform mat4 p3d_ProjectionMatrix;
             return normalize(cross(dx_x, dx_y));
         }
 
+        vec3 get_view_normal(vec2 coord) {
+
+            // OPTIONAL: Just recover it from the world space normal.
+            // This has the advantage that it does include normal mapping.
+            #if 1
+                vec3 world_normal = get_gbuffer_normal(GBuffer, coord);
+                return world_normal_to_view(world_normal);
+            #endif
+
+            return get_view_normal_from_depth(coord);
+        }
+
+        vec3 get_world_normal_from_depth(vec2 coord) {
+            return view_normal_to_world(get_view_normal_from_depth(coord));
+        }
+
         // Returns the view space normal at a given texcoord. This approximates
         // the normal instead of calculating it accurately, thus might produce
         // smaller artifacts at edges. However you should prefer this method
@@ -287,7 +302,6 @@ uniform mat4 p3d_ProjectionMatrix;
             vec3 dx_y = view_pos - get_view_pos_at(coord + pixel_size * vec2(0, 1));
             return normalize(cross(dx_x, dx_y));
         }
-
 
         // Returns the cameras velocity
         vec2 get_camera_velocity(vec2 texcoord) {

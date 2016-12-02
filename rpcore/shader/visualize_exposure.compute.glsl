@@ -60,9 +60,6 @@ void main() {
     // Slider
     float slider_pos = saturate((curr_exposure - min_exp) / (max_exp - min_exp));
 
-    // Make visualization logarithmic
-    // slider_pos = make_logarithmic(slider_pos, factor);
-
     const int slider_w = 4;
     int slider_pos_int = int(slider_pos * float(widget_size.x - 2 * border_size)) + border_size;
 

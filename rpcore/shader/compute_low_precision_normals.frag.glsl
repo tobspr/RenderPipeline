@@ -29,39 +29,21 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/normal_packing.inc.glsl"
 
-#pragma include "sky_ao.inc.glsl"
-
-out float result;
-
-uniform int pixel_multiplier;
-uniform sampler2D LowPrecisionNormals;
-vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
-vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
-
-
-
-uniform isamplerBuffer InvalidPixelCounter;
-uniform isamplerBuffer InvalidPixelBuffer;
-layout(r8) uniform writeonly image2D DestTex;
+out vec2 result;
 
 void main() {
-    const int width = 512;
-    
-    int index = int(gl_FragCoord.x) + int(gl_FragCoord.y) * width; 
-    int max_entries = texelFetch(InvalidPixelCounter, 0).x;
-    if (index >= max_entries)
-        discard;
+    vec2 texcoord = get_texcoord();
+    vec3 normal = get_gbuffer_normal(GBuffer, texcoord);    
 
-    int coord_data = texelFetch(InvalidPixelBuffer, index).x;
-    int frag_x = coord_data & 0xFFFF;
-    int frag_y = coord_data >> 16;
+    // Smooth out normal usign depth based normal, to avoid having
+    // too high frequences
+    #if 0
+        vec3 depth_based_normal = get_world_normal_from_depth(texcoord);
+        normal = mix(normal, depth_based_normal, 0.6);
+        normal = normalize(normal);
+    #endif
 
-    vec2 texcoord = vec2(ivec2(frag_x, frag_y) * pixel_multiplier + 0.5) / SCREEN_SIZE;
-    Material m = unpack_material(GBuffer, texcoord);
-    m.normal = get_normal(texcoord);
-    float result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(frag_x, frag_y));
-
-    // result = 0;
-    imageStore(DestTex, ivec2(frag_x, frag_y), vec4(result));
+    result = pack_normal_unsigned(normal); // Simple packing should be enough for this case
 }

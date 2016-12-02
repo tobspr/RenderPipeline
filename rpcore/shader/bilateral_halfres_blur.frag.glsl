@@ -40,12 +40,19 @@ uniform GBufferData GBuffer;
 
 out vec4 result;
 
-float get_lin_z(vec2 ccoord) {
+float get_lin_z(ivec2 ccoord) {
     return get_linear_z_from_z(get_gbuffer_depth(GBuffer, ccoord));
 }
 
+
+uniform sampler2D LowPrecisionNormals;
+vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
+vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
+
+
 void main() {
-    vec2 texcoord = get_half_native_texcoord();
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
     vec2 pixel_size = 2.0 / SCREEN_SIZE;
 
     // Store accumulated color
@@ -53,24 +60,34 @@ void main() {
     float accum_w = 0.0;
 
     // Amount of samples, don't forget to change the weights array in case you change this.
-    const int blur_size = 4;
+    const int blur_size = 9;
 
     // Get the mid pixel normal and depth
-    vec3 pixel_nrm = get_gbuffer_normal(GBuffer, texcoord);
-    float pixel_depth = get_lin_z(texcoord);
+    vec3 pixel_nrm = get_normal(coord * 2);
+    float pixel_depth = get_lin_z(coord * 2);
+
+    const float max_nrm_diff = 0.1;
+    float max_depth_diff = pixel_depth / 25.0;
+
+    // Increase maximum depth difference at obligue angles, to avoid artifacts
+    vec3 pixel_pos = get_gbuffer_position(GBuffer, coord * 2);
+    vec3 view_dir = normalize(pixel_pos - MainSceneData.camera_pos);
+    float NxV = saturate(dot(view_dir, -pixel_nrm));
+    max_depth_diff /= max(0.1, NxV);
 
     // Blur to the right
     for (int i = -blur_size + 1; i < blur_size; ++i) {
-        vec2 offcoord = texcoord + pixel_size * i * blur_direction;
-        vec4 sampled = textureLod(SourceTex, offcoord, 0);
-        vec3 nrm = get_gbuffer_normal(GBuffer, offcoord);
-        float depth = get_lin_z(offcoord);
+        ivec2 offcoord = coord + i * blur_direction * 2;
+        vec4 sampled = texelFetch(SourceTex, offcoord, 0);
+        vec3 nrm = get_normal(offcoord * 2);
+        float depth = get_lin_z(offcoord * 2);
 
-        float weight = gaussian_weights_4[abs(i)];
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_normal_factor) *
-            distance(nrm, pixel_nrm) / 0.01);
-        weight *= 1.0 - saturate(GET_SETTING(ao, blur_depth_factor) *
-            abs(depth - pixel_depth) / 0.001);
+        float weight = gaussian_weights_9[abs(i)];
+        float depth_diff = abs(depth - pixel_depth) > max_depth_diff ? 0.0 : 1.0;
+        weight *= depth_diff;
+
+        float nrm_diff = distance(nrm, pixel_nrm) < max_nrm_diff ? 1.0 : 0.0;
+        weight *= nrm_diff;
 
         accum += sampled * weight;
         accum_w += weight;

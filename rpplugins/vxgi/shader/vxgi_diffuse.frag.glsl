@@ -50,7 +50,7 @@ void main() {
     vec3 view_vector = normalize(MainSceneData.camera_pos - m.position);
     vec3 reflected_dir = reflect(-view_vector, m.normal);
 
-    if (out_of_unit_box(voxel_coord))
+    if (!in_unit_box(voxel_coord))
     {
         result = textureLod(ScatteringIBLDiffuse, m.normal, 0);
         return;
