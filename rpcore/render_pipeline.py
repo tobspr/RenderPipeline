@@ -108,8 +108,9 @@ class RenderPipeline(RPObject):
             self.debug("Reloading shaders ..")
             self.debugger.error_msg_handler.clear_messages()
             self.debugger.set_reload_hint_visible(True)
-            self._showbase.graphicsEngine.render_frame()
-            self._showbase.graphicsEngine.render_frame()
+            for i in range(2):
+                self._showbase.taskMgr.step()
+                self._showbase.graphics_engine.render_frame()    
         self.tag_mgr.cleanup_states()
         self.stage_mgr.reload_shaders()
         self.light_mgr.reload_shaders()

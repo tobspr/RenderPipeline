@@ -35,6 +35,7 @@
 #pragma include "includes/light_classification.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/matrix_ops.inc.glsl"
+#pragma include "includes/debug_font.inc.glsl"
 
 uniform isampler2DArray CellIndices;
 uniform usamplerBuffer PerCellLights;
@@ -118,7 +119,7 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
 float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: Examine if this is faster
-    // if (dot(m.normal, -l) < 0) return 0.0;
+    if (dot(m.normal, -l) < 0) return 0.0;
 
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
@@ -160,7 +161,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 // Shades the material from the per cell light buffer
 vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
-    #if DEBUG_MODE && !MODE_ACTIVE(LIGHT_COUNT) && !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
+    #if DEBUG_MODE && !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
         return vec3(0);
     #endif
 
@@ -173,19 +174,16 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     // Find per tile lights
     int cell_index = texelFetch(CellIndices, tile, 0).x;
     int count_offs = cell_index * (1 + LIGHT_CLS_COUNT); // 1 for total count, rest for light classes
-
-
-    // Get the light counts
     uint num_total_lights  = texelFetch(PerCellLightsCounts, count_offs).x;
 
     // Early out when no lights are there
-    #if !MODE_ACTIVE(LIGHT_COUNT) && !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
+    #if !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
         if (num_total_lights == 0) {
             return vec3(0);
         }
     #endif
 
-    // Get the per-class counts
+    // Get the per-class light counts
     uint num_spot_noshadow  = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x;
     uint num_spot_shadow    = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x;
     uint num_point_noshadow = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_NOSHADOW).x;
@@ -195,26 +193,10 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     int data_offs = cell_index * LC_MAX_LIGHTS_PER_CELL;
     int curr_offs = data_offs;
 
-    #if MODE_ACTIVE(LIGHT_COUNT)
-        float factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
-        return vec3(factor, 1 - factor, 0);
+    #if IS_SCREEN_SPACE
+        ivec2 tile_start = ivec2(tile.x, tile.y) * ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
     #endif
 
-    // Debug mode, show tile bounds
-    #if SPECIAL_MODE_ACTIVE(LIGHT_TILES)
-        // Show tiles
-        #if IS_SCREEN_SPACE
-            if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 ||
-                int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
-                shading_result += 1.0;
-            }
-            float light_factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
-            shading_result += ((tile.z + 1) % 2) * 0.2;
-            shading_result += light_factor;
-        #endif
-    #endif
-
-    // Compute view vector
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
 
     // Spotlights without shadow
@@ -263,6 +245,42 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     float curr_dist = distance(m.position, MainSceneData.camera_pos);
     float fade = saturate(curr_dist / LC_MAX_DISTANCE);
     fade = 1 - pow(fade, 10.0);
+
+
+    // Debug mode, show tile bounds
+    #if SPECIAL_MODE_ACTIVE(LIGHT_TILES)
+        // Show tiles
+        #if IS_SCREEN_SPACE
+
+            if (num_total_lights > 0) {
+        
+                float light_factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
+                shading_result = saturate(shading_result) * 0.2;
+        
+        
+                if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 ||
+                    int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
+                    shading_result += 0.1;
+                }
+                // shading_result += light_factor;
+                vec3 bg_color = vec3(0, 1, 0);
+                if (num_total_lights > 5) {
+                    bg_color = vec3(1, 1, 0);
+                }
+                if (num_total_lights > 10) {
+                    bg_color = vec3(1, 0, 0);
+                }
+
+                shading_result += bg_color * 0.2;
+
+                // shading_result += ((tile.z + 1) % 2) * 0.05;
+
+                shading_result += vec3(render_number(tile_start + ivec2(3, 3), num_total_lights));
+            
+            }
+
+        #endif
+    #endif
 
     return shading_result * fade;
 }

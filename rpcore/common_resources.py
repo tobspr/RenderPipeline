@@ -30,6 +30,7 @@ from panda3d.core import CS_yup_right, CS_zup_right, invert, Vec3, Mat4, Vec4
 from panda3d.core import SamplerState
 from direct.stdpy.file import open
 
+from rplibs.six import iteritems
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
@@ -116,6 +117,7 @@ class CommonResources(RPObject):
         self._load_environment_cubemap()
         self._load_prefilter_brdf()
         self._load_skydome()
+        self._load_debug_font_atlas()
 
     def _load_environment_cubemap(self):
         """ Loads the default cubemap used for the environment, which is used
@@ -132,25 +134,35 @@ class CommonResources(RPObject):
 
     def _load_prefilter_brdf(self):
         """ Loads the prefiltered brdf """
-        luts = [
-            {"src": "slices/env_brdf_#.png", "input": "PrefilteredBRDF"},
-            {"src": "slices_metal/env_brdf.png", "input": "PrefilteredMetalBRDF"},
-            {"src": "slices_coat/env_brdf.png", "input": "PrefilteredCoatBRDF"},
-        ]
+        luts = {
+            "PrefilteredBRDF": "slices/env_brdf_#.png",
+            "PrefilteredMetalBRDF": "slices_metal/env_brdf.png",
+            "PrefilteredCoatBRDF": "slices_coat/env_brdf.png",
+        }
 
-        for config in luts:
+        for name, src in iteritems(luts):
             loader_method = RPLoader.load_texture
-            if "#" in config["src"]:
+            if "#" in src:
                 loader_method = RPLoader.load_3d_texture
 
-            brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(config["src"]))
+            brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(src))
             brdf_tex.set_minfilter(SamplerState.FT_linear)
             brdf_tex.set_magfilter(SamplerState.FT_linear)
             brdf_tex.set_wrap_u(SamplerState.WM_clamp)
             brdf_tex.set_wrap_v(SamplerState.WM_clamp)
             brdf_tex.set_wrap_w(SamplerState.WM_clamp)
             brdf_tex.set_anisotropic_degree(0)
-            self._pipeline.stage_mgr.inputs[config["input"]] = brdf_tex
+            self._pipeline.stage_mgr.inputs[name] = brdf_tex
+
+    def _load_debug_font_atlas(self):
+        """ Loads the font atlas for the debug font """
+        tex = RPLoader.load_texture("/$$rp/data/debug_font_atlas/atlas.png")
+        tex.set_minfilter(SamplerState.FT_nearest)        
+        tex.set_magfilter(SamplerState.FT_nearest)        
+        tex.set_wrap_u(SamplerState.WM_border_color)
+        tex.set_wrap_v(SamplerState.WM_border_color)
+        tex.set_border_color(Vec4(1, 1, 1, 1))
+        self._pipeline.stage_mgr.inputs["DebugFontAtlas"] = tex
 
     def _load_skydome(self):
         """ Loads the skydome """

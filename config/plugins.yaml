@@ -168,6 +168,8 @@ overrides:
         normal_offset: 0.15
         noise_amount: 0.05
         blend_factor: 0.05
+        border_fade: 0.06
+        clip_length: 2
         capture_height: 500.0
 
     smaa:

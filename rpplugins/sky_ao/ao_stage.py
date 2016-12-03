@@ -37,11 +37,13 @@ class SkyAOStage(RenderStage):
     the sky occlusion term """
 
     required_inputs = ["SkyAOCapturePosition"]
-    required_pipes = ["SkyAOHeight", "GBuffer", "DownscaledDepth", "LowPrecisionNormals"]
+    required_pipes = ["SkyAOHeight", "GBuffer", "DownscaledDepth", "LowPrecisionNormals",
+                      "PreviousFrame::SkyAO", "PreviousFrame::SceneDepth",
+                      "CombinedVelocity"]
 
     @property
     def produced_pipes(self):
-        return {"SkyAO": self.fullres_upscaler.result_tex}
+        return {"SkyAO": self.target_resolve.color_tex}
 
     def create(self):
         self.target = self.create_target("ComputeSkyAO")
@@ -87,6 +89,12 @@ class SkyAOStage(RenderStage):
             percentage=0.05
         )
 
+
+        self.target_resolve = self.create_target("ResolveSkyAO")
+        self.target_resolve.add_color_attachment(bits=(8, 0, 0, 0))
+        self.target_resolve.prepare_buffer()
+        self.target_resolve.set_shader_input("CurrentTex", self.fullres_upscaler.result_tex)
+
     def update(self):
         self.fullres_upscaler.update()
         self.halfres_upscaler.update()
@@ -107,6 +115,8 @@ class SkyAOStage(RenderStage):
             upscale_shader=self.load_plugin_shader("upscale_sky_ao.frag.glsl"),
             fillin_shader=self.load_plugin_shader("fillin_sky_ao.frag.glsl"),
         )
+
+        self.target_resolve.shader = self.load_plugin_shader("resolve_sky_ao.frag.glsl")
 
         blur_shader = self.load_plugin_shader(
             "/$$rp/shader/bilateral_halfres_blur.frag.glsl")

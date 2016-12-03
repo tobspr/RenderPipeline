@@ -95,6 +95,28 @@ settings: !!omap
         description: >
             Controls how smooth the sky ao fades out at distance (the maximum radius)
 
+    - border_fade:
+        type: float
+        range: [0.01, 0.3]
+        default: 0.06
+        shader_runtime: true
+        label: Border Fade
+        description: >
+            Fades out the SkyAO term at the borders, to avoid artifacts
+            with temporal resolve. If you don't use the history buffer, you can
+            set this fairly low.
+
+    - clip_length:
+        type: int
+        range: [1, 16]
+        default: 4
+        shader_runtime: true
+        label: Clip length
+        description: >
+            Controls how long to keep SkyAO samples in the history. Bigger values
+            will produce a smoother effect but might also produce artifacts,
+            especially when moving.
+
     - capture_height:
         type: float
         range: [10, 1500.0]
@@ -103,5 +125,7 @@ settings: !!omap
         description: >
             Controls from which height the sky ao is captured. This should be the
             height of your highest object, e.g. maximum terrain height.
+
+
 
 daytime_settings:

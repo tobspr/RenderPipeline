@@ -33,30 +33,49 @@
 // the camera, values > 1 produce a distribution which is further away from the camera.
 #define SLICE_EXP_FACTOR 3.0
 
-// Cell ray directions
-const int num_raydirs = 5;
+// Plane offsets
+#define P_FRONT 0
+#define P_BACK 1
+#define P_LEFT 2
+#define P_RIGHT 3
+#define P_TOP 4
+#define P_BOTTOM 5
 
-// Increase the frustum size by a small bit, because we trace at the corners,
-// since using this way we could miss some small parts of the sphere. With this
-// bias we should be fine, except for very small spheres, but those will be
-// out of the culling range then anyays
-const float cull_bias = 1 + 0.01;
-vec3 aspect_mul = vec3(1, ASPECT_RATIO, 1);
+// Sphere defined by origin and radius
+struct Sphere {
+    vec3 pos;
+    float radius;
+};
 
-CONST_ARRAY vec2 ray_dirs[num_raydirs] = vec2[](
-    vec2(0, 0),
-    vec2(1.0, 1.0) * cull_bias,
-    vec2(-1.0, 1.0) * cull_bias,
-    vec2(1.0, -1.0) * cull_bias,
-    vec2(-1.0, -1.0) * cull_bias
-);
+// Normalized plane with normal and distance to origin
+struct Plane {
+    vec3 N;
+    float d;
+};
 
+// Frustum with 6 planes
+struct Frustum {
+    Plane planes[6];
+    Sphere bsphere;
+};
+
+// Cone
+struct Cone
+{
+    vec3 pos;
+    float  height;
+    vec3 direction;
+    float  radius;
+};
+
+// Returns the slice index based on the distance
 int get_slice_from_distance(float dist) {
     float flt_dist = dist / LC_MAX_DISTANCE;
     return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) /
                 log(1.0 + SLICE_EXP_FACTOR) * LC_TILE_SLICES);
 }
 
+// Returns the starting distance based on a slice index
 float get_distance_from_slice(int slice) {
     float flt_dist = slice / float(LC_TILE_SLICES) * log(1.0 + SLICE_EXP_FACTOR);
     float flt_exp = (exp(flt_dist) - 1.0) / SLICE_EXP_FACTOR;
@@ -75,6 +94,7 @@ void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int c
     cell_slice = (packed_data >> 20) & 0x3FF;
 }
 
+// Returns the ray direction in view space for a given culling cell
 vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size) {
     vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / precompute_size;
     return normalize(mix(
@@ -86,101 +106,155 @@ vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size) {
     ));
 }
 
-CONST_ARRAY vec3[num_raydirs] get_raydirs(int cell_x, int cell_y, vec2 precompute_size) {
-    vec3 local_ray_dirs[num_raydirs];
+// Computes a plane based on two points, the third point is assumed to be (0, 0, 0)
+// since we do culling in viewspace
+Plane compute_plane(vec3 p1, vec3 p2)
+{
+    Plane plane;
+    plane.N = normalize(cross(p1, p2));
+    plane.d = 0;
+    return plane;
+}
 
-    // Generate ray directions
-    for (int i = 0; i < num_raydirs; ++i) {
-        local_ray_dirs[i] = transform_raydir(ray_dirs[i], cell_x, cell_y, precompute_size);
+// Computes the six planes of the view frustum, or depending on the parameters, of the
+// given culling cell
+Frustum make_view_frustum(int cell_x, int cell_y, vec2 precompute_size, float min_dist, float max_dist) { 
+    vec3 rd_tr = transform_raydir(vec2(1, 1), cell_x, cell_y, precompute_size);
+    vec3 rd_tl = transform_raydir(vec2(-1, 1), cell_x, cell_y, precompute_size);
+    vec3 rd_br = transform_raydir(vec2(1, -1), cell_x, cell_y, precompute_size);
+    vec3 rd_bl = transform_raydir(vec2(-1, -1), cell_x, cell_y, precompute_size);
+
+    Frustum view_frustum;
+
+    view_frustum.planes[P_FRONT].N = vec3(0, 0, -1);
+    view_frustum.planes[P_FRONT].d = min_dist;
+
+    view_frustum.planes[P_BACK].N = vec3(0, 0, 1);
+    view_frustum.planes[P_BACK].d = -max_dist;
+
+    view_frustum.planes[P_LEFT] = compute_plane(rd_bl, rd_tl);
+    view_frustum.planes[P_RIGHT] = compute_plane(rd_tr, rd_br);
+    view_frustum.planes[P_TOP] = compute_plane(rd_tl, rd_tr);
+    view_frustum.planes[P_BOTTOM] = compute_plane(rd_br, rd_bl);
+
+    // Normalize ray directions, so that we can multiply with min_dist
+    // to intersect the near plane, and multiply with max_dist to intersect the
+    // far plane.
+    rd_tr /= abs(rd_tr.z);
+    rd_tl /= abs(rd_tl.z);
+    rd_br /= abs(rd_br.z);
+    rd_bl /= abs(rd_bl.z);
+
+    // Compute average point of the culling voxel
+    vec3 avg_planes = rd_tr + rd_tl + rd_br + rd_bl;
+    vec3 avg_point = (min_dist * avg_planes + max_dist * avg_planes) / 8.0;
+
+    // Find the radius of the bounding sphere arround this voxel for fast culling
+    float avg_radius = sqrt(max(max(
+        max(distance_squared(rd_tr * max_dist, avg_point),
+            distance_squared(rd_tl * max_dist, avg_point)),
+        max(distance_squared(rd_br * max_dist, avg_point),
+            distance_squared(rd_bl * max_dist, avg_point))
+    ), max(
+        max(distance_squared(rd_tr * min_dist, avg_point),
+            distance_squared(rd_tl * min_dist, avg_point)),
+        max(distance_squared(rd_br * min_dist, avg_point),
+            distance_squared(rd_bl * min_dist, avg_point))
+    )));
+
+    Sphere avg_sphere;
+    avg_sphere.pos = avg_point;
+    avg_sphere.radius = avg_radius;
+    view_frustum.bsphere = avg_sphere;
+
+    return view_frustum;
+}
+
+
+// http://www.3dgep.com/forward-plus/
+
+// Check to see if a point is fully behind (inside the negative halfspace of) a plane.
+bool point_inside_plane(vec3 p, Plane plane)
+{
+    return dot(plane.N, p) - plane.d < 0;
+}
+
+bool sphere_inside_plane(Sphere sphere, Plane plane)
+{
+    return dot(plane.N, sphere.pos) - plane.d < -sphere.radius;
+}
+
+bool sphere_inside_frustum(Sphere sphere, Frustum frustum)
+{
+    // Check frustum bounding sphere for fast check
+    float d = distance_squared(sphere.pos, frustum.bsphere.pos);
+    if (d > square(frustum.bsphere.radius + sphere.radius))
+        return false;
+
+    // Then check frustum planes
+    for (int i = 0; i < 6; ++i)
+    {
+        if (sphere_inside_plane(sphere, frustum.planes[i]))
+            return false;
     }
-
-    return local_ray_dirs;
+    return true;
 }
 
-
-struct Sphere {
-    vec3 pos;
-    float radius;
-};
-
-// Interesects a sphere with a ray
-// https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
-bool ray_sphere_intersection(Sphere sphere, vec3 ray_start, vec3 ray_dir,
-        out float min_dist, out float max_dist) {
-    // Get vector from ray to sphere
-    vec3 o_minus_c = ray_start - sphere.pos;
-
-    // Project that vector onto the ray
-    float l_dot_o_minus_c = dot(ray_dir, o_minus_c);
-
-    // Compute the distance
-    float root = l_dot_o_minus_c * l_dot_o_minus_c - dot(o_minus_c, o_minus_c) +
-        sphere.radius * sphere.radius;
-    float sqr_root = sqrt(abs(root));
-
-    min_dist = -l_dot_o_minus_c + sqr_root;
-    max_dist = -l_dot_o_minus_c - sqr_root;
-
-    return root > 0; // Can be >= 0 to include tangents as well.
+// Check to see if a cone if fully behind (inside the negative halfspace of) a plane.
+// Source: Real-time collision detection, Christer Ericson (2005)
+bool cone_inside_plane(Cone cone, Plane plane)
+{
+    // Compute the farthest point on the end of the cone to the positive space of the plane.
+    vec3 m = cross(cross(plane.N, cone.direction), cone.direction);
+    vec3 Q = cone.pos + cone.direction * cone.height - m * cone.radius;
+ 
+    // The cone is in the negative halfspace of the plane if both
+    // the tip of the cone and the farthest point on the end of the cone to the 
+    // positive halfspace of the plane are both inside the negative halfspace 
+    // of the plane.
+    return point_inside_plane(cone.pos, plane) && point_inside_plane(Q, plane );
 }
 
-// Intersect a sphere with a ray
-bool viewspace_ray_sphere_intersection(Sphere sphere, vec3 ray_dir,
-        out float min_dist, out float max_dist) {
-    return ray_sphere_intersection(sphere, vec3(0), ray_dir, min_dist, max_dist);
+bool cone_inside_frustum(Cone cone, Frustum frustum)
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        if (cone_inside_plane(cone, frustum.planes[i]))
+            return false;
+    }
+    return true;
 }
 
-// Intersect a sphere with a ray, given a minimum and maximum ray distance
-bool viewspace_ray_sphere_distance_intersection(Sphere sphere, vec3 ray_dir,
-        float tile_start, float tile_end) {
-    float r_min, r_max;
-    bool visible = viewspace_ray_sphere_intersection(sphere, ray_dir, r_min, r_max);
-    return visible && r_max < tile_end && r_min > tile_start;
-}
+bool cull_light(LightData light, Frustum view_frustum) {
 
-// Returns a representative sphere for a light
-Sphere get_representative_sphere(LightData data) {
-    Sphere ret;
+    vec3 light_pos = (MainSceneData.view_mat_z_up * vec4(get_light_position(light), 1)).xyz;
 
-    vec3 light_pos = (MainSceneData.view_mat_z_up *
-        vec4(get_light_position(data), 1)).xyz;
-
-    switch (get_light_type(data)) {
+    switch (get_light_type(light)) {
         case LT_POINT_LIGHT: {
-            ret.pos = light_pos;
-            ret.radius = get_pointlight_radius(data)
-                        + get_pointlight_inner_radius(data);
-            break;
+            Sphere sphere;
+            sphere.radius = get_pointlight_radius(light) + get_pointlight_inner_radius(light);
+            sphere.pos = light_pos; 
+            return sphere_inside_frustum(sphere, view_frustum);
         }
 
-        case LT_SPOT_LIGHT: {
-            float cone_radius = get_spotlight_radius(data);
-            vec3 direction = get_spotlight_direction(data);
-            vec3 direction_view = world_normal_to_view(direction);
-            float cone_fov = get_spotlight_fov(data);
+        case LT_SPOT_LIGHT:
+            Cone cone;
+            cone.pos = light_pos;
+            cone.height = get_spotlight_radius(light);
+            
+            // Need direction in view-space instead of world-space
+            vec3 direction_ws = get_spotlight_direction(light);
+            cone.direction = world_normal_to_view(direction_ws);
 
-            // Approximate the cone with a sphere
-            // See: http://fs5.directupload.net/images/151219/xp2knkre.png
-            float half_cone_radius = cone_radius * 0.5;
-            ret.pos = light_pos + direction_view * half_cone_radius;
-            float hypotenuse = cone_radius / cone_fov;
+            // Compute radius from fov (fov is stored as cos(fov))
+            float cos_cone_fov = get_spotlight_fov(light);
+            float sin_cone_fov = sqrt(1 - cos_cone_fov * cos_cone_fov);
 
-            // cone_fov is encoded as cos(cone_fov)
-            // we can get the sin(cone_fov) using basic trigonometry:
-            // From sin(x)^2 + cos(x)^2 = 1 we can derive:
-            // sin(cone_fov) = sqrt(1 - cos(cone_fov) * cos(cone_fov))
-            #if 0
-                // Unoptimized version
-                float opposite_side = sqrt(1.0 - cone_fov * cone_fov) * hypotenuse;
-                ret.radius = sqrt(opposite_side * opposite_side +
-                    half_cone_radius * half_cone_radius);
-            #else
-                // To optimize this, we don't need the square root any longer:
-                float opposite_side_sqr = (1.0 - cone_fov * cone_fov) * hypotenuse * hypotenuse;
-                ret.radius = sqrt(opposite_side_sqr + half_cone_radius * half_cone_radius);
-            #endif
-        }
+            float hypotenuse = cone.height / cos_cone_fov; 
+
+            cone.radius = sin_cone_fov * hypotenuse; 
+            return cone_inside_frustum(cone, view_frustum);
     }
 
-    return ret;
+    return false;
 }

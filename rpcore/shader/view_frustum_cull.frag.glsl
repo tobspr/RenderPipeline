@@ -47,14 +47,13 @@ void main() {
     const int tile_size = 16;
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    float max_light_dist_sq = LC_MAX_DISTANCE * LC_MAX_DISTANCE;
-
     int start_offset = coord.y * tile_size + coord.x;
+    
+    Frustum view_frustum = make_view_frustum(0, 0, ivec2(1, 1), 0.0, LC_MAX_DISTANCE);
 
-    // Iterate over all lights
+    // Check for all lights if they are in the view frustum, to reduce load
+    // on the upcoming detailed culling pass
     for (int i = start_offset; i < maxLightIndex + 1; i += tile_size * tile_size) {
-
-        // Fetch data of current light
         LightData light_data = read_light_data(AllLightsData, i);
 
         // XXX: Might first read the type, then skip early
@@ -63,14 +62,7 @@ void main() {
         // Skip Null-Lights
         if (light_type < 1) continue;
 
-        bool visible = true;
-
-        Sphere sphere = get_representative_sphere(light_data);
-
-        // XXX: Do actual culling here
-
-        if (length_squared(sphere.pos) - square(sphere.radius) > max_light_dist_sq)
-            visible = false;
+        bool visible = cull_light(light_data, view_frustum);
 
         if (visible) {
             int index = imageAtomicAdd(FrustumLightsCount, 0, 1);

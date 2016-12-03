@@ -49,9 +49,12 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 
     float accum = 0.0;
 
     ivec2 seed = tc % 4 + 5;
+    if (quality == SKYAO_HIGH_QUALITY) {
+        seed.x += 10 + 734 * (MainSceneData.frame_index % GET_SETTING(sky_ao, clip_length));
+    }
     
     float noise_amount = GET_SETTING(sky_ao, noise_amount);
-    float jitter = rand(seed * 0.23423 + 0.96344) * 0.4;
+    float jitter = rand(seed * 0.23423 + 0.96344) * 0.9;
     float rot_x  = rand(seed * 0.63452 + 0.45343) * noise_amount;
     float rot_y  = rand(seed * 0.96343 + 0.95433) * noise_amount;
     float rot_z  = rand(seed * 0.18643 + 0.13234) * noise_amount;

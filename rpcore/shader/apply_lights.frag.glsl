@@ -54,7 +54,7 @@ void main() {
     vec2 texcoord = get_texcoord();
     Material m = unpack_material(GBuffer);
     ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy),
-        distance(MainSceneData.camera_pos, m.position));
+        get_linear_z_from_z(get_gbuffer_depth(GBuffer, texcoord)));
 
     // Don't shade pixels out of the shading range
     #if !DEBUG_MODE

@@ -27,26 +27,31 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/light_culling.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
 
-#define USE_GBUFFER_EXTENSIONS 1
-#pragma include "includes/gbuffer.inc.glsl"
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(sky_ao, clip_length) * 2)
+#define RS_USE_POSITION_TECHNIQUE 1
+#define RS_FADE_BORDERS GET_SETTING(sky_ao, border_fade)
+#define RS_DISTANCE_SCALE 0.1
 
-uniform writeonly image2DArray RESTRICT cellGridFlags;
+#pragma include "includes/temporal_resolve.inc.glsl"
+
+uniform sampler2D CurrentTex;
+uniform sampler2D CombinedVelocity;
+uniform sampler2D Previous_SkyAO;
+
+out vec4 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
 
-    // Get the distance to the camera
-    // vec3 surf_pos = get_world_pos_at(texcoord);
-    // float surf_dist = distance(MainSceneData.camera_pos, surf_pos);
-    float surf_dist = get_linear_z_from_z(get_depth_at(texcoord));
+    #if GET_SETTING(sky_ao, clip_length) <= 1
+        // No reprojection needed without temporal ao
+        result = textureLod(CurrentTex, texcoord, 0);
+    #else
+        vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
+        vec2 last_coord = texcoord + velocity;
 
-
-    // Find the affected cell
-    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy), surf_dist);
-
-    // Mark the cell as used
-    imageStore(cellGridFlags, tile, vec4(1));
+        result = resolve_temporal(
+            CurrentTex, Previous_SkyAO, texcoord, last_coord);
+    #endif
 }

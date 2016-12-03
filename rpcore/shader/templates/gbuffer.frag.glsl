@@ -46,7 +46,7 @@ uniform Panda3DMaterial p3d_Material;
 
 // Late include of the gbuffer packing since it needs the vOutput
 #pragma include "includes/normal_mapping.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/gbuffer_write.inc.glsl"
 
 
 #if DONT_FETCH_DEFAULT_TEXTURES
@@ -69,7 +69,6 @@ uniform Panda3DMaterial p3d_Material;
 void main() {
 
     MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
-
     vec2 texcoord = vOutput.texcoord;
 
     // Get texture coordinate
@@ -120,11 +119,10 @@ void main() {
             // No normal mapping when not using default textures
         #else
             {
-            // Perform normal mapping if enabled
-            vec3 sampled_normal = texture(p3d_Texture1, texcoord).xyz;
-            vec3 detail_normal = unpack_texture_normal(sampled_normal);
-            material_nrm = apply_normal_map(
-                vOutput.normal, detail_normal, mInput.normalfactor);
+                // Perform normal mapping if enabled
+                vec3 sampled_normal = unpack_texture_normal(texture(p3d_Texture1, texcoord).xyz);
+                material_nrm = apply_normal_map(
+                    vOutput.normal, sampled_normal, mInput.normalfactor);
             }
         #endif
     #endif

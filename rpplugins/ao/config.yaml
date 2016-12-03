@@ -37,7 +37,7 @@ settings: !!omap
     - clip_length:
         type: int
         range: [1, 16]
-        default: 2
+        default: 4
         shader_runtime: true
         label: Clip length
         description: >

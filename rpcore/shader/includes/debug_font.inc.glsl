@@ -24,29 +24,36 @@
  *
  */
 
-#version 430
 
-#pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/light_culling.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
+#pragma once
 
-#define USE_GBUFFER_EXTENSIONS 1
-#pragma include "includes/gbuffer.inc.glsl"
+// Utility methods to render text in a shader
 
-uniform writeonly image2DArray RESTRICT cellGridFlags;
+uniform sampler2D DebugFontAtlas;
+const int digit_width = 5;
+const int digit_height = 8;
+const int spacing = 1;
 
-void main() {
-    vec2 texcoord = get_texcoord();
+int get_digit_count(uint number) {
+    return int(log(float(number)) / log(10.0) + 1e-6) + 1;
+}
 
-    // Get the distance to the camera
-    // vec3 surf_pos = get_world_pos_at(texcoord);
-    // float surf_dist = distance(MainSceneData.camera_pos, surf_pos);
-    float surf_dist = get_linear_z_from_z(get_depth_at(texcoord));
+float render_digit(ivec2 coord, uint digit) {
+    ivec2 offset = ivec2(digit * digit_width, 0);
+    ivec2 pointer = ivec2(gl_FragCoord.xy);
+    ivec2 sample_coord = pointer - coord;
+    if (sample_coord.x < 0 || sample_coord.y < 0 || sample_coord.x >= digit_width || sample_coord.y >= digit_height) {
+        return 0.0;
+    }
+    return 1 - texelFetch(DebugFontAtlas, sample_coord + offset, 0).x;
+}
 
-
-    // Find the affected cell
-    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy), surf_dist);
-
-    // Mark the cell as used
-    imageStore(cellGridFlags, tile, vec4(1));
+float render_number(ivec2 coord, uint number) {
+    int num_digits = get_digit_count(number);
+    float accum = 0.0;
+    for (int i = num_digits - 1; i >= 0; --i) {
+        accum += render_digit(coord + ivec2(i * (spacing + digit_width), 0), number % 10);
+        number /= 10;
+    }
+    return accum;
 }

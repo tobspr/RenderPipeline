@@ -71,7 +71,7 @@ void main() {
 
     // Amount to increment the minimum and maximum distance of the slice. This
     // avoids false negatives in culling.
-    const float distance_bias = 0.05;
+    const float distance_bias = 0.0;
 
     // Find the tiles minimum and maximum distance
     float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
@@ -81,11 +81,10 @@ void main() {
     int storage_offs = LC_MAX_LIGHTS_PER_CELL * idx;
     int num_rendered_lights = 0;
 
-    // Compute sample directions
-    vec3 local_ray_dirs[num_raydirs] = get_raydirs(cell_x, cell_y, precompute_size);
-
     // Get amount of visible lights in frustum
     int max_frustum_lights = texelFetch(FrustumLightsCount, 0).x;
+
+    Frustum view_frustum = make_view_frustum(cell_x, cell_y, precompute_size, min_distance, max_distance);
 
     // Cull all lights
     for (int i = local_offset;
@@ -96,24 +95,7 @@ void main() {
 
         // Fetch data of current light
         LightData light_data = read_light_data(AllLightsData, light_index);
-
-        // Get Light position and project it to view space
-        vec3 light_pos = get_light_position(light_data);
-        vec4 light_pos_view = MainSceneData.view_mat_z_up * vec4(light_pos, 1);
-
-        bool visible = false;
-
-        // Get a sphere encapsulating the light and cull against that
-        Sphere sphere = get_representative_sphere(light_data);
-
-        // XXX: This prevents invalid light culling for very distant small lights.
-        // Should find a better solution for this!
-        sphere.radius *= max(1.0, length(light_pos_view.xyz) / 200.0);
-
-        for (int k = 0; k < num_raydirs; ++k) {
-            visible = visible || viewspace_ray_sphere_distance_intersection(
-                sphere, local_ray_dirs[k], min_distance, max_distance);
-        }
+        bool visible = cull_light(light_data, view_frustum);
 
         // Uncomment this to see if the culling produces any issues
         // visible = true;
