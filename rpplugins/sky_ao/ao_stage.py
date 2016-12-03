@@ -38,7 +38,7 @@ class SkyAOStage(RenderStage):
 
     required_inputs = ["SkyAOCapturePosition"]
     required_pipes = ["SkyAOHeight", "GBuffer", "DownscaledDepth", "LowPrecisionNormals",
-                      "PreviousFrame::SkyAO", "PreviousFrame::SceneDepth",
+                      "PreviousFrame::SkyAO[R8]", "PreviousFrame::SceneDepth[R32]",
                       "CombinedVelocity"]
 
     @property
@@ -86,9 +86,7 @@ class SkyAOStage(RenderStage):
             self,
             source_tex=current_tex,
             name=self.stage_id + ":UpscaleFull",
-            percentage=0.05
-        )
-
+            percentage=0.05)
 
         self.target_resolve = self.create_target("ResolveSkyAO")
         self.target_resolve.add_color_attachment(bits=(8, 0, 0, 0))

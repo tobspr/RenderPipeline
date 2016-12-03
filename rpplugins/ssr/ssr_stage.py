@@ -36,8 +36,8 @@ class SSRStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["ShadedScene", "CombinedVelocity", "GBuffer",
-                      "DownscaledDepth", "PreviousFrame::PostAmbientScene",
-                      "PreviousFrame::SSRSpecular", "PreviousFrame::SceneDepth"]
+                      "DownscaledDepth", "PreviousFrame::PostAmbientScene[RGBA16]",
+                      "PreviousFrame::SSRSpecular[RGBA16]", "PreviousFrame::SceneDepth[R32]"]
 
     @property
     def produced_pipes(self):

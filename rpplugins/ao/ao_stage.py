@@ -31,8 +31,8 @@ from rpcore.render_stage import RenderStage
 class AOStage(RenderStage):
 
     required_inputs = []
-    required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::AmbientOcclusion",
-                      "CombinedVelocity", "PreviousFrame::SceneDepth", "LowPrecisionNormals"]
+    required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::AmbientOcclusion[R8]",
+                      "CombinedVelocity", "PreviousFrame::SceneDepth[R32]", "LowPrecisionNormals"]
 
     @property
     def produced_pipes(self):

@@ -66,6 +66,11 @@ void main() {
     vec3 pixel_nrm = get_normal(coord * 2);
     float pixel_depth = get_lin_z(coord * 2);
 
+    if (pixel_depth > SKYBOX_DIST) {
+        result = vec4(1);
+        return;
+    }
+
     const float max_nrm_diff = 0.1;
     float max_depth_diff = pixel_depth / 25.0;
 

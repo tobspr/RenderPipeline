@@ -28,10 +28,15 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
+
+#define RS_SKIP_SKYBOX 1
+#define RS_SKYBOX_COLOR float(1.0)
 #define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length) * 2)
 #define RS_USE_POSITION_TECHNIQUE 1
 #define RS_FADE_BORDERS GET_SETTING(ao, border_fade)
 #define RS_DISTANCE_SCALE 0.05
+#define RS_CTYPE float
+#define RS_CMASK .x
 
 #pragma include "includes/temporal_resolve.inc.glsl"
 
@@ -39,18 +44,17 @@ uniform sampler2D CurrentTex;
 uniform sampler2D CombinedVelocity;
 uniform sampler2D Previous_AmbientOcclusion;
 
-out vec4 result;
+out RS_CTYPE result;
 
 void main() {
     vec2 texcoord = get_texcoord();
 
     #if GET_SETTING(ao, clip_length) <= 1
         // No reprojection needed without temporal ao
-        result = textureLod(CurrentTex, texcoord, 0);
+        result = textureLod(CurrentTex, texcoord, 0) RS_CMASK;
     #else
         vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
         vec2 last_coord = texcoord + velocity;
-
         result = resolve_temporal(
             CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
     #endif

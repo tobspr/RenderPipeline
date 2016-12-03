@@ -35,8 +35,8 @@ class VXGIStage(RenderStage):
 
     required_inputs = ["voxelGridPosition"]
     required_pipes = ["ShadedScene", "SceneVoxels", "GBuffer", "ScatteringIBLSpecular",
-                      "ScatteringIBLDiffuse", "PreviousFrame::VXGIPostSample",
-                      "CombinedVelocity", "PreviousFrame::SceneDepth"]
+                      "ScatteringIBLDiffuse", "PreviousFrame::VXGIPostSample[RGBA16]",
+                      "CombinedVelocity", "PreviousFrame::SceneDepth[R32]"]
 
     @property
     def produced_pipes(self):

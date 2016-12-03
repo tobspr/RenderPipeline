@@ -51,7 +51,7 @@ class SMAAStage(RenderStage):
     def required_pipes(self):
         pipes = ["ShadedScene", "GBuffer", "CombinedVelocity"]
         if self.use_reprojection:
-            pipes.append("PreviousFrame::SMAAPostResolve")
+            pipes.append("PreviousFrame::SMAAPostResolve[RGBA16]")
         return pipes
 
     @property

@@ -59,6 +59,16 @@
     #define RS_USE_SMOOTH_TECHNIQUE 0
 #endif
 
+// Component type
+#ifndef RS_CTYPE
+    #define RS_CTYPE vec4
+#endif
+
+// Component mask
+#ifndef RS_CMASK
+    #define RS_CMASK
+#endif
+
 /*
 
 Uses the reprojection suggested in:
@@ -119,13 +129,13 @@ vec4 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec4 p, vec4 q)
 #endif
 
 
-vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord, vec2 last_coord) {
+RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord, vec2 last_coord) {
     vec2 one_pixel = 1.0 / SCREEN_SIZE;
-    vec4 curr_m = textureLod(current_tex, curr_coord, 0);
+    RS_CTYPE curr_m = textureLod(current_tex, curr_coord, 0) RS_CMASK;
 
     // Out of screen, can early out
     if (!in_unit_rect(last_coord)) {
-        return max(vec4(0.0), curr_m);
+        return max( RS_CTYPE (0.0), curr_m);
     }
 
     #if !RS_USE_SMOOTH_TECHNIQUE
@@ -133,12 +143,19 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
         #if RS_USE_POSITION_TECHNIQUE
 
             float curr_z = get_depth_at(curr_coord);
+            float curr_linz = get_linear_z_from_z(curr_z);
+
+            #if RS_SKIP_SKYBOX
+                if (curr_linz > SKYBOX_DIST) {
+                    return RS_SKYBOX_COLOR;
+                }
+            #endif
+
             vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord);
 
             float last_z = textureLod(Previous_SceneDepth, last_coord, 0).x;
             vec3 last_pos = calculate_surface_pos(
                 last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
-
 
             // Weight by distance
             float max_distance = RS_DISTANCE_SCALE;
@@ -152,7 +169,7 @@ vec4 resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_coord
                 weight *= fade;
             #endif
 
-            vec4 last_m = textureLod(last_tex, last_coord, 0);
+            RS_CTYPE last_m = textureLod(last_tex, last_coord, 0) RS_CMASK;
             return mix(curr_m, last_m, weight);
 
         #else

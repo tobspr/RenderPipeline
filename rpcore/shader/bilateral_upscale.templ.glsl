@@ -29,6 +29,7 @@
 
 #pragma optionNV (unroll all)
 
+
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 
@@ -60,6 +61,13 @@ out vec4 result;
 void main() {
     // Get sample coordinates
     ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    // On the bottom left pixels, do not check neighbours, saves 25% of workload
+    if (coord.x % 2 == 0 && coord.y % 2 == 0) {
+        result = texelFetch(SourceTex, coord / 2, 0);
+        return;
+    }
+
     ivec2 ss_coord = coord * MULTIPLIER;
 
     ivec2 bil_start_coord = get_bilateral_coord(coord);
@@ -92,8 +100,6 @@ void main() {
     // of the 4 direct neighbors.
     const int search_radius = 0;
 
-    // TODO: On the bottom left pixels, do not check neighbours, can save 25% performance
-    // with this
 
     // Accumulate all samples
     for (int x = -search_radius; x < 2 + search_radius; ++x) {

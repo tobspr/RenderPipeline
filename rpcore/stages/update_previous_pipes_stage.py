@@ -119,7 +119,7 @@ class UpdatePreviousPipesStage(RenderStage):
         # TODO: Add more lookups based on texture type
         return "vec4 " + dest_name + " = texelFetch(" + sampler_name + ", " + coord_var + ", 0);"
 
-    def get_store_code(self, tex, sampler_name, coord_var, data_var):   # noqa# pylint: disable=unused-argument
+    def get_store_code(self, tex, sampler_name, coord_var, data_var):   # noqa # pylint: disable=unused-argument
         """ Returns the matching GLSL code to store the given data in a given
         texture """
         # TODO: Add more stores based on texture type
