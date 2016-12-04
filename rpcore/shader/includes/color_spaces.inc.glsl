@@ -55,21 +55,44 @@ const float SRGB_ALPHA = 0.055;
 
 
 // Used to convert from linear RGB to XYZ space
-const mat3 RGB_2_XYZ = (mat3(
+const mat3 RGB_2_XYZ = mat3(
     0.4124564, 0.3575761, 0.1804375,
     0.2126729, 0.7151522, 0.0721750,
     0.0193339, 0.1191920, 0.9503041
-));
+);
 
 // Used to convert from XYZ to linear RGB space
-const mat3 XYZ_2_RGB = (mat3(
+const mat3 XYZ_2_RGB = mat3(
     3.2404542, -1.5371385, -0.4985314,
     -0.9692660, 1.8760108, 0.0415560,
     0.0556434, -0.2040259, 1.0572252
+);
+
+// Used to convert from linear RGB to YCgCo space
+const mat3 RGB_2_YCGCO = transpose(mat3(
+    0.25,  0.5,  0.25,
+    -0.25, 0.5, -0.25,
+    0.5,   0.0, -0.5
+));
+
+// Used to convert from YCgCo to linear RGB space
+const mat3 YCGCO_2_RGB = transpose(mat3(
+    1, -1,  1,
+    1,  1,  0,
+    1, -1, -1
 ));
 
 const vec3 LUMA_COEFFS = vec3(0.2126, 0.7152, 0.0722);
 
+// Converts linear rgb to the YCgCo space
+vec3 rgb_to_ycgco(vec3 rgb) {
+    return RGB_2_YCGCO * rgb;
+}
+
+// Converts from YCgCo space to linear rgb
+vec3 ycgco_to_rgb(vec3 ycgco) {
+    return YCGCO_2_RGB * ycgco;
+}
 
 // Returns the luminance of a !! linear !! rgb color
 float get_luminance(vec3 rgb) {

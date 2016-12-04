@@ -202,10 +202,13 @@ Material unpack_material(GBufferData data) {
 
         vec3 dx_nx = get_view_pos_at(coord + pixel_size * vec2(-1, 0)) - view_pos;
         vec3 dx_ny = get_view_pos_at(coord + pixel_size * vec2(0, -1)) - view_pos;
+        
+        // TODO: Handle screen edges
 
         // Find the closest distance in depth
         vec3 dx_x = abs(dx_px.z) < abs(dx_nx.z) ? vec3(dx_px) : vec3(dx_nx);
         vec3 dx_y = abs(dx_py.z) < abs(dx_ny.z) ? vec3(dx_py) : vec3(dx_ny);
+
 
         return normalize(cross(dx_x, dx_y));
     }

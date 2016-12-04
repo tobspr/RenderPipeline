@@ -27,16 +27,21 @@ THE SOFTWARE.
 from rpcore.render_stage import RenderStage
 
 
-class FinalStage(RenderStage):
+class SRGBCorrectionStage(RenderStage):
 
-    """ This stage is the final stage and outputs the shaded scene to the
-    screen """
+    """ This stage provides simple srgb correction in case the color correction
+    plugin is not enabled """
 
     required_pipes = ["ShadedScene"]
 
+    @property
+    def produced_pipes(self):
+        return {"ShadedScene": self._target.color_tex}
+
     def create(self):
-        self.present_target = self.create_target("FinalPresentStage")
-        self.present_target.present_on_screen()
+        self._target = self.create_target("SRGBCorrection")
+        self._target.add_color_attachment(bits=8)
+        self._target.prepare_buffer()
 
     def reload_shaders(self):
-        self.present_target.shader = self.load_shader("final_present_stage.frag.glsl")
+        self._target.shader = self.load_shader("srgb_correction.frag.glsl")

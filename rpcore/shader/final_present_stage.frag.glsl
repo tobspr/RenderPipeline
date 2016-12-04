@@ -29,33 +29,12 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
-uniform sampler2D SourceTex;
+uniform sampler2D ShadedScene;
 out vec4 result;
 
 // This shader just passes through the input texture
 
 void main() {
     vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
-    result = vec4(textureLod(SourceTex, texcoord, 0).xyz, 1);
-
-    #if SPECIAL_MODE_ACTIVE(LUMINANCE)
-
-        // Luminance debug mode, too bright pixels get red, too dark pixels get blue,
-        // rest stays green
-
-        vec3 color = textureLod(SourceTex, texcoord, 0).xyz;
-        float luminance = get_luminance(color);
-
-        vec3 color_ok = vec3(0, 1, 0);
-        vec3 color_too_bright = vec3(1, 0, 0);
-        vec3 color_too_dark = vec3(0, 0, 1);
-
-        const float max_brightness = 0.7;
-        const float max_darkness = 0.3;
-
-        color = mix(color_ok, color_too_bright, saturate(5.0 * (luminance - max_brightness)));
-        color = mix(color, color_too_dark, saturate(5.0 * (max_darkness - luminance)));
-
-        result.xyz = color;
-    #endif
+    result = vec4(textureLod(ShadedScene, texcoord, 0).xyz, 1);
 }

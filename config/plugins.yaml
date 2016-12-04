@@ -4,7 +4,7 @@
 # Any formatting and comments will be lost
 
 enabled:
-    - sky_ao
+    - smaa
     # - ao
     # - bloom
     # - clouds
@@ -17,7 +17,7 @@ enabled:
     # - pssm
     # - scattering
     # - skin_shading
-    # - smaa
+    # - sky_ao
     # - ssr
     # - volumetrics
     # - vxgi
@@ -162,7 +162,7 @@ overrides:
         max_radius: 500.0
         resolution: 1024
         sample_sequence: poisson_3D_32
-        trace_steps: 16
+        trace_steps: 7
         ao_multiplier: 0.5
         ao_bias: 0.0
         normal_offset: 0.15
@@ -175,9 +175,9 @@ overrides:
     smaa:
         use_reprojection: True
         smaa_quality: ultra
-        jitter_pattern: halton8
-        history_length: 8
-        jitter_amount: 0.16143
+        jitter_pattern: uniform4
+        history_length: 16
+        jitter_amount: 1.0
 
     ssr:
         effect_scale: 1.0

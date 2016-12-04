@@ -176,7 +176,7 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
 
             const float subpixel_threshold = 0.5;
             const float gather_base = 0.5;
-            const float gather_subpixel_motion = 0.1666;
+            const float gather_subpixel_motion = 0.01666;
 
             float curr_depth = get_depth_at(curr_coord);
             float vs_dist = get_linear_z_from_z(curr_depth);
@@ -219,6 +219,10 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
             float unbiased_weight_sqr = unbiased_weight * unbiased_weight;
             float feedback = mix(feedback_min, feedback_max, unbiased_weight_sqr);
 
+            // feedback = 1 - 1.0 / 16.0;
+            // feedback = mix(feedback, 0, saturate(20.0 * texel_vel_mag));
+            // feedback = 0;
+            // return vec4(feedback);
             // output
             return mix(curr_m, last_m, feedback);
 
@@ -226,7 +230,7 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
 
     #else
 
-        // Bounding box size
+        // Bounding box siz e
         const float bbs = RS_AABB_SIZE;
 
         // Get current frame neighbor texels

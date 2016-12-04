@@ -72,7 +72,7 @@ class Plugin(BasePlugin):
         scale = 1.0 / float(Globals.native_resolution.x)
 
         # Reduce jittering to 35% to avoid flickering
-        scale *= 0.35
+        # scale *= 0.35
 
         for x, y in JITTERS[self.get_setting("jitter_pattern")]:
             jitter_x = (x * 2 - 1) * scale * 0.5

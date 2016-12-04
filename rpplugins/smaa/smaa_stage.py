@@ -65,11 +65,18 @@ class SMAAStage(RenderStage):
             return {"ShadedScene": self.neighbor_target.color_tex}
 
     def create(self):
+
+        # Pre-detect edges (predication)
+        self.predicate_target = self.create_target("SMAApredicate")
+        self.predicate_target.add_color_attachment(alpha=True)
+        self.predicate_target.prepare_buffer()
+
         # Edge detection
         self.edge_target = self.create_target("EdgeDetection")
-        self.edge_target.add_color_attachment()
+        self.edge_target.add_color_attachment(bits=(8, 8, 0, 0))
         self.edge_target.prepare_buffer()
         self.edge_target.set_clear_color(0, 0, 0, 0)
+        self.edge_target.set_shader_input("PredicationTex", self.predicate_target.color_tex)
 
         # Weight blending
         self.blend_target = self.create_target("BlendWeights")
@@ -80,6 +87,7 @@ class SMAAStage(RenderStage):
         self.blend_target.set_shader_input("AreaTex", self.area_tex)
         self.blend_target.set_shader_input("SearchTex", self.search_tex)
         self.blend_target.set_shader_input("jitterIndex", self._jitter_index)
+        self.blend_target.set_shader_input("PredicationTex", self.predicate_target.color_tex)
 
         # Neighbor blending
         self.neighbor_target = self.create_target("NeighborBlending")
@@ -101,5 +109,7 @@ class SMAAStage(RenderStage):
         self.edge_target.shader = self.load_plugin_shader("edge_detection.frag.glsl")
         self.blend_target.shader = self.load_plugin_shader("blending_weights.frag.glsl")
         self.neighbor_target.shader = self.load_plugin_shader("neighborhood_blending.frag.glsl")
+        self.predicate_target.shader = self.load_plugin_shader("predication.frag.glsl")
         if self.use_reprojection:
             self.resolve_target.shader = self.load_plugin_shader("resolve_smaa.frag.glsl")
+        

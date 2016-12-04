@@ -68,7 +68,7 @@ from rpcore.stages.downscale_z_stage import DownscaleZStage
 from rpcore.stages.combine_velocity_stage import CombineVelocityStage
 from rpcore.stages.upscale_stage import UpscaleStage
 from rpcore.stages.compute_low_precision_normals_stage import ComputeLowPrecisionNormalsStage
-
+from rpcore.stages.srgb_correction_stage import SRGBCorrectionStage
 
 class RenderPipeline(RPObject):
 
@@ -695,6 +695,11 @@ class RenderPipeline(RPObject):
         if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.005:
             self._upscale_stage = UpscaleStage(self)
             add_stage(self._upscale_stage)
+
+        # Add simple SRGB stage in case we have no color correction plugin
+        if not self.plugin_mgr.is_plugin_enabled("color_correction"):
+            self._srgb_stage = SRGBCorrectionStage(self)
+            add_stage(self._srgb_stage)
 
     def _get_serialized_material_name(self, material, index=0):
         """ Returns a serializable material name """

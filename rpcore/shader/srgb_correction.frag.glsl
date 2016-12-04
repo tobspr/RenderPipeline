@@ -26,30 +26,48 @@
 
 #version 430
 
+// This shader applies the ambient term to the shaded scene
+
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/noise.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
+#pragma include "includes/noise.inc.glsl"
 
 uniform sampler2D ShadedScene;
-out vec4 result;
+out vec3 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-
-    // Fetch the current's scene color
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
-    #if !DEBUG_MODE && !HAVE_PLUGIN(color_correction)
-        // Do a simple sRGB correction
+    #if !DEBUG_MODE
         scene_color = rgb_to_srgb(scene_color);
-    #endif
+        scene_color = saturate(scene_color);
 
-    // Apply dithering to prevent banding, since we are converting from 16 bit
-    // precision to 8 bit precision here
-    #if !REFERENCE_MODE && !DEBUG_MODE
+        // Apply dithering to prevent banding, since we are converting from 16 bit
+        // precision to 8 bit precision here
         vec3 dither = (rand_rgb(texcoord) + rand_rgb(texcoord + 0.5787)) * 0.5 - 0.4;
         scene_color += dither / 255.0;
     #endif
 
-    result = vec4(scene_color, 1);
+
+    #if SPECIAL_MODE_ACTIVE(LUMINANCE)
+
+        // Luminance debug mode, too bright pixels get red, too dark pixels get blue,
+        // rest stays green
+        float luminance = get_luminance(scene_color);
+
+        vec3 color_ok = vec3(0, 1, 0);
+        vec3 color_too_bright = vec3(1, 0, 0);
+        vec3 color_too_dark = vec3(0, 0, 1);
+
+        const float max_brightness = 0.7;
+        const float max_darkness = 0.3;
+
+        scene_color = mix(color_ok, color_too_bright, saturate(5.0 * (luminance - max_brightness)));
+        scene_color = mix(scene_color, color_too_dark, saturate(5.0 * (max_darkness - luminance)));
+
+    #endif
+
+
+    result = scene_color;
 }

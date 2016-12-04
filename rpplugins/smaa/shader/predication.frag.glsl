@@ -28,24 +28,23 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-#pragma include "smaa_wrapper.inc.glsl"
+// #pragma include "smaa_wrapper.inc.glsl"
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "includes/gbuffer.inc.glsl"
 
-uniform GBufferData GBuffer;
 uniform sampler2D ShadedScene;
-uniform sampler2D PredicationTex;
 out vec4 result;
+
+
 
 void main() {
 
     vec2 texcoord = get_texcoord();
+    ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    // "Vertex shader"
-    vec4 offset[3];
-    SMAAEdgeDetectionVS(texcoord, offset);
+    vec3 nrm = abs(get_view_normal_from_depth(texcoord));
+    float linz = get_linear_z_from_z(get_depth_at(texcoord));
 
-    // Actual Fragment shader
-    result = vec4(0);
-    result.xy = SMAAColorEdgeDetectionPS(texcoord, offset, ShadedScene, PredicationTex);
-    result.w = 1.0;
+    result.xyz = nrm;
+    result.w = linz / 200.0;
 }

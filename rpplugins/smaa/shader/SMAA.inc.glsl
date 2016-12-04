@@ -619,8 +619,15 @@ float3 SMAAGatherNeighbours(float2 texcoord,
 float2 SMAACalculatePredicatedThreshold(float2 texcoord,
                                         float4 offset[3],
                                         SMAATexture2D(predicationTex)) {
-    float3 neighbours = SMAAGatherNeighbours(texcoord, offset, SMAATexturePass2D(predicationTex));
-    float2 delta = abs(neighbours.xx - neighbours.yz);
+    // float3 neighbours = SMAAGatherNeighbours(texcoord, offset, SMAATexturePass2D(predicationTex));
+
+    float4 P = SMAASamplePoint(predicationTex, texcoord);
+    float4 Pleft = SMAASamplePoint(predicationTex, offset[0].xy);
+    float4 Ptop  = SMAASamplePoint(predicationTex, offset[0].zw);
+
+    float2 delta = float2(distance(P, Pleft), distance(P, Ptop));
+    
+    // float2 delta = abs(neighbours.xx - neighbours.yz);
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
     return SMAA_PREDICATION_SCALE * SMAA_THRESHOLD * (1.0 - SMAA_PREDICATION_STRENGTH * edges);
 }
@@ -762,6 +769,9 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
     #else
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
     #endif
+
+    
+
 
     // Calculate color deltas:
     float4 delta;

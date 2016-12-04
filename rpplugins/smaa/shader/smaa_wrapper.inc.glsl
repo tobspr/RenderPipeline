@@ -52,18 +52,14 @@
 #define SMAA_INCLUDE_PS 1
 #define SMAA_DECODE_VELOCITY(_sample) error, custom resolve pass
 
-vec3 SMAA_GET_COLOR(vec3 _color) {
-    return _color;
-}
-
-vec4 SMAA_GET_COLOR(vec4 _color) {
-    return _color;
-}
+vec3 SMAA_GET_COLOR(vec3 _color) { return _color; }
+vec4 SMAA_GET_COLOR(vec4 _color) { return _color; }
 
 // Optionally enable smaa predication
-// #define SMAA_PREDICATION 1
-// #define SMAA_PREDICATION_SCALE 3.0
-// #define SMAA_PREDICATION_THRESHOLD 0.00001
+#define SMAA_PREDICATION 1
+#define SMAA_PREDICATION_STRENGTH 0.9
+#define SMAA_PREDICATION_SCALE 4.0
+#define SMAA_PREDICATION_THRESHOLD 0.005
 
 // SMAA defines its own saturate, make sure we don't run into conflicts
 #ifdef saturate

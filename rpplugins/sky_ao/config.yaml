@@ -44,7 +44,7 @@ settings: !!omap
         type: int
         shader_runtime: true
         range: [1, 32]
-        default: 16
+        default: 7
         label: Trace steps
         description: >
             Controls how many steps to perform for each ray.
