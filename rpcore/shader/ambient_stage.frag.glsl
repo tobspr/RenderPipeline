@@ -51,9 +51,9 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D AmbientOcclusion;
 #endif
 
-#if HAVE_PLUGIN(sky_ao)
-    uniform sampler2D SkyAO;
-#endif
+// #if HAVE_PLUGIN(sky_ao)
+//     uniform sampler2D SkyAO;
+// #endif
 
 #if HAVE_PLUGIN(vxgi)
     // uniform sampler2D VXGISpecular;
@@ -118,12 +118,19 @@ void main() {
             #endif
         }
 
+        float sky_ao_factor = 1.0;
+        float occlusion = 1.0;
 
-        #if HAVE_PLUGIN(sky_ao)
-            float sky_ao_factor = textureLod(SkyAO, texcoord, 0).x;
-            sky_ao_factor = pow(sky_ao_factor, 3.0);
-        #else
-            float sky_ao_factor = 1.0;
+        // Sample precomputed occlusion and multiply the ambient term with it
+        #if HAVE_PLUGIN(ao)
+            vec2 occlusion_raw = textureLod(AmbientOcclusion, texcoord, 0).xy;
+            occlusion = occlusion_raw.x;
+
+            // SkyAO is packed into the ao texture
+            #if HAVE_PLUGIN(sky_ao)
+                sky_ao_factor = occlusion_raw.y;
+            #endif
+
         #endif
 
 
@@ -229,14 +236,6 @@ void main() {
         } else {
             specular_ambient = fresnel * ibl_specular;
         }
-
-        // Sample precomputed occlusion and multiply the ambient term with it
-        #if HAVE_PLUGIN(ao)
-            float occlusion = textureLod(AmbientOcclusion, texcoord, 0).x;
-        #else
-            float occlusion = 1.0;
-        #endif
-
 
         float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
 

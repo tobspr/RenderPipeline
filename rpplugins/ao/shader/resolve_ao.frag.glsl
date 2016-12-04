@@ -30,13 +30,13 @@
 
 
 #define RS_SKIP_SKYBOX 1
-#define RS_SKYBOX_COLOR float(1.0)
+#define RS_SKYBOX_COLOR vec2(1.0)
 #define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length) * 2)
 #define RS_USE_POSITION_TECHNIQUE 1
 #define RS_FADE_BORDERS GET_SETTING(ao, border_fade)
 #define RS_DISTANCE_SCALE 0.05
-#define RS_CTYPE float
-#define RS_CMASK .x
+#define RS_CTYPE vec2
+#define RS_CMASK .xy
 
 #pragma include "includes/temporal_resolve.inc.glsl"
 

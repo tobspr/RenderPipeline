@@ -50,7 +50,7 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 
 
     ivec2 seed = tc % 4 + 5;
     if (quality == SKYAO_HIGH_QUALITY) {
-        seed.x += 10 + 734 * (MainSceneData.frame_index % GET_SETTING(sky_ao, clip_length));
+        seed.x += 10 + 734 * (MainSceneData.frame_index % max(1, GET_SETTING(ao, clip_length) / 4));
     }
     
     float noise_amount = GET_SETTING(sky_ao, noise_amount);
@@ -99,10 +99,12 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 
     END_ITERATE_SEQUENCE()
     NORMALIZE_SEQUENCE(sky_ao, sample_sequence, accum);
 
+    // XXX: TODO: Merge into single expression
     accum = 1.0 - accum;
     accum = max(GET_SETTING(sky_ao, ao_bias), accum);
     accum = pow(accum, 5.0);
     accum = mix(1.0, accum, float(GET_SETTING(sky_ao, ao_multiplier)));
     accum = mix(1.0, accum, blend);
+    accum = pow(accum, 3.0);
     return accum;
 }

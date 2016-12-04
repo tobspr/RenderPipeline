@@ -76,7 +76,7 @@ void main() {
     }
 
     const float max_nrm_diff = 0.1;
-    float max_depth_diff = pixel_depth / 75.0;
+    float max_depth_diff = pixel_depth / 520.0;
 
     // Increase maximum depth difference at obligue angles, to avoid artifacts
     vec3 pixel_pos = get_gbuffer_position(GBuffer, screen_coord);

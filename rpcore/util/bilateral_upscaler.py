@@ -38,7 +38,7 @@ class BilateralUpscaler(RPObject):
     # definition in the fillin shader
     ROW_WIDTH = 512
 
-    def __init__(self, parent_stage, halfres=False, source_tex=None, name="", percentage=0.05):
+    def __init__(self, parent_stage, halfres=False, source_tex=None, name="", percentage=0.05, bits=(8, 8, 0, 0)):
         """ Creates a new upscaler with the given name. Percentage controls
         the maximum amount of invalid pixels which can be processed, for example
         a value of 0.05 means that 5% of all pixels may be invalid. """
@@ -48,6 +48,7 @@ class BilateralUpscaler(RPObject):
         self.parent_stage = parent_stage
         self.percentage = percentage
         self.source_tex = source_tex
+        self.bits = bits
         self._prepare_textures()
         self._prepare_target()
 
@@ -61,7 +62,7 @@ class BilateralUpscaler(RPObject):
         """ Prepares all required render targets """
         self.target_upscale = self.parent_stage.create_target(self.name + ":Upscale")
         self.target_upscale.size = "50%" if self.halfres else "100%"
-        self.target_upscale.add_color_attachment(bits=(8, 0, 0, 0))
+        self.target_upscale.add_color_attachment(self.bits)
         self.target_upscale.prepare_buffer()
         self.target_upscale.set_shader_input("InvalidPixelCounter", self.counter)
         self.target_upscale.set_shader_input("InvalidPixelBuffer", self.databuffer)

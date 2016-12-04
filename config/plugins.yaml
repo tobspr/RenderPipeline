@@ -5,6 +5,7 @@
 
 enabled:
     - ao
+    - sky_ao
     # - bloom
     # - clouds
     # - color_correction
@@ -16,10 +17,9 @@ enabled:
     # - pssm
     # - scattering
     # - skin_shading
-    - sky_ao
-    # - smaa
+    - smaa
     # - ssr
-    # - temporal_aa
+    - temporal_aa
     # - volumetrics
     # - vxgi
 
@@ -27,16 +27,16 @@ enabled:
 overrides:
     ao:
         blur_quality: MEDIUM
-        occlusion_strength: 1.9
+        occlusion_strength: 1.46707
         border_fade: 0.0266
         clip_length: 10
         enable_small_scale_ao: True
-        sc_occlusion_strength: 2.29
+        sc_occlusion_strength: 0.41
         sc_occlusion_range: 8.06
         sc_occlusion_max_dist: 0.3024
         technique: SSAO
         ssao_sample_radius: 44.5
-        ssao_sequence: halton_3D_32
+        ssao_sequence: halton_3D_16
         ssao_bias: 0.02143
         ssao_max_distance: 8.68421
         hbao_sample_radius: 78.36
@@ -170,7 +170,6 @@ overrides:
         noise_amount: 0.05
         blend_factor: 0.05
         border_fade: 0.06
-        clip_length: 2
         capture_height: 500.0
 
     smaa:

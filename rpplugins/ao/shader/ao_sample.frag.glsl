@@ -30,8 +30,22 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "ao_common.inc.glsl"
 
-out float ao_result;
+#if HAVE_PLUGIN(sky_ao)
+uniform sampler2D SkyAOHalfRes;
+
+#pragma include "/$$rp/rpplugins/sky_ao/shader/sky_ao.inc.glsl"
+#endif
+
+out vec2 ao_result;
 
 void main() {
-    ao_result = compute_ao(ivec2(gl_FragCoord.xy) * 2);
+    ao_result.x = compute_ao(ivec2(gl_FragCoord.xy) * 2);
+    
+    #if HAVE_PLUGIN(sky_ao)
+        Material m = unpack_material(GBuffer, get_half_texcoord());
+        ao_result.y = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(gl_FragCoord.xy) * 2);
+
+    #else
+        ao_result.y = 0;
+    #endif
 }

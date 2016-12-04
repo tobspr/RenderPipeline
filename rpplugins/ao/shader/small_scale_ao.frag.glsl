@@ -34,7 +34,7 @@
 #pragma include "includes/sampling_sequences.inc.glsl"
 #pragma include "includes/matrix_ops.inc.glsl"
 
-out float result;
+out vec2 result;
 
 uniform sampler2D DownscaledDepth;
 uniform sampler2D AOResult;
@@ -57,7 +57,7 @@ void main() {
     float pixel_z = get_linear_depth_at(texcoord);
 
     // Merge with previous ao result
-    float prev_result = textureLod(AOResult, texcoord, 0).x;
+    vec2 prev_result = textureLod(AOResult, texcoord, 0).xy;
 
     // Fade out small scale ao at great distances
     if (pixel_z > 150.0) {
@@ -132,8 +132,8 @@ void main() {
     accum /= max(0.01, range_accum);
     accum = 1 - accum;
     accum = pow(accum, 3 * GET_SETTING(ao, sc_occlusion_strength));
-    prev_result *= accum;
-    // prev_result = accum;
+    prev_result.x *= accum;
+    // prev_result.x = accum;
 
     // Fade out AO at obligue angles
     // vec3 view_dir = normalize(pixel_view_pos);
@@ -142,5 +142,6 @@ void main() {
     // fade = 0;
     float fade = 0;
 
-    result = prev_result * (1 - fade) + fade;
+    prev_result.x = prev_result.x * (1 - fade) + fade;
+    result = prev_result;
 }

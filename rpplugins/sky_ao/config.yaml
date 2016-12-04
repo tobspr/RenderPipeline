@@ -106,17 +106,6 @@ settings: !!omap
             with temporal resolve. If you don't use the history buffer, you can
             set this fairly low.
 
-    - clip_length:
-        type: int
-        range: [1, 16]
-        default: 4
-        shader_runtime: true
-        label: Clip length
-        description: >
-            Controls how long to keep SkyAO samples in the history. Bigger values
-            will produce a smoother effect but might also produce artifacts,
-            especially when moving.
-
     - capture_height:
         type: float
         range: [10, 1500.0]
