@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 from panda3d.core import LVecBase2i, Vec4
 from rpcore.render_stage import RenderStage
+from rpcore.util.bilateral_upscaler import BilateralUpscaler
 
 
 class AOStage(RenderStage):
@@ -44,13 +45,21 @@ class AOStage(RenderStage):
         self.target.add_color_attachment(bits=(8, 0, 0, 0))
         self.target.prepare_buffer()
 
-        self.target_upscale = self.create_target("Upscale")
-        self.target_upscale.add_color_attachment(bits=(8, 0, 0, 0))
-        self.target_upscale.prepare_buffer()
+        self.upscaler = BilateralUpscaler(
+            self,
+            halfres=False,
+            source_tex=self.target.color_tex,
+            name=self.stage_id + ":Upscale",
+            percentage=0.05
+        )
 
-        self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_upscale.set_shader_input("skyboxColor", Vec4(1))
-        self.target_upscale.set_shader_input("skipSkybox", True)
+        # self.target_upscale = self.create_target("Upscale")
+        # self.target_upscale.add_color_attachment(bits=(8, 0, 0, 0))
+        # self.target_upscale.prepare_buffer()
+
+        # self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
+        # self.target_upscale.set_shader_input("skyboxColor", Vec4(1))
+        # self.target_upscale.set_shader_input("skipSkybox", True)
 
         self.debug("Blur quality is", self.quality)
 
@@ -70,7 +79,7 @@ class AOStage(RenderStage):
 
         self.blur_targets = []
 
-        current_tex = self.target_upscale.color_tex
+        current_tex = self.upscaler.result_tex
 
         for i in range(blur_passes):
             last_pass = i == blur_passes - 1
@@ -108,10 +117,20 @@ class AOStage(RenderStage):
         self.target_resolve.prepare_buffer()
         self.target_resolve.set_shader_input("CurrentTex", current_tex)
 
+
+    def update(self):
+        self.upscaler.update()
+
+    def set_dimensions(self):
+        self.upscaler.set_dimensions()
+
     def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("ao_sample.frag.glsl")
-        self.target_upscale.shader = self.load_plugin_shader(
-            "upscale_ao.frag.glsl")
+        self.upscaler.set_shaders(
+            upscale_shader=self.load_plugin_shader("upscale_ao.frag.glsl"),
+            fillin_shader=self.load_plugin_shader("fillin_ao.frag.glsl"),
+        )
+
         blur_shader = self.load_plugin_shader(
             "/$$rp/shader/bilateral_blur.frag.glsl")
 

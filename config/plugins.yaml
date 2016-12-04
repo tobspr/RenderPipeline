@@ -4,9 +4,7 @@
 # Any formatting and comments will be lost
 
 enabled:
-    - smaa
-    - temporal_aa
-    # - ao
+    - ao
     # - bloom
     # - clouds
     # - color_correction
@@ -18,8 +16,10 @@ enabled:
     # - pssm
     # - scattering
     # - skin_shading
-    # - sky_ao
+    - sky_ao
+    # - smaa
     # - ssr
+    # - temporal_aa
     # - volumetrics
     # - vxgi
 
@@ -27,18 +27,18 @@ enabled:
 overrides:
     ao:
         blur_quality: MEDIUM
-        occlusion_strength: 2.19
-        border_fade: 0.06
-        clip_length: 6
+        occlusion_strength: 1.9
+        border_fade: 0.0266
+        clip_length: 10
         enable_small_scale_ao: True
-        sc_occlusion_strength: 10.43
-        sc_occlusion_range: 17.02
-        sc_occlusion_max_dist: 0.34
+        sc_occlusion_strength: 2.29
+        sc_occlusion_range: 8.06
+        sc_occlusion_max_dist: 0.3024
         technique: SSAO
-        ssao_sample_radius: 72.70999
-        ssao_sequence: halton_3D_16
-        ssao_bias: 0.04286
-        ssao_max_distance: 7.5
+        ssao_sample_radius: 44.5
+        ssao_sequence: halton_3D_32
+        ssao_bias: 0.02143
+        ssao_max_distance: 8.68421
         hbao_sample_radius: 78.36
         hbao_ray_count: 4
         hbao_ray_steps: 3
@@ -191,6 +191,7 @@ overrides:
         jitter_pattern: halton8
         history_length: 8
         jitter_amount: 0.3
+        post_sharpen_amount: 1.0
 
     volumetrics:
         enable_volumetric_shadows: True

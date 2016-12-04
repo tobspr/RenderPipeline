@@ -49,6 +49,7 @@ out RS_CTYPE result;
 void main() {
     vec2 texcoord = get_texcoord();
 
+
     #if GET_SETTING(ao, clip_length) <= 1
         // No reprojection needed without temporal ao
         result = textureLod(CurrentTex, texcoord, 0) RS_CMASK;

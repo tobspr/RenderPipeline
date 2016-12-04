@@ -78,6 +78,7 @@ void main() {
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
 
     float kernel_scale = 10.0 / pixel_z;
+    // float kernel_scale = 0.6;
     const float sample_radius = 6.0;
 
     const int num_samples = 4;
@@ -98,7 +99,7 @@ void main() {
         offset.xy = rotation_mat * offset.xy;
 
         // Since poisson disks have more samples to the outer, but this
-        // is does not match the ao definition, move the samples closer to the pixel
+        // does not match the ao definition, move the samples closer to the pixel
         offset = pow(abs(offset), vec3(2.0)) * sign(offset);
 
         // Flip offset in case it faces away from the normal
@@ -130,14 +131,16 @@ void main() {
     // Normalize samples
     accum /= max(0.01, range_accum);
     accum = 1 - accum;
-    accum = pow(accum, GET_SETTING(ao, sc_occlusion_strength));
+    accum = pow(accum, 3 * GET_SETTING(ao, sc_occlusion_strength));
     prev_result *= accum;
     // prev_result = accum;
 
     // Fade out AO at obligue angles
-    vec3 view_dir = normalize(pixel_view_pos);
-    float NxV = saturate(dot(view_dir, -pixel_view_normal));
-    float fade = 1 - saturate(4 * NxV);
+    // vec3 view_dir = normalize(pixel_view_pos);
+    // float NxV = saturate(dot(view_dir, -pixel_view_normal));
+    // float fade = 1 - saturate(4 * NxV);
+    // fade = 0;
+    float fade = 0;
 
     result = prev_result * (1 - fade) + fade;
 }

@@ -63,10 +63,12 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     // On the bottom left pixels, do not check neighbours, saves 25% of workload
-    if (coord.x % 2 == 0 && coord.y % 2 == 0) {
-        result = texelFetch(SourceTex, coord / 2, 0);
-        return;
-    }
+    // XXX: Disabled, since we get a better blur on flat surfaces without this. Anyways,
+    // branching coherenncy would be bad too.
+    // if (coord.x % 2 == 0 && coord.y % 2 == 0) {
+    //     result = texelFetch(SourceTex, coord / 2, 0);   
+    //     return;
+    // }
 
     ivec2 ss_coord = coord * MULTIPLIER;
 
@@ -114,7 +116,7 @@ void main() {
             float sample_depth_linear = get_linear_z_from_z(sample_depth);
             float depth_diff = abs(sample_depth_linear - mid_depth_linear) > max_depth_diff ? 0.0 : 1.0;
             float weight = depth_diff;
-            // weight = 1;
+            
             vec3 sample_nrm = get_normal(source_coord * 2 * MULTIPLIER);
             float nrm_diff = distance(sample_nrm, mid_nrm) < max_nrm_diff ? 1.0 : 0.0;
             weight *= nrm_diff;
@@ -132,7 +134,8 @@ void main() {
         
         // Visualization to see failed resolves
         #if SPECIAL_MODE_ACTIVE(BILATERAL_MISSES)
-            result *= 0;
+            float t = mod(MainSceneData.frame_time, 0.2) / 0.2;
+            result = vec4(t);
         #else
             #if TRACK_INVALID_PIXELS
                 int index = imageAtomicAdd(InvalidPixelCounter, 0, 1);

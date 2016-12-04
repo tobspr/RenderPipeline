@@ -26,78 +26,12 @@
 
 #version 430
 
-#pragma optionNV (unroll all)
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
-#pragma include "includes/noise.inc.glsl"
-#pragma include "includes/sampling_sequences.inc.glsl"
-#pragma include "includes/matrix_ops.inc.glsl"
+#pragma include "ao_common.inc.glsl"
 
-out float result;
-
-uniform sampler2D DownscaledDepth;
-
-// use the extended gbuffer api
-#define USE_GBUFFER_EXTENSIONS 1
-#pragma include "includes/gbuffer.inc.glsl"
-
-float get_linear_depth_at(vec2 coord) {
-    return textureLod(DownscaledDepth, coord, 0).x;
-    // return get_linear_z_from_z(textureLod(GBuffer.Depth, coord, 0).x);
-}
+out float ao_result;
 
 void main() {
-
-    // Provide some variables to the kernel
-    vec2 screen_size = vec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    vec2 pixel_size = vec2(1.0) / screen_size;
-
-    ivec2 coord = ivec2(gl_FragCoord.xy) * 2;
-    vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
-
-    // Shader variables
-    float pixel_depth = get_depth_at(texcoord);
-    float pixel_distance = get_linear_z_from_z(pixel_depth);
-
-    if (pixel_distance > 1000.0) {
-        result = 1.0;
-        return;
-    }
-
-    float view_dist = pixel_distance;
-
-
-    float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
-
-    vec3 noise_vec = rand_rgb(coord % 16 +
-        0.05 * (MainSceneData.frame_index % (GET_SETTING(ao, clip_length))));
-    float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
-    mat2 rotation_mat = make_rotate_mat2(rotation_factor);
-    float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.1 * t)));
-
-    vec3 pixel_view_normal = get_view_normal(texcoord);
-    vec3 pixel_view_pos = get_view_pos_at(texcoord);
-    vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
-
-    // float kernel_scale = 10.0 / get_linear_z_from_z(pixel_depth);
-    float kernel_scale = 10.0 / view_dist;
-
-    // Include the appropriate kernel
-    #if ENUM_V_ACTIVE(ao, technique, SSAO)
-        #pragma include "ssao.kernel.glsl"
-    #elif ENUM_V_ACTIVE(ao, technique, HBAO)
-        #pragma include "hbao.kernel.glsl"
-    #elif ENUM_V_ACTIVE(ao, technique, SSVO)
-        #pragma include "ssvo.kernel.glsl"
-    #elif ENUM_V_ACTIVE(ao, technique, ALCHEMY)
-        #pragma include "alchemy.kernel.glsl"
-    #elif ENUM_V_ACTIVE(ao, technique, UE4AO)
-        #pragma include "ue4ao.kernel.glsl"
-    #else
-        #error Unkown AO technique!
-    #endif
-
-    result = pow(saturate(result), GET_SETTING(ao, occlusion_strength));
-    result = pow(result, 3.0);
+    ao_result = compute_ao(ivec2(gl_FragCoord.xy) * 2);
 }

@@ -72,7 +72,8 @@ uniform samplerCube DefaultEnvmap;
 out vec4 result;
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
-    return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
+    return occlusion;
+    // return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
 }
 
 // From: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
@@ -238,6 +239,7 @@ void main() {
 
 
         float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
+
 
         // Add diffuse and specular ambient term
         ambient += diffuse_ambient * occlusion + specular_ambient * specular_occlusion;

@@ -166,7 +166,7 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
             
             #ifdef RS_FADE_BORDERS
                 float fade = compute_screen_fade_factor(last_coord, RS_FADE_BORDERS);
-                weight *= fade;
+                weight *= max(0.4, fade);
             #endif
 
             RS_CTYPE last_m = textureLod(last_tex, last_coord, 0) RS_CMASK;

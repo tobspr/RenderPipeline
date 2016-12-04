@@ -26,7 +26,7 @@
 
 #version 430
 
-#define TRACK_INVALID_PIXELS 0
+#define TRACK_INVALID_PIXELS 1
 #define SKIP_SKYBOX 1
 #define SKYBOX_COLOR vec4(1)
 
