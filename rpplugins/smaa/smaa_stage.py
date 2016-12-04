@@ -35,37 +35,17 @@ class SMAAStage(RenderStage):
     """ This stage does the actual SMAA """
 
     required_inputs = []
-
+    required_pipes = ["ShadedScene", "GBuffer"]
+        
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.area_tex = None
         self.search_tex = None
-        self.use_reprojection = True
-        self._jitter_index = PTAInt.empty_array(1)
-
-    def set_jitter_index(self, idx):
-        """ Sets the current jitter index """
-        self._jitter_index[0] = idx
-
-    @property
-    def required_pipes(self):
-        pipes = ["ShadedScene", "GBuffer", "CombinedVelocity"]
-        if self.use_reprojection:
-            pipes.append("PreviousFrame::SMAAPostResolve[RGBA16]")
-        return pipes
-
     @property
     def produced_pipes(self):
-        if self.use_reprojection:
-            return {
-                "ShadedScene": self.resolve_target.color_tex,
-                "SMAAPostResolve": self.resolve_target.color_tex
-            }
-        else:
-            return {"ShadedScene": self.neighbor_target.color_tex}
+        return {"ShadedScene": self.neighbor_target.color_tex}
 
     def create(self):
-
         # Pre-detect edges (predication)
         self.predicate_target = self.create_target("SMAApredicate")
         self.predicate_target.add_color_attachment(alpha=True)
@@ -86,30 +66,17 @@ class SMAAStage(RenderStage):
         self.blend_target.set_shader_input("EdgeTex", self.edge_target.color_tex)
         self.blend_target.set_shader_input("AreaTex", self.area_tex)
         self.blend_target.set_shader_input("SearchTex", self.search_tex)
-        self.blend_target.set_shader_input("jitterIndex", self._jitter_index)
         self.blend_target.set_shader_input("PredicationTex", self.predicate_target.color_tex)
 
         # Neighbor blending
         self.neighbor_target = self.create_target("NeighborBlending")
-        self.neighbor_target.add_color_attachment(bits=16)
+        self.neighbor_target.add_color_attachment()
         self.neighbor_target.prepare_buffer()
         self.neighbor_target.set_shader_input("BlendTex", self.blend_target.color_tex)
-
-        # Resolving
-        if self.use_reprojection:
-            self.resolve_target = self.create_target("Resolve")
-            self.resolve_target.add_color_attachment(bits=16)
-            self.resolve_target.prepare_buffer()
-            self.resolve_target.set_shader_input("jitterIndex", self._jitter_index)
-
-            # Set initial textures
-            self.resolve_target.set_shader_input("CurrentTex", self.neighbor_target.color_tex)
 
     def reload_shaders(self):
         self.edge_target.shader = self.load_plugin_shader("edge_detection.frag.glsl")
         self.blend_target.shader = self.load_plugin_shader("blending_weights.frag.glsl")
         self.neighbor_target.shader = self.load_plugin_shader("neighborhood_blending.frag.glsl")
         self.predicate_target.shader = self.load_plugin_shader("predication.frag.glsl")
-        if self.use_reprojection:
-            self.resolve_target.shader = self.load_plugin_shader("resolve_smaa.frag.glsl")
         

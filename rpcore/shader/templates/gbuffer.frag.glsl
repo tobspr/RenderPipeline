@@ -97,7 +97,7 @@ void main() {
             // TODO: Might want to make the alpha testing distance configurable
             vec4 sampled_diffuse = texture(p3d_Texture0, texcoord);
             float dist_to_camera = distance(MainSceneData.camera_pos, vOutput.position);
-            float alpha_factor = mix(0.99, 0.1, saturate(dist_to_camera / 12.0));
+            float alpha_factor = mix(0.99, 0.4, saturate(dist_to_camera / 12.0));
             if (sampled_diffuse.w < alpha_factor) discard;
         #endif
     #else

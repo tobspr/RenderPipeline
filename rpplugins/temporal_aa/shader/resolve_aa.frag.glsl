@@ -32,42 +32,52 @@
 
 #define RS_MAX_CLIP_DIST 0.4
 #define RS_DISTANCE_SCALE 1.5
-#define RS_KEEP_GOOD_DURATION float(GET_SETTING(smaa, history_length))
-#define RS_KEEP_BAD_DURATION (RS_KEEP_GOOD_DURATION * 0.5)
+#define RS_KEEP_GOOD_DURATION float(GET_SETTING(temporal_aa, history_length))
+#define RS_KEEP_BAD_DURATION (RS_KEEP_GOOD_DURATION * 1.0)
 
 #pragma include "includes/temporal_resolve.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
-uniform sampler2D CurrentTex;
-uniform sampler2D Previous_SMAAPostResolve;
+uniform sampler2D ShadedScene;
+uniform sampler2D Previous_TemporalAAPostResolve;
 uniform sampler2D CombinedVelocity;
-
-uniform int jitterIndex;
 
 out vec3 result;
 
 
+vec3 clip_aabb_v3(vec3 aabb_min, vec3 aabb_max, vec3 aabb_center, vec3 q)
+{   
+    vec3 r = q - aabb_center;
+    vec3 rmax = aabb_max - aabb_center.xyz;
+    vec3 rmin = aabb_min - aabb_center.xyz;
 
-vec3 clip_aabb_v3(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q)
-{
-    // note: only clips towards aabb center (but fast!)
-    vec3 p_clip = 0.5 * (aabb_max + aabb_min);
-    vec3 e_clip = 0.5 * (aabb_max - aabb_min);
+    const float eps = 1e-8;
 
-    vec3 v_clip = q - p_clip;
-    vec3 v_unit = v_clip / e_clip;
-    vec3 a_unit = abs(v_unit);
-    float ma_unit = max3(a_unit.x, a_unit.y, a_unit.z);
+    if (r.x > rmax.x + eps)
+        r *= (rmax.x / r.x);
+    if (r.y > rmax.y + eps)
+        r *= (rmax.y / r.y);
+    if (r.z > rmax.z + eps)
+        r *= (rmax.z / r.z);
 
-    if (ma_unit > 1.0)
-        return p_clip + v_clip / ma_unit;
-    else
-        return q; // point inside aabb
+    if (r.x < rmin.x - eps)
+        r *= (rmin.x / r.x);
+    if (r.y < rmin.y - eps)
+        r *= (rmin.y / r.y);
+    if (r.z < rmin.z - eps)
+        r *= (rmin.z / r.z);
+
+    return aabb_center + r;
 }
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_texcoord();
+
+    #if DEBUG_MODE
+        result = texelFetch(ShadedScene, coord, 0).xyz;
+        return;
+    #endif
 
     // Find velocity of closest pixel to get better AA for moving objects
     const int sample_range = 2;
@@ -97,7 +107,7 @@ void main() {
     // velocity -= velocity_offset;
 
     // Get current color
-    vec3 curr_m = texelFetch(CurrentTex, coord, 0).xyz;
+    vec3 curr_m = texelFetch(ShadedScene, coord, 0).xyz;
 
     vec2 last_coord = texcoord + velocity;
     if (!in_unit_rect(last_coord)) {
@@ -108,26 +118,41 @@ void main() {
     }
 
     // Find the AABB of our direct neighbours
-    vec3 aabb_min = vec3(1);
-    vec3 aabb_max = vec3(0);
+    vec3 aabb_min = vec3(1e10);
+    vec3 aabb_max = vec3(-1e10);
+    vec3 aabb_center = vec3(0);
+    int num_samples = 0;
     for (int x = -1; x <= 1; ++x) {
         for (int y = -1; y <= 1; ++y) {
-            vec3 color = texelFetch(CurrentTex, coord + ivec2(x, y), 0).xyz;
+            // if (abs(x) + abs(y) > 1)
+            //     continue;
+            vec3 color = texelFetch(ShadedScene, coord + ivec2(x, y), 0).xyz;
+            color = rgb_to_ycgco(color);
             aabb_min = min(aabb_min, color);
             aabb_max = max(aabb_max, color);
+            aabb_center += color;
+            num_samples += 1;
         }
     }
+
+    aabb_center /= float(num_samples);
 
     vec2 one_pixel = 1.0 / SCREEN_SIZE;
     const float bbs = 1.0;
 
     // Get last frame texels
     float blend_weight = 1.0;
-    vec3 last_m = textureLod(Previous_SMAAPostResolve,  last_coord, 0).xyz;
-    vec3 last_tl = textureLod(Previous_SMAAPostResolve, last_coord + vec2(-bbs, -bbs) * one_pixel, 0).xyz;
-    vec3 last_tr = textureLod(Previous_SMAAPostResolve, last_coord + vec2(bbs, -bbs) * one_pixel, 0).xyz;
-    vec3 last_bl = textureLod(Previous_SMAAPostResolve, last_coord + vec2(-bbs, bbs) * one_pixel, 0).xyz;
-    vec3 last_br = textureLod(Previous_SMAAPostResolve, last_coord + vec2(bbs, bbs) * one_pixel, 0).xyz;
+    vec3 last_m = textureLod(Previous_TemporalAAPostResolve,  last_coord, 0).xyz;
+    vec3 last_tl = textureLod(Previous_TemporalAAPostResolve, last_coord + vec2(-bbs, -bbs) * one_pixel, 0).xyz;
+    vec3 last_tr = textureLod(Previous_TemporalAAPostResolve, last_coord + vec2(bbs, -bbs) * one_pixel, 0).xyz;
+    vec3 last_bl = textureLod(Previous_TemporalAAPostResolve, last_coord + vec2(-bbs, bbs) * one_pixel, 0).xyz;
+    vec3 last_br = textureLod(Previous_TemporalAAPostResolve, last_coord + vec2(bbs, bbs) * one_pixel, 0).xyz;
+
+    last_m = rgb_to_ycgco(last_m);
+    // last_m = clamp(last_m, aabb_min, aabb_max);
+    last_m = clip_aabb_v3(aabb_min, aabb_max, aabb_center, last_m);
+    last_m = ycgco_to_rgb(last_m);
+
 
     float neighbor_diff = length(clamp(last_tl, aabb_min, aabb_max) - last_tl)
                         + length(clamp(last_tr, aabb_min, aabb_max) - last_tr)
@@ -139,20 +164,22 @@ void main() {
         get_luminance(curr_m)), 0.0001, 15.0) * RS_MAX_CLIP_DIST;
 
     // For moving objects, decrease maximum tolerance
-    float motion_factor = mix(1.0, 0.01, saturate(length(velocity) * WINDOW_HEIGHT / 4.0));
+    float motion_factor = saturate(length(velocity) * WINDOW_HEIGHT / 2.0);
 
-    max_difference *= motion_factor;
+    // max_difference *= motion_factor;
 
-    if (neighbor_diff >= max_difference)
-        blend_weight = 0.0;
+    // if (neighbor_diff >= max_difference)
+    //     blend_weight = 0.0;
 
-    float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE) * motion_factor;
+    float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE);
 
     // Merge the sample with the current color, in case we can't pick it
     last_m = mix(curr_m, last_m, blend_weight);
 
     float weight = saturate(1.0 /
         mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
+
+    weight = mix(weight, 1.0, motion_factor * 0.5);    
 
     result = max(vec3(0.0), mix(last_m, curr_m, weight));
 

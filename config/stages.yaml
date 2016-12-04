@@ -48,6 +48,8 @@ global_stage_order:
   - ApplyCloudsStage
   - GodrayStage
   - VolumetricsStage
+
+
   - AutoExposureStage
   - ManualExposureStage
 
@@ -59,6 +61,10 @@ global_stage_order:
   # Past this point, we work on 8 bit targets
   - SMAAStage
   - FXAAStage
+
+  # Past this stage, we can not rely on the depth buffer anymore
+  - TemporalAAStage
+
   - DoFStage
   - MotionBlurStage
   - SkinShadingStage

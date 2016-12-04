@@ -5,6 +5,7 @@
 
 enabled:
     - smaa
+    - temporal_aa
     # - ao
     # - bloom
     # - clouds
@@ -173,11 +174,7 @@ overrides:
         capture_height: 500.0
 
     smaa:
-        use_reprojection: True
         smaa_quality: ultra
-        jitter_pattern: uniform4
-        history_length: 16
-        jitter_amount: 1.0
 
     ssr:
         effect_scale: 1.0
@@ -189,6 +186,11 @@ overrides:
         roughness_fade: 0.72
         skip_invalid_samples: False
         border_fade: 0.005
+
+    temporal_aa:
+        jitter_pattern: halton8
+        history_length: 8
+        jitter_amount: 0.3
 
     volumetrics:
         enable_volumetric_shadows: True

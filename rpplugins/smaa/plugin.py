@@ -31,8 +31,6 @@ from rpcore.loader import RPLoader
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .smaa_stage import SMAAStage
-from .jitters import JITTERS
-
 
 class Plugin(BasePlugin):
 
@@ -43,55 +41,8 @@ class Plugin(BasePlugin):
     version = "1.5"
 
     def on_stage_setup(self):
-        if self.get_setting("use_reprojection"):
-            self._compute_jitters()
-
         self._smaa_stage = self.create_stage(SMAAStage)
-        self._smaa_stage.use_reprojection = self.get_setting("use_reprojection")
         self._load_textures()
-
-    def on_pre_render_update(self):
-        # Apply jitter for temporal aa
-        if self.get_setting("use_reprojection"):
-            jitter_scale = self.get_setting("jitter_amount")
-            jitter = self._jitters[self._jitter_index]
-            jitter = jitter[0] * jitter_scale, jitter[1] * jitter_scale
-
-            Globals.base.camLens.set_film_offset(jitter)
-            self._smaa_stage.set_jitter_index(self._jitter_index)
-
-            # Increase jitter index
-            self._jitter_index += 1
-            if self._jitter_index >= len(self._jitters):
-                self._jitter_index = 0
-
-    def _compute_jitters(self):
-        """ Internal method to compute the SMAA sub-pixel frame offsets """
-        self._jitters = []
-        self._jitter_index = 0
-        scale = 1.0 / float(Globals.native_resolution.x)
-
-        # Reduce jittering to 35% to avoid flickering
-        # scale *= 0.35
-
-        for x, y in JITTERS[self.get_setting("jitter_pattern")]:
-            jitter_x = (x * 2 - 1) * scale * 0.5
-            jitter_y = (y * 2 - 1) * scale * 0.5
-            self._jitters.append((jitter_x, jitter_y))
-
-    @property
-    def history_length(self):
-        if self.get_setting("use_reprojection"):
-            return len(self._jitters)
-        return 1
-
-    def update_jitter_pattern(self):
-        """ Updates the jitter pattern when the setting was changed """
-        self._compute_jitters()
-
-    def on_window_resized(self):
-        """ Updates the jitter pattern when the window size was changed """
-        self._compute_jitters()
 
     def _load_textures(self):
         """ Loads all required textures """
