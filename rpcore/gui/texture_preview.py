@@ -70,7 +70,8 @@ class TexturePreview(DraggableWindow):
             if scale_f >= 1.0:
                 # Make sure we choose a fitting scale factor to avoid
                 # crushing pixels
-                scale_f = int(scale_f)
+                # scale_f = int(scale_f)
+                pass
             display_w = int(scale_f * w)
             display_h = int(scale_f * h)
         else:

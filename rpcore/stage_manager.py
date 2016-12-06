@@ -105,6 +105,7 @@ class StageManager(RPObject):
 
     def _bind_pipes_to_stage(self, stage):
         """ Sets all required pipes on a stage """
+
         for pipe in stage.required_pipes:
 
             # Check if there is an input block named like the pipe
@@ -113,8 +114,7 @@ class StageManager(RPObject):
                 continue
 
             if pipe.startswith("PreviousFrame::"):
-                # Special case: Pipes from the previous frame. We assume those
-                # pipes have the same size as the window. Could be subject to change.
+                # Special case: Pipes from the previous frame. 
                 pipe_name = pipe.split("::")[-1]
                 if "[" not in pipe_name:
                     self.error("When using PreviousFrame:: you need to specify the texture format! I.e. PreviousFrame::AmbientOcclusion[RGBA8]")
@@ -122,13 +122,19 @@ class StageManager(RPObject):
                 
                 pipe_name = pipe_name.split("[", 1)
                 pipe_type = pipe_name[-1].strip("[]")
+                pipe_resolution = "100%"
                 pipe_name = pipe_name[0]
+                pipe_handle = None
+                
+                if "," in pipe_type:
+                    pipe_type, pipe_resolution = pipe_type.split(",", 1)
 
                 if pipe_name not in self.previous_pipes:
                     pipe_tex = Image.create_2d("Prev-" + pipe_name, 0, 0, pipe_type)
                     pipe_tex.clear_image()
-                    self.previous_pipes[pipe_name] = pipe_tex
-                stage.set_shader_input("Previous_" + pipe_name, self.previous_pipes[pipe_name])
+                    self.debug("Storing history for pipe", pipe_name, "with format", pipe_type, "and dimensions")
+                    self.previous_pipes[pipe_name] = (pipe_tex, pipe_resolution)
+                stage.set_shader_input("Previous_" + pipe_name, self.previous_pipes[pipe_name][0])
                 continue
 
             elif pipe.startswith("FuturePipe::"):
@@ -197,7 +203,7 @@ class StageManager(RPObject):
         with the prefix 'Previous::' has to be stored and copied each frame. """
         if self.previous_pipes:
             self._prev_stage = UpdatePreviousPipesStage(self.pipeline)
-            for prev_pipe, prev_tex in iteritems(self.previous_pipes):
+            for prev_pipe, (prev_tex, prev_resolution) in iteritems(self.previous_pipes):
 
                 if prev_pipe not in self.pipes:
                     self.error("Attempted to use previous frame data from pipe",
@@ -206,7 +212,7 @@ class StageManager(RPObject):
 
                 # Tell the stage to transfer the data from the current pipe to
                 # the current texture
-                self._prev_stage.add_transfer(self.pipes[prev_pipe], prev_tex)
+                self._prev_stage.add_transfer(self.pipes[prev_pipe], prev_tex, prev_resolution)
             self._prev_stage.create()
             self._prev_stage.set_dimensions()
             self.stages.append(self._prev_stage)

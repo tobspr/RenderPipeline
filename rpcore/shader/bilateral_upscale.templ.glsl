@@ -32,6 +32,7 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/bilateral_params.inc.glsl"
 
 uniform sampler2D SourceTex;
 uniform GBufferData GBuffer;
@@ -52,23 +53,11 @@ uniform GBufferData GBuffer;
     #define MULTIPLIER 1
 #endif
 
-uniform sampler2D LowPrecisionNormals;
-vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
-vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
-
 out vec4 result;
 
 void main() {
     // Get sample coordinates
     ivec2 coord = ivec2(gl_FragCoord.xy);
-
-    // On the bottom left pixels, do not check neighbours, saves 25% of workload
-    // XXX: Disabled, since we get a better blur on flat surfaces without this. Anyways,
-    // branching coherenncy would be bad too.
-    // if (coord.x % 2 == 0 && coord.y % 2 == 0) {
-    //     result = texelFetch(SourceTex, coord / 2, 0);   
-    //     return;
-    // }
 
     ivec2 ss_coord = coord * MULTIPLIER;
 
@@ -86,13 +75,21 @@ void main() {
         }
     #endif
 
+    // On the bottom left pixels, do not check neighbours, saves 25% of workload
+    // XXX: Disabled, since we get a better blur on flat surfaces without this. Anyways,
+    // branching coherency is bad too.
+    // if (coord.x % 2 == 0 && coord.y % 2 == 0) {
+    //     result = texelFetch(SourceTex, coord / 2, 0);   
+    //     return;
+    // }
+
     vec3 pixel_pos = get_gbuffer_position(GBuffer, ss_coord);
     vec3 view_dir = normalize(pixel_pos - MainSceneData.camera_pos);
 
     float NxV = saturate(dot(view_dir, -mid_nrm));
 
-    const float max_nrm_diff = 0.1;
-    float max_depth_diff = mid_depth_linear / 50.0;
+    const float max_nrm_diff = max_nrm_diff_base;
+    float max_depth_diff = mid_depth_linear * max_depth_diff_base;
     max_depth_diff /= max(0.1, NxV);
 
     float weights = 0.0;

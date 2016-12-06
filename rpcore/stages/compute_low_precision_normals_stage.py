@@ -31,7 +31,7 @@ from rpcore.render_stage import RenderStage
 
 class ComputeLowPrecisionNormalsStage(RenderStage):
 
-    """ This stage computes normals from the depth buffer """
+    """ This stage computes normals and low-precision depth from the depth buffer """
 
     required_pipes = ["GBuffer"]
 
@@ -41,7 +41,7 @@ class ComputeLowPrecisionNormalsStage(RenderStage):
 
     def create(self):
         self.target = self.create_target("ComputeLowPrecisionNormals")
-        self.target.add_color_attachment(bits=(8, 8, 0, 0))
+        self.target.add_color_attachment(bits=(8, 8, 8, 8))
         self.target.prepare_buffer()
 
     def reload_shaders(self):

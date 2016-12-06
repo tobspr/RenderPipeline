@@ -26,8 +26,33 @@
 
 #version 430
 
-#define TRACK_INVALID_PIXELS 0
-#define SKIP_SKYBOX 1
-#define SKYBOX_COLOR vec4(1)
+#define USE_TIME_OF_DAY 1
+#define USE_GBUFFER_EXTENSIONS
 
-#pragma include "bilateral_upscale.templ.glsl"
+#pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/color_spaces.inc.glsl"
+
+uniform sampler2D ShadedScene;
+uniform sampler2D GodrayTex;
+
+out vec4 result;
+
+void main() {
+
+    vec2 texcoord = get_texcoord();
+    vec4 scene_result = textureLod(ShadedScene, texcoord, 0);
+
+    float godray_factor = textureLod(GodrayTex, texcoord, 0).x;
+    godray_factor *= godray_factor * 5;
+
+
+    vec3 godray_color = get_sun_color() * godray_factor * 0.09 * GET_SETTING(scattering, godrays_strength);
+    #if HAVE_PLUGIN(color_correction)
+        godray_color *= 5.5;
+    #endif
+    godray_color *= godray_color * get_sun_color() * 0.1;
+
+    scene_result.xyz = scene_result.xyz * (1 - saturate(0.0 * godray_factor)) + godray_color;
+    result = scene_result;
+}

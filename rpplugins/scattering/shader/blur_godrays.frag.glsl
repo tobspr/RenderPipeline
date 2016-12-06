@@ -26,8 +26,33 @@
 
 #version 430
 
-#define TRACK_INVALID_PIXELS 0
-#define SKIP_SKYBOX 1
-#define SKYBOX_COLOR vec4(1)
+#pragma optionNV (unroll all)
 
-#pragma include "bilateral_upscale.templ.glsl"
+#define USE_TIME_OF_DAY 1
+#define USE_GBUFFER_EXTENSIONS
+
+#pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/gaussian_weights.inc.glsl"
+
+uniform sampler2D SourceTex;
+uniform ivec2 direction;
+
+out float result;
+
+void main() {
+
+    vec2 texcoord = get_half_native_texcoord();
+    const vec2 pixel_size = 2.0 / SCREEN_SIZE;
+
+    const int num_samples = 6;
+
+    float accum = 0.0;
+    for (int i = 0; i < num_samples; ++i) {
+        float weight = opt_gaussian_weights_6[i];
+        float offset = opt_gaussian_offsets_6[i];
+        accum += textureLod(SourceTex, texcoord + pixel_size * offset * direction, 0).x * weight;
+    }
+
+    result = accum;
+
+}

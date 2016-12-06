@@ -40,7 +40,7 @@ const float sample_radius = GET_SETTING(ao, alchemy_sample_radius);
 float max_dist = GET_SETTING(ao, alchemy_max_distance);
 float accum = 0.0;
 int accum_count = 0;
-vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.5;
+vec2 offset_scale = pixel_size * sample_radius * 0.5;
 
 
 START_ITERATE_SEQUENCE(ao, alchemy_sequence, vec2 offset)

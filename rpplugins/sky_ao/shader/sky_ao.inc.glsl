@@ -50,7 +50,7 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 
 
     ivec2 seed = tc % 4 + 5;
     if (quality == SKYAO_HIGH_QUALITY) {
-        seed.x += 10 + 734 * (MainSceneData.frame_index % max(1, GET_SETTING(ao, clip_length) / 4));
+        seed.x += 10 + 734 * (MainSceneData.frame_index % max(1, GET_SETTING(ao, clip_length)));
     }
     
     float noise_amount = GET_SETTING(sky_ao, noise_amount);

@@ -103,3 +103,21 @@ vec3 unpack_normal_octahedron(vec2 packed_nrm) {
 vec3 unpack_normal_unsigned(vec2 packed_nrm) {
     return unpack_normal_octahedron(packed_nrm * 2 - 1);
 }
+
+// XXX: Probably belongs into its own header
+vec2 pack_depth(float d) {
+    float x = d * 1000.0;
+    float fx = fract(x);    
+    return vec2(fx, (x - fx) / 1000.0 ).xy;
+}
+
+float unpack_depth(vec2 p) {
+    return p.x / 1000.0 + p.y;
+}
+
+float quantize_depth(float d) {
+    vec2 data = pack_depth(d);
+    data.x = int(data.x * 255) / 255.0;
+    data.y = int(data.y * 255) / 255.0;
+    return unpack_depth(data);
+}

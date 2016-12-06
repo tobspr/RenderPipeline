@@ -33,7 +33,7 @@ class PSSMStage(RenderStage):
     """ This stage uses the PSSM Shadow map to render the shadows """
 
     required_inputs = []
-    required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBuffer", "PSSMShadowAtlasPCF"]
+    required_pipes = ["ShadedScene", "PSSMShadowAtlas", "GBuffer", "PSSMShadowAtlasPCF", "ScatteringSunColor"]
 
     @property
     def produced_pipes(self):
@@ -46,7 +46,7 @@ class PSSMStage(RenderStage):
         self.target_shadows.prepare_buffer()
         self.target_shadows.color_tex.set_clear_color(Vec4(0))
 
-        self.target = self.create_target("ApplyPSSMShadows")
+        self.target = self.create_target("ApplySunShading")
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
 

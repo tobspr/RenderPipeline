@@ -47,7 +47,7 @@ START_ITERATE_SEQUENCE(ao, ssvo_sequence, vec2 offset)
 
     offset = mix(offset, noise_vec.xy, 0.3);
 
-    vec2 offc = offset * sphere_radius * 5.0 * kernel_scale;
+    vec2 offc = offset * sphere_radius * 5.0;
 
     // Use paired samples, this enables us to hide depth buffer discontinuities
     vec2 offcoord_a = texcoord + offc;
@@ -96,5 +96,7 @@ END_ITERATE_SEQUENCE();
 
 NORMALIZE_SEQUENCE(ao, ssvo_sequence, accum);
 
+// Normalize kernel to match up with other techniques
+accum = accum * 0.5 + 0.5;
 
 result = accum;

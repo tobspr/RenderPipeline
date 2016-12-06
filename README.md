@@ -21,6 +21,9 @@ You can click on the images to enlarge them. Besides of that, you can find many 
 **Forest**
 <img src="http://i.imgur.com/fD88ZMU.png" />
 
+**Experimental Godrays**
+<img src="http://i.imgur.com/XAL5ZXS.png" />
+
 **Material demo**
 <img src="http://i.imgur.com/M5YtvYR.png" />
 

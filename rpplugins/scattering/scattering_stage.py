@@ -34,15 +34,19 @@ class ScatteringStage(RenderStage):
     """ This stage uses the precomputed data to display the scattering """
 
     required_pipes = ["ShadedScene", "GBuffer"]
-    required_inputs = ["DefaultSkydome"]
+    required_inputs = ["DefaultSkydome", "DefaultSkydomeOverlay"]
 
     @property
     def produced_pipes(self):
-        return {"ShadedScene": self.target.color_tex}
+        return {
+            "ScatteringColor": self.target.color_tex,
+            "ScatteringSunColor": self.target.aux_tex[0],
+            }
 
     def create(self):
         self.target = self.create_target("ApplyScattering")
-        self.target.add_color_attachment(bits=16, alpha=True)
+        self.target.add_color_attachment(bits=16)
+        self.target.add_aux_attachments(bits=16, count=1)
         self.target.prepare_buffer()
 
     def reload_shaders(self):

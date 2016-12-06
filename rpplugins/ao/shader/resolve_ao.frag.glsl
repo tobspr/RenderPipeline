@@ -28,35 +28,46 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-
-#define RS_SKIP_SKYBOX 1
-#define RS_SKYBOX_COLOR vec2(1.0)
-#define RS_KEEP_GOOD_DURATION float(GET_SETTING(ao, clip_length) * 2)
-#define RS_USE_POSITION_TECHNIQUE 1
-#define RS_FADE_BORDERS GET_SETTING(ao, border_fade)
-#define RS_DISTANCE_SCALE 0.05
-#define RS_CTYPE vec2
-#define RS_CMASK .xy
-
-#pragma include "includes/temporal_resolve.inc.glsl"
+#define USE_GBUFFER_EXTENSIONS
+#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/normal_packing.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
 
 uniform sampler2D CurrentTex;
 uniform sampler2D CombinedVelocity;
-uniform sampler2D Previous_AmbientOcclusion;
+uniform sampler2D Previous_ResolvedAO;
+uniform sampler2D Previous_SceneDepth;
 
-out RS_CTYPE result;
+out vec2 result;
 
 void main() {
-    vec2 texcoord = get_texcoord();
+    ivec2 coord = ivec2(gl_FragCoord.xy);
 
+    float curr_depth = get_depth_at(coord * 2);
+    vec2 velocity = texelFetch(CombinedVelocity, coord * 2, 0).xy;
 
-    #if GET_SETTING(ao, clip_length) <= 1
-        // No reprojection needed without temporal ao
-        result = textureLod(CurrentTex, texcoord, 0) RS_CMASK;
-    #else
-        vec2 velocity = textureLod(CombinedVelocity, texcoord, 0).xy;
-        vec2 last_coord = texcoord + velocity;
-        result = resolve_temporal(
-            CurrentTex, Previous_AmbientOcclusion, texcoord, last_coord);
-    #endif
+    vec2 curr_coord = get_half_texcoord();
+    vec2 last_native_coord = get_half_native_texcoord() + velocity;
+    vec2 last_coord = curr_coord + velocity;
+    // last_coord = last_native_coord;
+
+    // XXX: use truncate coordinate maybe
+    vec2 last_data = textureLod(Previous_ResolvedAO, last_native_coord, 0).xy;
+    float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
+
+    vec2 curr_ao = textureLod(CurrentTex, curr_coord, 0).xy;
+
+    vec3 last_pos = calculate_surface_pos(last_depth, vec2(last_coord), MainSceneData.last_inv_view_proj_mat_no_jitter);
+    vec3 curr_pos = calculate_surface_pos(curr_depth, vec2(curr_coord), MainSceneData.inv_view_proj_mat_no_jitter);
+
+    const float max_dist = 0.05;
+    float distance_factor = step(max_dist * max_dist, distance_squared(last_pos, curr_pos));
+
+    float weight = mix(0.9, 0.0, distance_factor);
+
+    if (!in_unit_rect(last_coord)) {
+        weight = 0.0;
+    }
+
+    result.xy = mix(curr_ao, last_data.xy, weight);
 }

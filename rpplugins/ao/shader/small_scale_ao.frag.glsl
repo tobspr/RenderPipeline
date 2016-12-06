@@ -60,13 +60,15 @@ void main() {
     vec2 prev_result = textureLod(AOResult, texcoord, 0).xy;
 
     // Fade out small scale ao at great distances
-    if (pixel_z > 150.0) {
+    if (pixel_z > 50.0) {
         result = prev_result;
         return;
     }
 
     // Compute noise components
     float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
+    t = 0; // XXX
+    
     float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
     mat2 rotation_mat = make_rotate_mat2(rotation_factor);
     float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.05 * t)));
@@ -77,12 +79,13 @@ void main() {
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
 
-    float kernel_scale = 10.0 / pixel_z;
-    // float kernel_scale = 0.6;
+    // float kernel_scale = 10.0 / pixel_z;
+    float kernel_scale = 0.8;
     const float sample_radius = 6.0;
 
     const int num_samples = 4;
-    const float bias = 0.0005 + 0.01 / kernel_scale;
+    const float bias = 0.0005 + 0.001 * pixel_z;
+
     float max_range = GET_SETTING(ao, sc_occlusion_max_dist) * 5;
 
     float sample_offset = sample_radius * pixel_size.x * 5 * GET_SETTING(ao, sc_occlusion_range);
@@ -132,8 +135,16 @@ void main() {
     accum /= max(0.01, range_accum);
     accum = 1 - accum;
     accum = pow(accum, 3 * GET_SETTING(ao, sc_occlusion_strength));
-    prev_result.x *= accum;
-    // prev_result.x = accum;
+
+
+    #if !MODE_ACTIVE(OCCLUSION)
+        // prev_result.x *= accum;
+    #endif
+
+    #if MODE_ACTIVE(SC_OCCLUSION)
+        prev_result.x = accum;
+    #endif
+
 
     // Fade out AO at obligue angles
     // vec3 view_dir = normalize(pixel_view_pos);

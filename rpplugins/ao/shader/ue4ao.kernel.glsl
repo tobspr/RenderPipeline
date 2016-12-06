@@ -42,7 +42,7 @@ const float max_distance = GET_SETTING(ao, ue4ao_max_distance);
 float accum = 0.0;
 float accum_count = 0.0;
 
-vec2 offset_scale = pixel_size * sample_radius * kernel_scale * 0.4;
+vec2 offset_scale = pixel_size * sample_radius * 0.4;
 
 START_ITERATE_SEQUENCE(ao, ue4ao_sample_sequence, vec2 offset)
 

@@ -40,7 +40,10 @@ void main() {
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
     #if !DEBUG_MODE
-        scene_color = rgb_to_srgb(scene_color);
+
+        #if !HAVE_PLUGIN(color_correction)
+            scene_color = rgb_to_srgb(scene_color);
+        #endif
         scene_color = saturate(scene_color);
 
         // Apply dithering to prevent banding, since we are converting from 16 bit

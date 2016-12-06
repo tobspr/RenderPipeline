@@ -137,6 +137,8 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         self.lbl_color_preview.setStyleSheet("background: rgb({}, {}, {});".format(
             int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)))
 
+        self.slider_specular.setEnabled(not self.material.metallic)
+
         # Shading model
         self._update_shading_model()
 
@@ -162,6 +164,7 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         # Shading model
         self.material.shading_model = self.cb_shading_model.currentIndex()
 
+
         self.update_ui()
         self.send_update()
 
@@ -179,7 +182,6 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
 
         # Metallics
         self.cb_metallic.setChecked(self.material.metallic)
-        self.slider_specular.setEnabled(not self.material.metallic)
 
         # Rest of sliders
         for slider, lbl, start, end, prop in self.sliders:

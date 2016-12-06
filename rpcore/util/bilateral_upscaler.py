@@ -38,10 +38,21 @@ class BilateralUpscaler(RPObject):
     # definition in the fillin shader
     ROW_WIDTH = 512
 
-    def __init__(self, parent_stage, halfres=False, source_tex=None, name="", percentage=0.05, bits=(8, 8, 0, 0)):
+    def __init__(self, parent_stage, halfres=False, source_tex=None, name="", percentage=0.05, bits=(8, 8, 0, 0), fillin=True):
         """ Creates a new upscaler with the given name. Percentage controls
         the maximum amount of invalid pixels which can be processed, for example
-        a value of 0.05 means that 5% of all pixels may be invalid. """
+        a value of 0.05 means that 5% of all pixels may be invalid.
+        
+        Parameters:
+            parent_stage: Stage which contains the upscaler
+            halfres: Whether to upscale from quarte to half resolution, instead of
+                     half to full resolution
+            source_tex: The texture to upscale
+            name: Name, will be visible in pstats
+            percentage: If <fillin> is True, controls how many pixels (percentage) may be invalid.
+            bits: Type of the textures
+            filin: Wheter to create a second pass which fills in pixels which could not get
+                   resolved during the bilateral upscale pass """
         RPObject.__init__(self)
         self.name = name
         self.halfres = halfres
@@ -49,14 +60,16 @@ class BilateralUpscaler(RPObject):
         self.percentage = percentage
         self.source_tex = source_tex
         self.bits = bits
+        self.fillin = fillin
         self._prepare_textures()
         self._prepare_target()
 
     def _prepare_textures(self):
         """ Prepares all required textures """
-        self.counter = Image.create_counter(self.name + ":BadPixelsCounter")
-        self.counter.set_clear_color(Vec4(0))
-        self.databuffer = Image.create_buffer(self.name + ":BadPixelsData", 1, "R32I")
+        if self.fillin:
+            self.counter = Image.create_counter(self.name + ":BadPixelsCounter")
+            self.counter.set_clear_color(Vec4(0))
+            self.databuffer = Image.create_buffer(self.name + ":BadPixelsData", 1, "R32I")
     
     def _prepare_target(self):
         """ Prepares all required render targets """
@@ -64,34 +77,40 @@ class BilateralUpscaler(RPObject):
         self.target_upscale.size = "50%" if self.halfres else "100%"
         self.target_upscale.add_color_attachment(self.bits)
         self.target_upscale.prepare_buffer()
-        self.target_upscale.set_shader_input("InvalidPixelCounter", self.counter)
-        self.target_upscale.set_shader_input("InvalidPixelBuffer", self.databuffer)
         self.target_upscale.set_shader_input("SourceTex", self.source_tex)
 
-        self.target_fillin = self.parent_stage.create_target(self.name + ":Fillin")
-        self.target_fillin.size = 0, 0
-        self.target_fillin.prepare_buffer()
-        self.target_fillin.set_shader_input("pixel_multiplier", 2 if self.halfres else 1)
-        self.target_fillin.set_shader_input("InvalidPixelCounter", self.counter)
-        self.target_fillin.set_shader_input("InvalidPixelBuffer", self.databuffer)
-        self.target_fillin.set_shader_input("DestTex", self.target_upscale.color_tex)
+        if self.fillin:
+            self.target_upscale.set_shader_input("InvalidPixelCounter", self.counter)
+            self.target_upscale.set_shader_input("InvalidPixelBuffer", self.databuffer)
+
+            self.target_fillin = self.parent_stage.create_target(self.name + ":Fillin")
+            self.target_fillin.size = 0, 0
+            self.target_fillin.prepare_buffer()
+            self.target_fillin.set_shader_input("pixel_multiplier", 2 if self.halfres else 1)
+            self.target_fillin.set_shader_input("InvalidPixelCounter", self.counter)
+            self.target_fillin.set_shader_input("InvalidPixelBuffer", self.databuffer)
+            self.target_fillin.set_shader_input("DestTex", self.target_upscale.color_tex)
 
     @property
     def result_tex(self):
         """ Returns the final upscaled texture """
         return self.target_upscale.color_tex
 
-    def set_shaders(self, upscale_shader, fillin_shader):
+    def set_shaders(self, upscale_shader, fillin_shader=None):
         """ Sets all required shaders """
         self.target_upscale.shader = upscale_shader
-        self.target_fillin.shader = fillin_shader
+
+        if self.fillin:
+            self.target_fillin.shader = fillin_shader
         
     def set_dimensions(self):
         """ Adapts the targets to the current resolution """
-        pixels = max(1, int(Globals.resolution.x * Globals.resolution.y * self.percentage))
-        self.databuffer.setup_buffer(pixels, "R32I")
-        self.target_fillin.size = self.ROW_WIDTH, pixels // self.ROW_WIDTH
+        if self.fillin:
+            pixels = max(1, int(Globals.resolution.x * Globals.resolution.y * self.percentage))
+            self.databuffer.setup_buffer(pixels, "R32I")
+            self.target_fillin.size = self.ROW_WIDTH, pixels // self.ROW_WIDTH
 
     def update(self):
         """ Updates all targets and buffers """
-        self.counter.clear_image()
+        if self.fillin:
+            self.counter.clear_image()

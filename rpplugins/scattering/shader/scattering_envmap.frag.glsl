@@ -46,17 +46,14 @@ void main() {
 
     // Store horizon
     float horizon = view_vector.z;
-    float sky_clip = 0.0;
 
     vec3 orig_view_vector = view_vector;
-    view_vector.z = max(view_vector.z, 0.14);
+    view_vector.z = max(view_vector.z, 0.0);
 
     // Get inscattered light
-    vec3 inscattered_light =
-        DoScattering(view_vector * 1e10, view_vector, sky_clip) *
-        TimeOfDay.scattering.sun_intensity;
+    vec3 result_scattering = vec3(0);
+    vec3 result_sun_color = vec3(0);
+    do_scattering(view_vector * 1e10, view_vector, result_scattering, result_sun_color);
 
-    inscattered_light = get_merged_scattering(orig_view_vector, inscattered_light);
-
-    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(inscattered_light, 1.0));
+    imageStore(DestCubemap, ivec3(clamped_coord, face), vec4(result_scattering, 1.0));
 }

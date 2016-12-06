@@ -32,48 +32,40 @@ from rpcore.util.bilateral_upscaler import BilateralUpscaler
 class AOStage(RenderStage):
 
     required_inputs = []
-    required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::AmbientOcclusion[RG8]",
-                      "CombinedVelocity", "PreviousFrame::SceneDepth[R32]", "LowPrecisionNormals"]
+    required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::ResolvedAO[RG8,50%]",
+                      "CombinedVelocity", "LowPrecisionNormals", "PreviousFrame::SceneDepth[R32I]"]
 
     @property
     def produced_pipes(self):
-        return {"AmbientOcclusion": self.target_resolve.color_tex}
-
+        return {
+            "AmbientOcclusion": self.target_detail_ao.color_tex if self.enable_small_scale_ao else self.upscaler.result_tex,
+            "ResolvedAO": self.target_resolve.color_tex
+            }
     def create(self):
 
-        # XXX: Use R8 when not using sky ao
+        # XXX: Use RG8 when not using sky ao
         ao_bits = (8, 8, 0, 0)
-        
 
-        self.target = self.create_target("Sample")
+        # Target to compute the initial ao
+        self.target = self.create_target("SampleAO")
         self.target.size = "50%"
         self.target.add_color_attachment(bits=ao_bits)
         self.target.prepare_buffer()
 
-        self.upscaler = BilateralUpscaler(
-            self,
-            halfres=False,
-            source_tex=self.target.color_tex,
-            name=self.stage_id + ":Upscale",
-            percentage=0.05,
-            bits=ao_bits
-        )
-
-        # self.target_upscale = self.create_target("Upscale")
-        # self.target_upscale.add_color_attachment(bits=ao_bits)
-        # self.target_upscale.prepare_buffer()
-
-        # self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-        # self.target_upscale.set_shader_input("skyboxColor", Vec4(1))
-        # self.target_upscale.set_shader_input("skipSkybox", True)
+        # Construct the temporal resolve target
+        self.target_resolve = self.create_target("ResolveAO")
+        self.target_resolve.size = "50%"
+        self.target_resolve.add_color_attachment(bits=ao_bits)
+        self.target_resolve.prepare_buffer()
+        self.target_resolve.set_shader_input("CurrentTex", self.target.color_tex)
 
         self.debug("Blur quality is", self.quality)
 
-        # Low
-        pixel_stretch = 2.0
-        blur_passes = 1
-
-        if self.quality == "MEDIUM":
+        if self.quality == "LOW":
+            # pixel_stretch = 2.0
+            pixel_stretch = 1.0
+            blur_passes = 1
+        elif self.quality == "MEDIUM":
             pixel_stretch = 1.0
             blur_passes = 2
         elif self.quality == "HIGH":
@@ -82,46 +74,44 @@ class AOStage(RenderStage):
         elif self.quality == "ULTRA":
             pixel_stretch = 1.0
             blur_passes = 5
+        else:
+            self.fatal("Unkown blur quality")
 
+        # Create N blur passes (each horizontal/vertical) which smooth out the result 
         self.blur_targets = []
-
-        current_tex = self.upscaler.result_tex
+        current_tex = self.target_resolve.color_tex
 
         for i in range(blur_passes):
-            last_pass = i == blur_passes - 1
-            if last_pass and self.enable_small_scale_ao:                
-                self.target_detail_ao = self.create_target("DetailAO")
-                self.target_detail_ao.add_color_attachment(bits=ao_bits)
-                self.target_detail_ao.prepare_buffer()
-                self.target_detail_ao.set_shader_input("AOResult", current_tex)
-                current_tex = self.target_detail_ao.color_tex
 
-            target_blur_v = self.create_target("BlurV-" + str(i))
-            target_blur_v.add_color_attachment(bits=ao_bits)
-            target_blur_v.prepare_buffer()
+            for name, direction in [("V", LVecBase2i(0, 1)), ("H", LVecBase2i(1, 0))]:
+                target_blur = self.create_target("AOBlur" + name + "-" + str(i))
+                target_blur.add_color_attachment(bits=ao_bits)
+                target_blur.size = "50%"
+                target_blur.prepare_buffer()
+                target_blur.set_shader_input("SourceTex", current_tex)
+                target_blur.set_shader_input("blur_direction", direction)
+                target_blur.set_shader_input("pixel_stretch", pixel_stretch)
 
-            target_blur_h = self.create_target("BlurH-" + str(i))
-            target_blur_h.add_color_attachment(bits=ao_bits)
-            target_blur_h.prepare_buffer()
+                current_tex = target_blur.color_tex
+                self.blur_targets.append(target_blur)
 
-            target_blur_v.set_shader_input("SourceTex", current_tex)
-            target_blur_h.set_shader_input("SourceTex", target_blur_v.color_tex)
+        # Upscale from half to full-resolution
+        self.upscaler = BilateralUpscaler(
+            self,
+            halfres=False,
+            source_tex=current_tex,
+            name=self.stage_id + ":Upscale",
+            percentage=0.05,
+            bits=ao_bits,
+            fillin=False
+        )
 
-            target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
-            target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
-
-            if last_pass and self.enable_small_scale_ao:
-                pixel_stretch *= 0.5
-            target_blur_v.set_shader_input("pixel_stretch", pixel_stretch)
-            target_blur_h.set_shader_input("pixel_stretch", pixel_stretch)
-
-            current_tex = target_blur_h.color_tex
-            self.blur_targets += [target_blur_v, target_blur_h]
-
-        self.target_resolve = self.create_target("ResolveAO")
-        self.target_resolve.add_color_attachment(bits=ao_bits)
-        self.target_resolve.prepare_buffer()
-        self.target_resolve.set_shader_input("CurrentTex", current_tex)
+        # Optionally compute small scale (detailed) ao
+        if self.enable_small_scale_ao:
+            self.target_detail_ao = self.create_target("DetailAO")
+            self.target_detail_ao.add_color_attachment(bits=ao_bits)
+            self.target_detail_ao.prepare_buffer()
+            self.target_detail_ao.set_shader_input("AOResult", self.upscaler.result_tex)
 
 
     def update(self):
@@ -133,12 +123,11 @@ class AOStage(RenderStage):
     def reload_shaders(self):
         self.target.shader = self.load_plugin_shader("ao_sample.frag.glsl")
         self.upscaler.set_shaders(
-            upscale_shader=self.load_plugin_shader("upscale_ao.frag.glsl"),
-            fillin_shader=self.load_plugin_shader("fillin_ao.frag.glsl"),
+            upscale_shader=self.load_plugin_shader("upscale_ao.frag.glsl")
         )
 
         blur_shader = self.load_plugin_shader(
-            "/$$rp/shader/bilateral_blur.frag.glsl")
+            "/$$rp/shader/bilateral_halfres_blur.frag.glsl")
 
         for target in self.blur_targets:
             target.shader = blur_shader

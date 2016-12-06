@@ -33,48 +33,39 @@
 #pragma include "includes/color_spaces.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
 
-uniform sampler2D ShadedScene;
-out vec3 result;
-
+uniform sampler2D SunMask;
+flat in vec2 sun_pos_tc;
+flat in float godray_factor;
+out float result;
 
 void main() {
-    vec2 texcoord = get_texcoord();
-    Material m = unpack_material(GBuffer);
-
-    // compute sun position on screen
-    // TODO: could move to vertex shader
-    vec3 sun_vector = get_sun_vector();
-    vec3 sun_pos = sun_vector * 1e5;
-    vec4 sun_proj = MainSceneData.view_proj_mat_no_jitter * vec4(sun_pos, 1);
-    sun_proj.xyz /= sun_proj.w;
-    if (sun_proj.w < 0.0) {
-        result = textureLod(ShadedScene, texcoord, 0).xyz;
-        return;
-    }
-    sun_proj.xy = sun_proj.xy * 0.5 + 0.5;
+    vec2 texcoord = get_half_texcoord();
 
     // raymarch to sun and collect .. whatever
-    float jitter = rand(texcoord) * 0.9;
+    int history = GET_SETTING(scattering, godrays_resolve_history);
+    float time_seed = (MainSceneData.frame_index % history) / float(history);
 
-    const int num_samples = 32;
-    vec3 accum = vec3(0);
+    float jitter = rand(texcoord + time_seed);
+
+    vec2 diff_vec = abs(sun_pos_tc - texcoord);
+    float d = length(diff_vec * vec2(1.0, ASPECT_RATIO));
+
+    int num_samples = clamp(int(d * 700.0), 16, GET_SETTING(scattering, godrays_max_samples));
+    const float fade_factor = 20.0;
+
+    float accum = 0.0;
+
     for (int i = 0; i < num_samples; ++i) {
         float t = (i + jitter) / float(num_samples - 1);
+        vec2 sample_coord = mix(texcoord, sun_pos_tc, t);
 
-        vec2 sample_coord = mix(texcoord, sun_proj.xy, pow(t, 1.0));
-        vec3 sample_data = textureLod(ShadedScene, sample_coord, 0).xyz;
-
-        // float weight = step(get_luminance(sample_data), 1.0);
-        float weight = step(1.0, get_luminance(sample_data));
-        // float weight = 1.0;
-        accum += sample_data * weight * saturate(5 * (1 - t)) * 1;
-        // accum += sample_data * weight;
+        float sample_data = textureLod(SunMask, sample_coord, 0).x;
+        accum += sample_data * saturate(fade_factor * (1 - t));
     }
 
     accum /= num_samples;
-    accum *= 0.001;
-
-    accum += textureLod(ShadedScene, texcoord, 0).xyz;
-    result = vec3(accum);
+    accum = pow(accum, 0.5);
+    accum = saturate(accum) * godray_factor;
+    result = accum;
 
 }

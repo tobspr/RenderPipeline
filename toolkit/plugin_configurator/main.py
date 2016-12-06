@@ -31,6 +31,7 @@ from __future__ import print_function
 import os
 import sys
 import time
+import contextlib
 from threading import Thread
 from functools import partial
 
@@ -54,19 +55,18 @@ from rpcore.util.network_communication import NetworkCommunication  # noqa
 from rpcore.mount_manager import MountManager  # noqa
 
 
+
 class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
     """ Interface to change the plugin settings """
 
     def __init__(self):
-        
-
-        # Init mounts
         self._mount_mgr = MountManager(None)
         self._mount_mgr.mount()
 
         self._plugin_mgr = PluginManager(None)
         self._plugin_mgr.requires_daytime_settings = False
+        self._plugin_mgr.load_anyways = True
 
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -98,6 +98,14 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
         update_thread = Thread(target=self.update_thread, args=())
         update_thread.start()
+
+
+    @contextlib.contextmanager
+    def restore_scrolling(self):
+        """ Restores the scrollbar offset """
+        val = self.table_plugin_settings.verticalScrollBar().value()
+        yield
+        self.table_plugin_settings.verticalScrollBar().setValue(val)
 
     def closeEvent(self, event):  # noqa
         event.accept()
@@ -135,8 +143,69 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         plugin_id = item._plugin_id
         state = item.checkState() == Qt.Checked
         self._plugin_mgr.set_plugin_enabled(plugin_id, state)
+
+
         self._rewrite_plugin_config()
         self._show_restart_hint()
+        self._check_requirements(plugin_id, state)
+
+    def _check_requirements(self, plugin_id, enabled):
+        """ When a plugin is disabled, checks if any dependent plugins are
+        still enabled, when it is enabled, checks if any dependent plugins are
+        disabled """
+
+        instance = self._plugin_mgr.instances[plugin_id]
+        # required_plugins = instance.required_plugins
+
+        if not enabled:
+            # When this plugin just got disabled, make sure all plugins which
+            # depend on this plugin are also disabled
+            bad_plugins = []
+            for other_plugin_id, other_instance in iteritems(self._plugin_mgr.instances):
+                if other_plugin_id != plugin_id and plugin_id in other_instance.required_plugins:
+                    # This plugin depends on the current plugin, check if its disabled
+                    if self._plugin_mgr.is_plugin_enabled(other_plugin_id):
+                        bad_plugins.append(other_plugin_id)
+
+            if bad_plugins:
+                msg = "You are about to disable the '" + instance.name + "' plugin, but the following plugins still depend on it:\n\n"
+                for pid in bad_plugins:
+                    msg += " - " + self._plugin_mgr.instances[pid].name + "\n"
+                msg += "\nWould you like to also disable those plugins?"
+                reply = QMessageBox.question(self, "Warning", msg, QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    print("Disabling", bad_plugins)
+                    for pid in bad_plugins:
+                        self._plugin_mgr.set_plugin_enabled(pid, False)
+
+                    self._rewrite_plugin_config()
+                    self._load_plugin_list()
+                    return
+        else:
+            # When this plugin just got enabled, check if all requirements are satisfied
+            bad_plugins = []
+            for req_plugin_id in instance.required_plugins:
+                if not self._plugin_mgr.is_plugin_enabled(req_plugin_id):
+                    bad_plugins.append(req_plugin_id)
+
+            if bad_plugins:
+                msg = "You are about to enable the '" + instance.name + "' plugin, but it depends on the following disabled plugins:\n\n"
+                for pid in bad_plugins:
+                    msg += " - " + self._plugin_mgr.instances[pid].name + "\n"
+                msg += "\nWould you like to also enable those plugins?"
+                reply = QMessageBox.question(self, "Warning", msg, QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    print("Enabling", bad_plugins)
+                    for pid in bad_plugins:
+                        self._plugin_mgr.set_plugin_enabled(pid, True)
+
+                    self._rewrite_plugin_config()
+                    self._load_plugin_list()
+                    return
+
+
 
     def on_plugin_selected(self):
         """ Gets called when a plugin got selected in the plugin list """
@@ -275,7 +344,6 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
             btn_show_info.setMaximumSize(QSize(24, 24))
             btn_show_info.setToolTip("Show description")
 
-
             qt_connect(btn_show_info, "clicked", partial(self._show_setting_desc, handle.label, handle.description))
             actions_layout.addWidget(btn_show_info)
 
@@ -283,10 +351,9 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
     def _reset_setting(self, setting_id, handle):
         """ Resets a given setting """
-        handle.value = handle.default
-        self._do_update_setting(setting_id, handle.default, force_redraw=True)
-
-
+        with self.restore_scrolling():
+            handle.value = handle.default
+            self._do_update_setting(setting_id, handle.default, force_redraw=True)
 
     def _show_setting_desc(self, label, description):
         """ Shows the description of a given setting """
@@ -321,7 +388,8 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
         # Update GUI, but only in case of enum and bool values, since they can trigger
         # display conditions:
         if force_redraw or setting_handle.type == "enum" or setting_handle.type == "bool":
-            self._render_current_settings()
+            with self.restore_scrolling():
+                self._render_current_settings()
 
     def _on_setting_bool_changed(self, setting_id, value):
         self._do_update_setting(setting_id, value == Qt.Checked)

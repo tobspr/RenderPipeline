@@ -31,6 +31,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/gaussian_weights.inc.glsl"
+#pragma include "includes/bilateral_params.inc.glsl"
 
 uniform ivec2 blur_direction;
 uniform sampler2D SourceTex;
@@ -46,25 +47,21 @@ float get_lin_z(ivec2 ccoord) {
     return get_linear_z_from_z(get_gbuffer_depth(GBuffer, ccoord));
 }
 
-
-uniform sampler2D LowPrecisionNormals;
-vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
-vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
-
-
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     ivec2 screen_coord = coord * MULTIPLIER;
 
-    // result = texelFetch(SourceTex, coord, 0);
-    // return;
+    #if 0
+        result = texelFetch(SourceTex, coord, 0);
+        return;
+    #endif
 
     // Store accumulated color
     vec4 accum = vec4(0);
     float accum_w = 0.0;
 
     // Amount of samples, don't forget to change the weights array in case you change this.
-    const int blur_size = 7;
+    const int blur_size = 5;
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_normal(screen_coord);
@@ -75,8 +72,8 @@ void main() {
         return;
     }
 
-    const float max_nrm_diff = 0.1;
-    float max_depth_diff = pixel_depth / 520.0;
+    const float max_nrm_diff = max_nrm_diff_base;
+    float max_depth_diff = pixel_depth * max_depth_diff_base;
 
     // Increase maximum depth difference at obligue angles, to avoid artifacts
     vec3 pixel_pos = get_gbuffer_position(GBuffer, screen_coord);
@@ -94,12 +91,12 @@ void main() {
 
     // Blur to the right
     for (int i = -blur_size + 1; i < blur_size; ++i) {
-        ivec2 offcoord = coord + i * real_direction * MULTIPLIER;
+        ivec2 offcoord = coord + i * real_direction * 2;
         vec4 sampled = texelFetch(SourceTex, offcoord, 0);
         vec3 nrm = get_normal(offcoord * MULTIPLIER);
         float depth = get_lin_z(offcoord * MULTIPLIER);
 
-        float weight = gaussian_weights_7[abs(i)];
+        float weight = gaussian_weights_5[abs(i)];
         float depth_diff = abs(depth - pixel_depth) > max_depth_diff ? 0.0 : 1.0;
         weight *= depth_diff;
 

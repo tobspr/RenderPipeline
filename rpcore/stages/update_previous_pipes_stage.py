@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+from __future__ import division
+
 from direct.stdpy.file import open
 
 from rpcore.render_stage import RenderStage
@@ -44,12 +46,10 @@ class UpdatePreviousPipesStage(RenderStage):
         RenderStage.__init__(self, pipeline)
         self._transfers = []
 
-    def add_transfer(self, from_tex, to_tex):
+    def add_transfer(self, from_tex, to_tex, resolution):
         """ Adds a new texture which should be copied from "from_tex" to
-        "to_tex". This should be called before the stage gets constructed.
-        The source texture is expected to have the same size as the render
-        resolution. """
-        self._transfers.append((from_tex, to_tex))
+        "to_tex". This should be called before the stage gets constructed. """
+        self._transfers.append((from_tex, to_tex, resolution))
 
     def create(self):
         self.debug("Creating previous pipes stage ..")
@@ -57,15 +57,21 @@ class UpdatePreviousPipesStage(RenderStage):
         self._target.prepare_buffer()
 
         # Set inputs
-        for i, (from_tex, to_tex) in enumerate(self._transfers):  # pylint: disable=unused-variable
+        for i, (from_tex, to_tex, _) in enumerate(self._transfers):  # pylint: disable=unused-variable
             self._target.set_shader_input("SrcTex" + str(i), from_tex)
             self._target.set_shader_input("DestTex" + str(i), to_tex)
 
     def set_dimensions(self):
         """ Sets the dimensions on all targets. See RenderTarget::set_dimensions """
-        for from_tex, to_tex in self._transfers:  # pylint: disable=unused-variable
-            to_tex.set_x_size(Globals.resolution.x)
-            to_tex.set_y_size(Globals.resolution.y)
+        for from_tex, to_tex, resolution in self._transfers:  # pylint: disable=unused-variable
+            if resolution == "100%":
+                to_tex.set_x_size(Globals.resolution.x)
+                to_tex.set_y_size(Globals.resolution.y)
+            elif resolution == "50%":
+                to_tex.set_x_size(Globals.resolution.x // 2)
+                to_tex.set_y_size(Globals.resolution.y // 2)
+            else:
+                self.error("Resolution not supported yet:", resolution)
 
     def reload_shaders(self):
         """ This method augo-generates a shader which copies all textures specified
@@ -74,7 +80,7 @@ class UpdatePreviousPipesStage(RenderStage):
         lines = []
 
         # Collect all samplers and generate the required uniforms and copy code
-        for i, (from_tex, to_tex) in enumerate(self._transfers):
+        for i, (from_tex, to_tex, resolution) in enumerate(self._transfers):
             index = str(i)
             uniforms.append(self.get_sampler_type(from_tex) + " SrcTex" + index)
             uniforms.append(self.get_sampler_type(to_tex, True) + " DestTex" + index)

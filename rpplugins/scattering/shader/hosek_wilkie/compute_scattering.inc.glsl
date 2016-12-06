@@ -63,7 +63,8 @@ vec3 get_scattering(vec3 surface_pos) {
     elevation *= 0.95;
 
     vec2 lut_coord = vec2(gamma / TWO_PI, 1 - (elevation / HALF_PI));
-    vec3 value = textureLod(ScatteringLUT, vec3(lut_coord, slice_index), 0).xyz ;
+    vec3 value = textureLod(ScatteringLUT, vec3(lut_coord, slice_index), 0).xyz;
+
     value *= 25.0;
     value *= night_factor;
     return vec3(value);

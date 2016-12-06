@@ -135,7 +135,7 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
 
     // Out of screen, can early out
     if (!in_unit_rect(last_coord)) {
-        return max( RS_CTYPE (0.0), curr_m);
+        return max(RS_CTYPE (0.0), curr_m);
     }
 
     #if !RS_USE_SMOOTH_TECHNIQUE
@@ -151,27 +151,28 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
                 }
             #endif
 
-            vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord);
-
+            vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord, MainSceneData.inv_view_proj_mat_no_jitter);
             float last_z = textureLod(Previous_SceneDepth, last_coord, 0).x;
+
             vec3 last_pos = calculate_surface_pos(
                 last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
-            // Weight by distance
-            float max_distance = RS_DISTANCE_SCALE;
-            // max_distance *= distance(curr_pos, MainSceneData.camera_pos) / 10.0;
+            float max_distance = RS_DISTANCE_SCALE / curr_linz * 120.0;
+            float distance_factor = saturate(distance_squared(curr_pos, last_pos) / (max_distance * max_distance));
 
-            float weight = 1.0 - saturate(distance(curr_pos, last_pos) / max_distance);
-            weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
-            
+            float weight = 1 - distance_factor;
+            // weight *= 1 - 1.0 / RS_KEEP_GOOD_DURATION;
+            weight *= 0.9;
+
             #ifdef RS_FADE_BORDERS
                 float fade = compute_screen_fade_factor(last_coord, RS_FADE_BORDERS);
-                weight *= max(0.8, fade);
+                fade = mix(1, fade, saturate(distance(curr_coord, last_coord) * WINDOW_WIDTH / 12.0));
+                weight *= max(0.1, fade);
             #endif
 
             RS_CTYPE last_m = textureLod(last_tex, last_coord, 0) RS_CMASK;
             return mix(curr_m, last_m, weight);
-
+            
         #else
 
             const float subpixel_threshold = 0.5;
@@ -219,11 +220,6 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
             float unbiased_weight_sqr = unbiased_weight * unbiased_weight;
             float feedback = mix(feedback_min, feedback_max, unbiased_weight_sqr);
 
-            // feedback = 1 - 1.0 / 16.0;
-            // feedback = mix(feedback, 0, saturate(20.0 * texel_vel_mag));
-            // feedback = 0;
-            // return vec4(feedback);
-            // output
             return mix(curr_m, last_m, feedback);
 
         #endif

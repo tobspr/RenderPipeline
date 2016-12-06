@@ -55,7 +55,7 @@ void main() {
     #if !DEBUG_MODE
 
         vec2 ccord = (texcoord - 0.5) * vec2(1.0, ASPECT_RATIO);
-        float vignette = 1 - saturate(length(ccord));
+        float vignette = 1 - square(saturate(length(ccord)));
 
         // Chromatic abberation
         #if GET_SETTING(color_correction, use_chromatic_aberration)

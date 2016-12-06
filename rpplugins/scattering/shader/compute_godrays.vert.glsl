@@ -26,8 +26,28 @@
 
 #version 430
 
-#define TRACK_INVALID_PIXELS 0
-#define SKIP_SKYBOX 1
-#define SKYBOX_COLOR vec4(1)
+#define USE_TIME_OF_DAY 1
+#pragma include "render_pipeline_base.inc.glsl"
 
-#pragma include "bilateral_upscale.templ.glsl"
+in vec4 p3d_Vertex;
+
+flat out vec2 sun_pos_tc;
+flat out float godray_factor;
+
+void main() {
+
+    // Compute texture coordinates of the sun-disk
+    vec3 sun_vector = get_sun_vector();
+    vec3 sun_pos = sun_vector * 1e20;
+    vec4 sun_proj = MainSceneData.view_proj_mat_no_jitter * vec4(sun_pos, 1);
+    sun_proj.xyz /= sun_proj.w;
+    if (sun_proj.w < 0.0) {
+        // Discard vertex when sun not on screen
+        return;
+    }
+    sun_pos_tc = sun_proj.xy * 0.5 + 0.5;
+    godray_factor = compute_screen_fade_factor(sun_pos_tc, 0.02);    
+
+
+    gl_Position = vec4(p3d_Vertex.xz, 0, 1);
+}

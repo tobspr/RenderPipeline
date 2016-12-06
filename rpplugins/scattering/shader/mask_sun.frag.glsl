@@ -26,8 +26,24 @@
 
 #version 430
 
-#define TRACK_INVALID_PIXELS 0
-#define SKIP_SKYBOX 1
-#define SKYBOX_COLOR vec4(1)
+#define USE_TIME_OF_DAY 1
+#define USE_GBUFFER_EXTENSIONS
 
-#pragma include "bilateral_upscale.templ.glsl"
+#pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/gbuffer.inc.glsl"
+
+out float result;
+
+void main() {
+
+    vec2 texcoord = get_half_texcoord();
+    Material m = unpack_material(GBuffer, texcoord);
+    if (!is_skybox(m)) {
+        result = 0.0;
+        return;
+    }
+    
+    vec3 sun_vector = get_sun_vector();
+    vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
+    result = saturate(pow(saturate(dot(view_vector, sun_vector) + 0.000069 * 9), 23.0 * 1e3));
+}

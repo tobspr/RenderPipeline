@@ -37,7 +37,7 @@ void main() {
     vec2 texcoord = (ivec2(gl_FragCoord.xy) + 0.5) / NATIVE_SCREEN_SIZE;
     vec3 scene_color = textureLod(SourceTex, texcoord, 0).xyz;
 
-    const float sharpen_strength = 1.4;
+    const float sharpen_strength = GET_SETTING(temporal_aa, post_sharpen_amount);
 
     vec2 pixel_size = 1.0 / NATIVE_SCREEN_SIZE;
     const float r = 0.4;

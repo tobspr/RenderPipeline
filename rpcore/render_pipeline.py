@@ -532,8 +532,8 @@ class RenderPipeline(RPObject):
         state garbarge collector, which does a great job, but still cannot clear
         up all states. """
         task.delayTime = 2.0
-        TransformState.clear_cache()
-        RenderState.clear_cache()
+        # TransformState.clear_cache()
+        # RenderState.clear_cache()
         return task.again
 
     def _process_plugin_reload_queue(self, task=None):
@@ -564,6 +564,7 @@ class RenderPipeline(RPObject):
         self._queued_plugin_reloads = set()
         base_path = join(Filename(self.mount_mgr.base_path).to_os_specific(), "rpplugins").replace("\\", "/")
         rp_instance = self
+
         class EventHandler(watchdog.events.FileSystemEventHandler):
             def on_modified(self, event):
                 pth = event.src_path.replace("\\", "/")

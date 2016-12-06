@@ -71,6 +71,7 @@ class CommonResources(RPObject):
         inputs = (
             ("camera_pos", "vec3"),
             ("view_proj_mat_no_jitter", "mat4"),
+            ("inv_view_proj_mat_no_jitter", "mat4"),
             ("last_view_proj_mat_no_jitter", "mat4"),
             ("last_inv_view_proj_mat_no_jitter", "mat4"),
             ("view_mat_z_up", "mat4"),
@@ -166,10 +167,18 @@ class CommonResources(RPObject):
 
     def _load_skydome(self):
         """ Loads the skydome """
-        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
+        # skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
+        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox-3.jpg")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.inputs["DefaultSkydome"] = skydome
+
+        skydome_overlay = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.jpg")
+        skydome_overlay.set_wrap_u(SamplerState.WM_clamp)
+        skydome_overlay.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["DefaultSkydomeOverlay"] = skydome_overlay
+
+        
 
     def load_default_skybox(self):
         skybox = RPLoader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
@@ -198,9 +207,8 @@ class CommonResources(RPObject):
         # Compute last view projection mat
         curr_vp = self._input_ubo.get_input("view_proj_mat_no_jitter")
         update("last_view_proj_mat_no_jitter", curr_vp)
-        curr_vp = Mat4(curr_vp)
-        curr_vp.invert_in_place()
-        curr_inv_vp = curr_vp
+        curr_inv_vp = Mat4(curr_vp)
+        curr_inv_vp.invert_in_place()
         update("last_inv_view_proj_mat_no_jitter", curr_inv_vp)
 
         proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
@@ -216,7 +224,11 @@ class CommonResources(RPObject):
         # Remove jitter and set the new view projection mat
         proj_mat.set_cell(1, 0, 0.0)
         proj_mat.set_cell(1, 1, 0.0)
-        update("view_proj_mat_no_jitter", view_mat * proj_mat)
+        curr_vp = view_mat * proj_mat
+        update("view_proj_mat_no_jitter", curr_vp)
+        curr_inv_vp = Mat4(curr_vp)
+        curr_inv_vp .invert_in_place()
+        update("inv_view_proj_mat_no_jitter", curr_inv_vp)
 
         # Store the frame delta
         update("frame_delta", Globals.clock.get_dt())

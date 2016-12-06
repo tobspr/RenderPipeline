@@ -26,8 +26,16 @@
 
 #version 430
 
-#define TRACK_INVALID_PIXELS 0
-#define SKIP_SKYBOX 1
-#define SKYBOX_COLOR vec4(1)
 
-#pragma include "bilateral_upscale.templ.glsl"
+#pragma include "render_pipeline_base.inc.glsl"
+
+uniform sampler2D SourceTex;
+out float result;
+
+void main() {
+
+    // TODO: Do something like a bilateral upscale or so instead of a linear upscale
+    // (also see upscaling pass for reference)
+    vec2 texcoord = get_texcoord();
+    result = textureLod(SourceTex, texcoord, 0).x;
+}

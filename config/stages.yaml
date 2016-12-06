@@ -36,8 +36,8 @@ global_stage_order:
   - SkyAOStage
   - AOStage
   - ApplyLightsStage
-  - PSSMStage
   - ScatteringStage
+  - PSSMStage
   - ApplyEnvprobesStage
   - VXGIStage
   - SSRStage

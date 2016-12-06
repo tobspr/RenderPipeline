@@ -80,7 +80,7 @@ float compute_ao(ivec2 coord_fullres) {
 
     float kernel_scale = 10.0 / pixel_distance;
     // float kernel_scale = 10.0 / sqrt(pixel_distance) * 0.3;
-    // float kernel_scale = 1.2;
+    // float kernel_scale = 1.0;
 
     // Increase kernel scale at obligue angles
     vec3 view_dir = normalize(pixel_view_pos);

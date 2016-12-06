@@ -4,7 +4,7 @@ settings: !!omap
     - blur_quality:
         type: enum
         values: ["LOW", "MEDIUM", "HIGH", "ULTRA"]
-        default: "MEDIUM"
+        default: LOW
         label: Blur quality
         description: >
             Controls the quality of the post-ao blur, higher values produce smoother
@@ -14,7 +14,7 @@ settings: !!omap
     - occlusion_strength:
         type: float
         range: [0.1, 6.0]
-        default: 1.6
+        default: 2.5
         shader_runtime: true
         label: Occlusion Strength
         description: >
@@ -26,7 +26,7 @@ settings: !!omap
     - border_fade:
         type: float
         range: [0.01, 0.3]
-        default: 0.06
+        default: 0.05
         shader_runtime: true
         label: Border Fade
         description: >
@@ -57,8 +57,8 @@ settings: !!omap
     - sc_occlusion_strength:
         display_if: {enable_small_scale_ao: true}
         type: float
-        range: [0.1, 12.0]
-        default: 8.0
+        range: [0.1, 2.0]
+        default: 0.5
         shader_runtime: true
         label: SSO Strength
         description: >
@@ -80,7 +80,7 @@ settings: !!omap
         display_if: {enable_small_scale_ao: true}
         type: float
         range: [0.01, 0.9]
-        default: 0.375
+        default: 0.25
         shader_runtime: true
         label: SSO Max Range
         description: >
@@ -105,7 +105,7 @@ settings: !!omap
         display_if: {technique: "SSAO"}
         type: float
         range: [5, 400]
-        default: 80
+        default: 50
         shader_runtime: true
         label: SSAO Sample Radius
         description: >
@@ -116,7 +116,7 @@ settings: !!omap
         display_if: {technique: "SSAO"}
         type: sample_sequence
         dimension: 3
-        default: halton_3D_8
+        default: halton_3D_16
         shader_runtime: true
         label: SSAO Sample Sequence
         description: >
@@ -138,7 +138,7 @@ settings: !!omap
         display_if: {technique: "SSAO"}
         type: float
         range: [0.0, 15.0]
-        default: 6.9
+        default: 4.0
         shader_runtime: true
         label: SSAO Max distance
         description: >
@@ -152,7 +152,7 @@ settings: !!omap
         display_if: {technique: "HBAO"}
         type: float
         range: [5, 400]
-        default: 255.0
+        default: 100.0
         shader_runtime: true
         label: HBAO Sample Radius
         description: >
@@ -242,7 +242,7 @@ settings: !!omap
         display_if: {technique: "ALCHEMY"}
         type: float
         range: [5, 400]
-        default: 210.0
+        default: 100.0
         shader_runtime: true
         label: ALCHEMY Sample Radius
         description: >
@@ -264,7 +264,7 @@ settings: !!omap
         display_if: {technique: "ALCHEMY"}
         type: float
         range: [0.1, 20.0]
-        default: 4.75
+        default: 3.0
         shader_runtime: true
         label: ALCHEMY Maximum distance
         description: >

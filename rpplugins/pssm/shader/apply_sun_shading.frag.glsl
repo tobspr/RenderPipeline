@@ -44,6 +44,7 @@ out vec4 result;
 uniform GBufferData GBuffer;
 uniform sampler2D PrefilteredShadows;
 uniform sampler2D ShadedScene;
+uniform sampler2D ScatteringSunColor;
 
 void main() {
 
@@ -69,11 +70,16 @@ void main() {
     // Compute the sun lighting
     vec3 v = normalize(MainSceneData.camera_pos - m.position);
     vec3 l = sun_vector;
-    vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
+    // vec3 sun_color = get_sun_color() * get_sun_color_scale(sun_vector);
+    vec3 sun_color = textureLod(ScatteringSunColor, texcoord, 0).xyz;
 
     {
         vec3 reflected_dir = reflect(-v, m.normal);
-        const float sun_angular_radius = degree_to_radians(0.54);
+        // const float sun_angular_radius = degree_to_radians(0.54);
+
+        // XXX : We increase the sun radius to get better highlights, and match the sun disk,
+        // which is increased to improve godray quality
+        const float sun_angular_radius = degree_to_radians(1.5);
         const float r = sin(sun_angular_radius); // Disk radius
         const float d = cos(sun_angular_radius); // Distance to disk
 

@@ -179,11 +179,13 @@ float blend_ior(float material_specular, float sampled_specular) {
 #define get_half_texcoord() vec2((ivec2(gl_FragCoord.xy) * 2 + 0.5) / SCREEN_SIZE)
 
 // Texcoord for half-res targets sampling half-res targets
-#define get_half_native_texcoord() ((vec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE / 2))
+#define get_half_native_texcoord() (vec2(ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE / 2))
 
 // Texcoord for quarter-res targets sampling full-res targets
 #define get_quarter_texcoord() vec2((ivec2(gl_FragCoord.xy) * 4 + 0.5) / SCREEN_SIZE)
 
+// Texcoord for quarter-res targets sampling quarter-res targets
+#define get_quarter_native_texcoord() (vec2(ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE / 4))
 
 
 // Converts degree (0 .. 360) to radians (0 .. 2 PI)
@@ -192,8 +194,12 @@ float degree_to_radians(float degree) {
 }
 
 // Simulates a near filter on a fullscreen texture
+vec2 truncate_coordinate(vec2 tcoord, vec2 size) {
+    return (ivec2(tcoord * size) + 0.5) / size;
+}
+
 vec2 truncate_coordinate(vec2 tcoord) {
-    return (ivec2(tcoord * SCREEN_SIZE) + 0.5) / SCREEN_SIZE;
+    return truncate_coordinate(tcoord, SCREEN_SIZE);
 }
 
 // Returns the squared length of v
@@ -211,6 +217,9 @@ float square(float x) { return x * x; }
 vec2 square(vec2 x) { return x * x; }
 vec3 square(vec3 x) { return x * x; }
 vec4 square(vec4 x) { return x * x; }
+
+// Returns x * x * x * x
+float pow4(float x) { float tmp = x * x; return tmp * tmp; }
 
 // Minimum and maximum for multiple components
 // XXX: There are hardware instructions (at least on AMD) for it:

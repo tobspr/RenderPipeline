@@ -150,6 +150,10 @@ class Image(RPObject, Texture, ImageFormatTypes):
         self.clear_image()
         self.sort = RenderTarget.CURRENT_SORT
 
+    def clear_image(self):
+        Texture.clear_image(self)
+        self.prepare(Globals.base.win.gsg.get_prepared_objects())
+
     def __del__(self):
         """ Destroys the image """
         self.warn("Image destructor not implemented yet")

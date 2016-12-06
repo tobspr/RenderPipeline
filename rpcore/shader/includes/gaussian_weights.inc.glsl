@@ -93,6 +93,7 @@ CONST_ARRAY float gaussian_weights_39[39] = float[39](0.0315700658546, 0.0314718
 CONST_ARRAY float opt_gaussian_weights_2[] = float[2] (0.274068619061, 0.725931380939);
 CONST_ARRAY float opt_gaussian_offsets_2[] = float[2] (-1.0, 0.377540668798);
 
+
 // Offsets and weights for n = 3, relative to pixel center
 CONST_ARRAY float opt_gaussian_weights_3[] = float[3] (0.15246914402, 0.473220416416, 0.374310439564);
 CONST_ARRAY float opt_gaussian_offsets_3[] = float[3] (-2.0, -0.468790626626, 1.40733340005);

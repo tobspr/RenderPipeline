@@ -8,6 +8,7 @@
 pstats-gpu-timing #t
 gl-debug #t
 gl-debug-object-labels #t
+#notify-level-glgsg debug
 
 # -------------- Production options ---------------
 
@@ -154,6 +155,9 @@ framebuffer-depth #f
 # Might cause issues with some (incorrectly converted/loaded) meshes though
 gl-fixed-vertex-attrib-locations #f
 
+# Bind all images as writeonly
+gl-force-image-bindings-writeonly #t
+
 # Disable the fragment shader performance warning
 gl-validate-shaders #f
 gl-skip-shader-recompilation-warnings #t
@@ -166,6 +170,8 @@ screenshot-extension png
 # Required for correct velocity
 always-store-prev-transform #t
 allow-incomplete-render #t
+
+# gl-version 3 2
 
 
 no-singular-invert #f

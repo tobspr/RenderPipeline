@@ -75,7 +75,7 @@ void main() {
 
     if (early_out) {
         result = 0.0;
-        return;
+        // return;
     }
 
     // Variables to accumulate the shadows
@@ -99,8 +99,9 @@ void main() {
             const float esm_factor = 5.0;
             float depth_sample = textureLod(PSSMDistSunShadowMap, proj.xy, 0).x;
             shadow_factor = saturate(exp(-esm_factor * proj.z) * depth_sample);
-            shadow_factor = pow(shadow_factor, 1e2);
+            shadow_factor = pow(shadow_factor, 150);
         }
+
     }
     #endif
 

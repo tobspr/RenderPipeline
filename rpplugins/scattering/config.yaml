@@ -29,7 +29,7 @@ settings: !!omap
         shader_runtime: true
         label: Rayleigh factor
         description: >
-            Controls the the rayleigh factor, lower values cause a more bluish sky.
+            Controls the the rayleigh factor.
 
     - rayleigh_height_scale:
         display_if: {scattering_method: "eric_bruneton"}
@@ -39,7 +39,7 @@ settings: !!omap
         shader_runtime: true
         label: Rayleigh height scale
         description: >
-            Rayleigh height scale, higher values cause a more bluish sky.
+            Rayleigh height scale.
 
     - mie_height_scale:
         display_if: {scattering_method: "eric_bruneton"}
@@ -49,7 +49,7 @@ settings: !!omap
         shader_runtime: true
         label: Mie height scale
         description: >
-            Mie height scale, higher values cause a more reddish sky.
+            Mie height scale.
 
     - mie_phase_factor:
         display_if: {scattering_method: "eric_bruneton"}
@@ -72,13 +72,6 @@ settings: !!omap
         description: >
             Beta Mie Scattering factor
 
-    - enable_godrays:
-        type: bool
-        default: false
-        label: Enable Godrays (experimental!)
-        description: >
-            This enables the experimental support for godrays.
-
     - atmosphere_start:
         type: float
         range: [25.0, 2000.0]
@@ -90,6 +83,43 @@ settings: !!omap
             z = 0 lies inside the atmosphere. A value of 0 would mean
             sea level for example.
 
+    - enable_godrays:
+        type: bool
+        default: true
+        label: Enable Godrays (beta)
+        description: >
+            This enables the (beta) support for godrays.
+    
+    - godrays_max_samples:
+        display_if: {enable_godrays: true}
+        type: int
+        shader_runtime: true
+        range: [32, 512]
+        default: 128
+        label: Godray Sample Count
+        description: >
+            Amount of samples for the godrays, higher values produce smoother results.
+
+    - godrays_resolve_history:
+        display_if: {enable_godrays: true}
+        type: int
+        range: [2, 8]
+        shader_runtime: true
+        default: 3
+        label: Godray History Count
+        description: >
+            Splits computation of godrays over multiple frames to improve performance,
+            might lead to artifacts though.
+    
+    - godrays_strength:
+        display_if: {enable_godrays: true}
+        type: float
+        range: [0.05, 1.0]
+        shader_runtime: true
+        default: 0.3
+        label: Godray Strength
+        description: >
+            Strength of the godrays.
 
 daytime_settings: !!omap
 

@@ -3,7 +3,7 @@ settings: !!omap
 
     - jitter_pattern:
         type: enum
-        default: halton8
+        default: halton16
         values: ["halton8", "skew_butterly", "uniform4", "halton256", "rotated4_helix2", "uniform2",
                  "halton16", "still", "rotated4", "rotated4_helix", "poisson10", "halton32",
                  "uniform4_helix", "uniform4_double_helix", "pentagram"]
@@ -15,7 +15,7 @@ settings: !!omap
     - history_length:
         type: int
         range: [1, 16]
-        default: 8
+        default: 16
         shader_runtime: true
         label: History Length
         description: >
@@ -26,7 +26,7 @@ settings: !!omap
     - jitter_amount:
         type: float
         range: [0.05, 2.0]
-        default: 0.6
+        default: 1.0
         runtime: true
         label: Jitter Amount
         description: >

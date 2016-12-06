@@ -92,17 +92,18 @@ fragment:
         float snow = 0.0;
 
         { // Snow
-            snow = saturate(4.0 * (height-0.49));
-            snow *= saturate(pow(saturate(1.0 - slope), 2.0)) * 12.0;
+            snow = saturate(4.0 * (height-0.48));
+            snow *= saturate(pow(saturate(1.0 - slope), 3.0)) * 15.0;
 
-            //snow -= 0.6;
+            snow -= 0.3;
             //snow *= 0.5;
             snow = saturate(snow);
             snow = pow(snow, 2.0);
+            snow = step(0.5, snow);
         }
 
         { // Rock
-            rock = saturate((pow(slope, 1.2) * 12.0 - 0.02) * 4.5);
+            rock = saturate((pow(slope, 1.4) * 12.0 - 0.07) * 4.5);
         }
 
         { // Grass
@@ -113,18 +114,18 @@ fragment:
         // Material definitions
 
         MaterialShaderOutput grass_mat = make_default_material_output();
-        grass_mat.basecolor = vec3(0.1, 0.2, 0.1);
+        grass_mat.basecolor = vec3(0.1, 0.27, 0.08);
         grass_mat.roughness = 0.8;
 
         MaterialShaderOutput rock_mat = make_default_material_output();
-        rock_mat.basecolor = vec3(0.13);
+        rock_mat.basecolor = vec3(0.03);
         rock_mat.roughness = 0.8;
         rock_mat.specular_ior = 1.4;
 
         MaterialShaderOutput snow_mat = make_default_material_output();
-        snow_mat.basecolor = vec3(0.6, 0.6, 0.9);
-        snow_mat.roughness = 0.5;
-        snow_mat.specular_ior = 1.7;
+        snow_mat.basecolor = vec3(0.7, 0.6, 0.75) * 0.9;
+        snow_mat.roughness = 0.9;
+        snow_mat.specular_ior = 1.05;
 
         m.basecolor = vec3(0);
         m.shading_model = SHADING_MODEL_DEFAULT;

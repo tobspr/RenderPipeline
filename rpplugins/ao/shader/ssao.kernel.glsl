@@ -42,8 +42,7 @@ float sample_offset = sample_radius * pixel_size.x * 30.0;
 float range_accum = 0.0;
 float accum = 0.0;
 
-// Make sure we have nice sampling coherency by scaling the kernel
-sample_offset /= 0.8 * kernel_scale;
+sample_offset /= 0.8;
 
 START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
 
@@ -53,7 +52,7 @@ START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
     // Since poisson disks have more samples to the outer, but this
     // is does not match the ao definition, move the samples closer to the pixel
     offset = pow(abs(offset), vec3(2.0)) * sign(offset);
-
+    
     // Flip offset in case it faces away from the normal
     offset = face_forward(offset, pixel_view_normal);
 

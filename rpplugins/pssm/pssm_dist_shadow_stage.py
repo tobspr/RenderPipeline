@@ -77,6 +77,7 @@ class PSSMDistShadowStage(RenderStage):
             self.cam_node.set_pos(cam_pos + self.sun_vector * self.sun_distance)
             self.cam_node.look_at(cam_pos)
             self.cam_lens.set_film_size(self.clip_size, self.clip_size)
+            self.cam_lens.set_near_far(10.0, self.sun_distance * 2)
 
             snap_shadow_map(self.mvp, self.cam_node, self.resolution)
 

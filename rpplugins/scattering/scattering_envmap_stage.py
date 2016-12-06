@@ -39,7 +39,7 @@ class ScatteringEnvmapStage(RenderStage):
     scattering """
 
     required_pipes = []
-    required_inputs = ["DefaultSkydome", "DefaultEnvmap"]
+    required_inputs = ["DefaultSkydome", "DefaultSkydomeOverlay", "DefaultEnvmap"]
 
     @property
     def produced_pipes(self):

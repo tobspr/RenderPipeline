@@ -54,6 +54,10 @@ class PluginManager(RPObject):
         self.instances = {}
         self.enabled_plugins = set()
 
+        # Used by the plugin configurator to also load plugins which depend
+        # on other disabled plugins
+        self.load_anyways = False
+
         # Used by the plugin configurator and to only load the required data
         self.requires_daytime_settings = True
 
@@ -195,17 +199,18 @@ class PluginManager(RPObject):
         plugin_class = "rpplugins.{}.plugin".format(plugin_id)
         module = importlib.import_module(plugin_class)
         instance = module.Plugin(self._pipeline)
-        if instance.native_only and not NATIVE_CXX_LOADED:
-            if plugin_id in self.enabled_plugins:
-                self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
-                return False
-        for required_plugin in instance.required_plugins:
-            if required_plugin not in self.enabled_plugins:
+        if not self.load_anyways:
+            if instance.native_only and not NATIVE_CXX_LOADED:
                 if plugin_id in self.enabled_plugins:
-                    self.warn("Cannot load {} since it requires {}".format(
-                        plugin_id, required_plugin))
+                    self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
                     return False
-                break
+            for required_plugin in instance.required_plugins:
+                if required_plugin not in self.enabled_plugins:
+                    if plugin_id in self.enabled_plugins:
+                        self.warn("Cannot load {} since it requires {}".format(
+                            plugin_id, required_plugin))
+                        return False
+                    break
         return instance
 
     def save_overrides(self, override_file):

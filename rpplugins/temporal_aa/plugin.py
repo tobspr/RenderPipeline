@@ -67,8 +67,8 @@ class Plugin(BasePlugin):
         # scale *= 0.35
 
         for x, y in JITTERS[self.get_setting("jitter_pattern")]:
-            jitter_x = (x * 2 - 1) * scale * 0.5
-            jitter_y = (y * 2 - 1) * scale * 0.5
+            jitter_x = x * scale
+            jitter_y = y * scale
             self._jitters.append((jitter_x, jitter_y))
 
     def update_jitter_pattern(self):

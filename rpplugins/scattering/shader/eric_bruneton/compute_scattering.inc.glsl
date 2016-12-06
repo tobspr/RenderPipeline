@@ -35,6 +35,7 @@ uniform sampler3D InscatterSampler;
 uniform sampler2D IrradianceSampler;
 
 vec3 sun_vector = get_sun_vector();
+
 /*
 
 
@@ -47,6 +48,7 @@ which unfortunately does not seem to be online anymore, so I can't link to it.
 const float EPSILON_ATMOSPHERE = 0.002f;
 const float EPSILON_INSCATTER = 0.01f;
 
+const float SUN_INTENSITY = 30;
 
 // input - d: view ray in world space
 // output - offset: distance to atmosphere or 0 if within atmosphere
@@ -95,10 +97,14 @@ bool intersect_atmosphere(vec3 cam_pos, vec3 d, out float offset, out float max_
 // rendering and atmospheric scattering.
 vec3 worldspace_to_atmosphere(vec3 pos) {
     pos.z += GET_SETTING(scattering, atmosphere_start);
-    pos /= 1000.0;
+    pos /= 100.0;
     pos.z = max(0, pos.z);
-    pos.z += Rg;
+    pos.z += Rg + 0;
     return pos;
+}
+
+float get_surface_pos_height(vec3 pos) {
+    return length(pos); // XXX: should be pos.z
 }
 
 vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuation,
@@ -109,7 +115,6 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
     float max_path_length;
 
     vec3 cam_pos = MainSceneData.camera_pos;
-    // cam_pos.z = max(cam_pos.z, surface_pos.z);
     cam_pos = worldspace_to_atmosphere(cam_pos);
 
     if (is_skybox(surface_pos)) {
@@ -126,7 +131,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
 
             // offsetting camera
             vec3 start_pos = cam_pos + offset * view_dir;
-            float start_pos_height = length(start_pos);
+            float start_pos_height = get_surface_pos_height(start_pos);
             path_length -= offset;
 
             // starting position of path is now ensured to be inside atmosphere
@@ -139,7 +144,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             // no surface hit or object behind atmosphere)
             vec4 inscatter = max(texture4D(InscatterSampler, start_pos_height,
                 mustart_pos, musstart_pos, nustart_pos), 0.0f);
-            float surface_pos_height = length(surface_pos);
+            float surface_pos_height = get_surface_pos_height(surface_pos);
             float musEndPos = dot(surface_pos, sun_vector) / surface_pos_height;
 
             // check if object hit is inside atmosphere
@@ -202,36 +207,43 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             float phaseR = phaseFunctionR(nustart_pos);
             float phaseM = phaseFunctionM(nustart_pos);
 
+            // XXX 
             phaseR *= GET_SETTING(scattering, rayleigh_factor);
 
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
+            inscattered_light *= SUN_INTENSITY;
 
         }
     }
 
-
-
-    #if !HAVE_PLUGIN(color_correction)
-        // Reduce scattering, otherwise its way too bright without automatic
-        // exposure
-        // inscattered_light /= 7.0;
-    #endif
-
     return inscattered_light;
 }
 
+void get_reflected_light(vec3 surface_pos, float irradiance_factor, vec3 attenuation, out vec3 sun_color) {
+
+    vec3 atmosphere_pos = worldspace_to_atmosphere(surface_pos);
+    float surf_pos_height = get_surface_pos_height(atmosphere_pos);
+    float mus_surface_pos = dot(atmosphere_pos, sun_vector) / surf_pos_height;
+    vec3 att_sunlight = transmittance(surf_pos_height, mus_surface_pos);
+
+    // XXX: Why do we have to multiple thrice with the attenuation to get the desired result?!
+    sun_color = att_sunlight * att_sunlight * att_sunlight * attenuation * SUN_INTENSITY;
+
+    // vec3 irradiance_surface = irradiance(IrradianceSampler, surf_pos_height, mus_surface_pos);
+    // irradiance_surface *= irradiance_factor;
+    // scattering_irradiance = irradiance_surface * attenuation * SUN_INTENSITY;
+}
 
 
-vec3 DoScattering(vec3 surface_pos, vec3 view_dir, out float sky_clip)
+void do_scattering(vec3 surface_pos, vec3 view_dir, out vec3 scattering, out vec3 sun_color)
 {
-    vec3 attenuation = vec3(0);
+    vec3 attenuation = vec3(1);
     float irradiance_factor = 0.0;
-    vec3 scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
-
-    sky_clip = is_skybox(surface_pos) ? 1.0 : 0.0;
+    scattering = get_inscattered_light(surface_pos, view_dir, attenuation, irradiance_factor);
 
     // Reduce scattering in the near to avoid artifacts due to low precision
-    scattering *= saturate(distance(surface_pos, MainSceneData.camera_pos) / 500.0 - 0.0);
+    // scattering *= saturate(distance(surface_pos, MainSceneData.camera_pos) / 500.0 - 0.0);
 
-    return scattering;
+    get_reflected_light(surface_pos, irradiance_factor, attenuation, sun_color);
+    
 }

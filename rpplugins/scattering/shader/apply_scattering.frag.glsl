@@ -34,60 +34,37 @@ uniform sampler2D ShadedScene;
 
 uniform GBufferData GBuffer;
 
-out vec4 result;
+layout(location=0) out vec3 result_scattering;
+layout(location=1) out vec3 result_sun_color;
 
 #pragma include "scattering_method.inc.glsl"
 #pragma include "merge_scattering.inc.glsl"
 
 void main() {
-
     vec2 texcoord = get_texcoord();
 
-    // Get material data
     Material m = unpack_material(GBuffer);
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
     vec3 orig_view_vector = view_vector;
 
-    // Fetch scattering
-    float sky_clip = 0.0;
-
     // Prevent a way too dark horizon by clamping the view vector
     if (is_skybox(m)) {
-        view_vector.z = max(view_vector.z, 0.14);
+        view_vector.z = max(view_vector.z, 0.0);
     }
 
-    vec3 inscattered_light = DoScattering(m.position, view_vector, sky_clip)
-                                * TimeOfDay.scattering.sun_intensity;
-
-    result.xyz = textureLod(ShadedScene, texcoord, 0).xyz;
-    result.w = 1;
+    do_scattering(m.position, view_vector, result_scattering, result_sun_color);
 
     if (is_skybox(m)) {
 
-        inscattered_light = get_merged_scattering(orig_view_vector, inscattered_light);
-
+        result_scattering = get_merged_scattering(orig_view_vector, result_scattering);
         // Sun disk
         vec3 silhouette_col = vec3(TimeOfDay.scattering.sun_intensity) *
-            inscattered_light * sky_clip;
+            result_scattering * sky_clip;
         silhouette_col *= 2.0;
-        float disk_factor = pow(saturate(dot(orig_view_vector, sun_vector) + 0.000069), 23.0 * 1e5);
+        float disk_factor = pow(saturate(dot(orig_view_vector, sun_vector) + 0.000069 * 9), 23.0 * 1e5);
         float upper_disk_factor = smoothstep(0, 1, (orig_view_vector.z + 0.045) * 1.0);
-        inscattered_light += vec3(1, 0.3, 0.1) * disk_factor * upper_disk_factor *
-            silhouette_col * 3.0 * 1e3;
+        result_scattering += vec3(1, 0.3, 0.1) * disk_factor * upper_disk_factor *
+            silhouette_col * 3.0 * 1e4;
 
-    } else {
-        inscattered_light *= 70.0;
-        float dist = distance(m.position, MainSceneData.camera_pos);
-        float extinction = saturate(dist / TimeOfDay.scattering.extinction * 10.0);
-        inscattered_light *= extinction;
     }
-
-    #if !DEBUG_MODE
-        result.xyz += inscattered_light;
-    #endif
-
-    #if MODE_ACTIVE(SCATTERING)
-        result.xyz = inscattered_light / (1 + inscattered_light);
-    #endif
-
 }

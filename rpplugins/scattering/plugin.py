@@ -29,6 +29,7 @@ import math
 from panda3d.core import Vec3
 
 from rpcore.pluginbase.base_plugin import BasePlugin
+from rpcore.stages.ambient_stage import AmbientStage
 
 from .scattering_stage import ScatteringStage
 from .scattering_envmap_stage import ScatteringEnvmapStage
@@ -67,6 +68,8 @@ class Plugin(BasePlugin):
             self.scattering_model = ScatteringMethodHosekWilkie(self)  # noqa # pylint: disable=redefined-variable-type
         else:
             self.error("Unrecognized scattering method!")
+
+        AmbientStage.required_pipes += ["ScatteringColor"]
 
     @property
     def sun_vector(self):

@@ -149,7 +149,6 @@ void main() {
     vec3 last_br = textureLod(Previous_TemporalAAPostResolve, last_coord + vec2(bbs, bbs) * one_pixel, 0).xyz;
 
     last_m = rgb_to_ycgco(last_m);
-    // last_m = clamp(last_m, aabb_min, aabb_max);
     last_m = clip_aabb_v3(aabb_min, aabb_max, aabb_center, last_m);
     last_m = ycgco_to_rgb(last_m);
 
@@ -174,7 +173,7 @@ void main() {
     float blend_amount = saturate(distance(last_m.xyz, curr_m.xyz) * RS_DISTANCE_SCALE);
 
     // Merge the sample with the current color, in case we can't pick it
-    last_m = mix(curr_m, last_m, blend_weight);
+    // last_m = mix(curr_m, last_m, blend_weight);
 
     float weight = saturate(1.0 /
         mix(RS_KEEP_GOOD_DURATION, RS_KEEP_BAD_DURATION, blend_amount));
