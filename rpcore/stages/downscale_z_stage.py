@@ -37,12 +37,22 @@ class DownscaleZStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"DownscaledDepth": self.target.color_tex}
+        return {
+            "LowPrecisionDepth": self.target.color_tex,
+            "LowPrecisionHalfresDepth": self.target_half.color_tex
+        }
 
     def create(self):
-        self.target = self.create_target("DownscaleDepth")
+        self.target = self.create_target("ConvertDepth16bit")
         self.target.add_color_attachment(bits=(16, 0, 0, 0))
         self.target.prepare_buffer()
 
+        self.target_half = self.create_target("DownscaleDepthHalfres")
+        self.target_half.add_color_attachment(bits=(16, 0, 0, 0))
+        self.target_half.size = "50%"
+        self.target_half.prepare_buffer()
+        self.target_half.set_shader_input("SourceTex", self.target.color_tex)
+
     def reload_shaders(self):
-        self.target.shader = self.load_shader("downscale_depth.frag.glsl")
+        self.target.shader = self.load_shader("convert_depth_to_16bit.frag.glsl")
+        self.target_half.shader = self.load_shader("downscale_depth.frag.glsl")

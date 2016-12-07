@@ -26,14 +26,12 @@
 
 #version 430
 
-#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
 
+uniform sampler2D SourceTex;
 out float result;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    result = get_linear_z_from_z(get_depth_at(coord));
+    result = texelFetch(SourceTex, coord * 2, 0).x;
 }

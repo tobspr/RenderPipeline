@@ -29,48 +29,41 @@
 #pragma include "includes/noise.inc.glsl"
 #pragma include "includes/sampling_sequences.inc.glsl"
 #pragma include "includes/matrix_ops.inc.glsl"
+#pragma include "includes/bilateral_params.inc.glsl"
 
 #pragma optionNV (unroll all)
 
-uniform sampler2D DownscaledDepth;
+uniform sampler2D LowPrecisionDepth;
+uniform sampler2D LowPrecisionHalfresDepth;
 
 #define USE_GBUFFER_EXTENSIONS 1
 #pragma include "includes/gbuffer.inc.glsl"
 
 float get_linear_depth_at(vec2 coord) {
-    return textureLod(DownscaledDepth, coord, 0).x;
-    // return get_linear_z_from_z(textureLod(GBuffer.Depth, coord, 0).x);
+    // return textureLod(LowPrecisionDepth, coord, 0).x;
+    return textureLod(LowPrecisionHalfresDepth, coord, 0).x;
 }
 
 
-float compute_ao(ivec2 coord_fullres) {
+float compute_ao(ivec2 coord) {
 
     // Provide some variables to the kernel
     vec2 pixel_size = vec2(1.0) / SCREEN_SIZE;
-
-    ivec2 coord = coord_fullres;
     vec2 texcoord = (coord + 0.5) / SCREEN_SIZE;
 
     // Shader variables
-    float pixel_depth = get_depth_at(texcoord);
-    float pixel_distance = get_linear_z_from_z(pixel_depth);
+    float pixel_distance = get_linear_depth_at(texcoord);
 
     if (pixel_distance > 1000.0) {
         return 1.0;
     }
 
     float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
-    // t = 0;
-
     t += pixel_distance;
 
     vec3 noise_vec = rand_rgb(coord + 0.32343 * t);
     float rotation_factor = M_PI * rand(coord) + t * TWO_PI;
     float scale_factor = mix(0.8, 1.2, abs(rand(coord + 0.1 * t)));
-
-    // rotation_factor = 0;
-    // scale_factor = 1;
-
 
     mat2 rotation_mat = make_rotate_mat2(rotation_factor);
 
@@ -78,14 +71,14 @@ float compute_ao(ivec2 coord_fullres) {
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
 
-    float kernel_scale = 10.0 / pixel_distance;
-    // float kernel_scale = 10.0 / sqrt(pixel_distance) * 0.3;
-    // float kernel_scale = 1.0;
+    float screen_scale = WINDOW_WIDTH / 800.0;
+    float kernel_scale = 2.0 / pixel_distance * screen_scale;
+
 
     // Increase kernel scale at obligue angles
     vec3 view_dir = normalize(pixel_view_pos);
     float NxV = saturate(dot(view_dir, -pixel_view_normal));
-    // kernel_scale *= max(0.5, NxV);
+    kernel_scale *= max(0.5, NxV);
 
     float result = 0.0;
 
@@ -104,13 +97,12 @@ float compute_ao(ivec2 coord_fullres) {
         #error Unkown AO technique!
     #endif
 
+
     result = pow(saturate(result), GET_SETTING(ao, occlusion_strength));
     
     // Increase AO in the distance
-    float pow_add = pixel_distance / 400.0;
-    
-    result = pow(result, 3.0 + pow_add);
-
+    float pow_add = pixel_distance / 1000.0;    
+    result = pow(result, 6.0 + pow_add);
 
     return result;
 }

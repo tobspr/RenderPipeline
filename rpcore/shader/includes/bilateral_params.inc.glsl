@@ -29,10 +29,15 @@
 #pragma include "includes/normal_packing.inc.glsl"
 
 uniform sampler2D LowPrecisionNormals;
+uniform sampler2D LowPrecisionHalfresNormals;
 
 vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
 vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
 
 
-const float max_depth_diff_base = 1.0 / 100.0;
-const float max_nrm_diff_base = 0.1;
+vec3 get_halfres_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionHalfresNormals, coord, 0).xy); }
+vec3 get_halfres_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionHalfresNormals, coord, 0).xy); }
+
+
+const float max_depth_diff_base = 1.0 / 50.0;
+const float max_nrm_diff_base = 0.2;

@@ -99,6 +99,8 @@ void main() {
     // of the 4 direct neighbors.
     const int search_radius = 0;
 
+    float best_depth_diff = 1e10;
+    vec4 best_accum = vec4(0);
 
     // Accumulate all samples
     for (int x = -search_radius; x < 2 + search_radius; ++x) {
@@ -111,10 +113,20 @@ void main() {
             // enough, use that sample
             float sample_depth = get_gbuffer_depth(GBuffer, source_coord * 2 * MULTIPLIER);
             float sample_depth_linear = get_linear_z_from_z(sample_depth);
-            float depth_diff = abs(sample_depth_linear - mid_depth_linear) > max_depth_diff ? 0.0 : 1.0;
-            float weight = depth_diff;
+            float depth_diff = abs(sample_depth_linear - mid_depth_linear);
+            float weight = depth_diff > max_depth_diff ? 0.0 : 1.0;
+
+            if (depth_diff < best_depth_diff) {
+                best_depth_diff = depth_diff;
+                best_accum = source_sample;
+            }
+
+            #if MULTIPLIER == 2
+                vec3 sample_nrm = get_halfres_normal(source_coord * 2);
+            #else
+                vec3 sample_nrm = get_normal(source_coord * 2);
+            #endif
             
-            vec3 sample_nrm = get_normal(source_coord * 2 * MULTIPLIER);
             float nrm_diff = distance(sample_nrm, mid_nrm) < max_nrm_diff ? 1.0 : 0.0;
             weight *= nrm_diff;
 
@@ -125,9 +137,9 @@ void main() {
     }
 
     if (weights < 1e-5) {
-        // When no sample was valid, take the center sample - this is still
+        // When no sample was valid, take the best matching sample - this is still
         // better than invalid pixels
-        result = texelFetch(SourceTex, coord / 2, 0);
+        result = best_accum;
         
         // Visualization to see failed resolves
         #if SPECIAL_MODE_ACTIVE(BILATERAL_MISSES)

@@ -37,7 +37,7 @@ class SkyAOStage(RenderStage):
     the sky occlusion term """
 
     required_inputs = ["SkyAOCapturePosition"]
-    required_pipes = ["SkyAOHeight", "GBuffer", "DownscaledDepth", "LowPrecisionNormals"]
+    required_pipes = ["SkyAOHeight", "GBuffer", "LowPrecisionDepth"]
 
     @property
     def produced_pipes(self):

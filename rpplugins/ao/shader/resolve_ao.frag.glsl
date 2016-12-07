@@ -46,10 +46,9 @@ void main() {
     float curr_depth = get_depth_at(coord * 2);
     vec2 velocity = texelFetch(CombinedVelocity, coord * 2, 0).xy;
 
-    vec2 curr_coord = get_half_texcoord();
+    vec2 curr_coord = get_half_native_texcoord();
     vec2 last_native_coord = get_half_native_texcoord() + velocity;
-    vec2 last_coord = curr_coord + velocity;
-    // last_coord = last_native_coord;
+    vec2 last_coord = get_half_texcoord() + velocity;
 
     // XXX: use truncate coordinate maybe
     vec2 last_data = textureLod(Previous_ResolvedAO, last_native_coord, 0).xy;
@@ -57,17 +56,23 @@ void main() {
 
     vec2 curr_ao = textureLod(CurrentTex, curr_coord, 0).xy;
 
-    vec3 last_pos = calculate_surface_pos(last_depth, vec2(last_coord), MainSceneData.last_inv_view_proj_mat_no_jitter);
+    #if 0
+        result = texelFetch(CurrentTex, coord, 0).xy;
+        return;
+    #endif
+
+    vec3 last_pos = calculate_surface_pos(last_depth, vec2(last_native_coord), MainSceneData.last_inv_view_proj_mat_no_jitter);
     vec3 curr_pos = calculate_surface_pos(curr_depth, vec2(curr_coord), MainSceneData.inv_view_proj_mat_no_jitter);
 
     const float max_dist = 0.05;
     float distance_factor = step(max_dist * max_dist, distance_squared(last_pos, curr_pos));
 
-    float weight = mix(0.9, 0.0, distance_factor);
+    float weight = mix(1 - 1.0 / 9.0, 0.0, distance_factor);
 
     if (!in_unit_rect(last_coord)) {
         weight = 0.0;
     }
 
     result.xy = mix(curr_ao, last_data.xy, weight);
+
 }

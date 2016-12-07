@@ -35,10 +35,10 @@ AO.
 */
 
 const float sample_radius = GET_SETTING(ao, ssao_sample_radius);
-const float bias = GET_SETTING(ao, ssao_bias) * 0.5 / kernel_scale;
+const float bias = GET_SETTING(ao, ssao_bias) * 5 * screen_scale;
 float max_range = GET_SETTING(ao, ssao_max_distance);
 
-float sample_offset = sample_radius * pixel_size.x * 30.0;
+float sample_offset = sample_radius * pixel_size.x * 30.0 * screen_scale;
 float range_accum = 0.0;
 float accum = 0.0;
 
@@ -51,8 +51,9 @@ START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
 
     // Since poisson disks have more samples to the outer, but this
     // is does not match the ao definition, move the samples closer to the pixel
-    offset = pow(abs(offset), vec3(2.0)) * sign(offset);
-    
+    offset = pow(abs(offset), vec3(1.5)) * sign(offset);
+    // offset *= 0.7;
+
     // Flip offset in case it faces away from the normal
     offset = face_forward(offset, pixel_view_normal);
 

@@ -34,7 +34,7 @@ class MotionBlurStage(RenderStage):
     """ This stage applies the motion blur, using the screen space velocity vectors """
 
     required_inputs = []
-    required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth", "CombinedVelocity"]
+    required_pipes = ["ShadedScene", "GBuffer", "LowPrecisionDepth", "CombinedVelocity"]
 
     @property
     def produced_pipes(self):

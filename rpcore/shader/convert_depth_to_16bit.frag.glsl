@@ -29,13 +29,11 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
-
-#pragma include "sky_ao.inc.glsl"
+#pragma include "includes/transforms.inc.glsl"
 
 out float result;
 
 void main() {
-    vec2 texcoord = get_quarter_texcoord();
-    Material m = unpack_material(GBuffer, texcoord);
-    result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(gl_FragCoord.xy));
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    result = get_linear_z_from_z(get_depth_at(coord));
 }

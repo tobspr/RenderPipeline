@@ -35,11 +35,6 @@
 out float result;
 
 uniform int pixel_multiplier;
-uniform sampler2D LowPrecisionNormals;
-vec3 get_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(LowPrecisionNormals, coord, 0).xy); }
-vec3 get_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionNormals, coord, 0).xy); }
-
-
 
 uniform isamplerBuffer InvalidPixelCounter;
 uniform isamplerBuffer InvalidPixelBuffer;
@@ -59,7 +54,6 @@ void main() {
 
     vec2 texcoord = vec2(ivec2(frag_x, frag_y) * pixel_multiplier + 0.5) / SCREEN_SIZE;
     Material m = unpack_material(GBuffer, texcoord);
-    m.normal = get_normal(texcoord);
     float result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(frag_x, frag_y));
 
     // result = 0;

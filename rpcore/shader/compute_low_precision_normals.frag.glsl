@@ -31,7 +31,7 @@
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/normal_packing.inc.glsl"
 
-out vec4 result;
+out vec2 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
@@ -45,9 +45,6 @@ void main() {
         normal = normalize(normal);
     #endif
 
-    result.xy = pack_normal_unsigned(normal); // Simple packing should be enough for this case
+    result = pack_normal_unsigned(normal);
 
-    float depth = get_gbuffer_depth(GBuffer, texcoord);
-
-    result.zw = pack_depth(depth);
 }

@@ -28,14 +28,11 @@
 
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
 
-#pragma include "sky_ao.inc.glsl"
-
-out float result;
+uniform sampler2D SourceTex;
+out vec4 result;
 
 void main() {
-    vec2 texcoord = get_quarter_texcoord();
-    Material m = unpack_material(GBuffer, texcoord);
-    result = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(gl_FragCoord.xy));
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    result = texelFetch(SourceTex, coord * 2, 0);
 }

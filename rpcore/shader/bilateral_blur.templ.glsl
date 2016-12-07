@@ -41,6 +41,12 @@ uniform GBufferData GBuffer;
     #define MULTIPLIER 1
 #endif
 
+#if MULTIPLIER == 2 // halfres
+    uniform sampler2D LowPrecisionHalfresDepth;
+#else
+    uniform sampler2D LowPrecisionDepth;
+#endif
+
 out vec4 result;
 
 float get_lin_z(ivec2 ccoord) {
@@ -61,7 +67,7 @@ void main() {
     float accum_w = 0.0;
 
     // Amount of samples, don't forget to change the weights array in case you change this.
-    const int blur_size = 5;
+    const int blur_size = 7;
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_normal(screen_coord);
@@ -93,10 +99,19 @@ void main() {
     for (int i = -blur_size + 1; i < blur_size; ++i) {
         ivec2 offcoord = coord + i * real_direction * 2;
         vec4 sampled = texelFetch(SourceTex, offcoord, 0);
-        vec3 nrm = get_normal(offcoord * MULTIPLIER);
-        float depth = get_lin_z(offcoord * MULTIPLIER);
+        
+        #if MULTIPLIER == 2 // Halfres
+            vec3 nrm = get_halfres_normal(offcoord);
+            // float depth = texelFetch(LowPrecisionHalfresDepth, offcoord, 0).x;
+        #else
+            vec3 nrm = get_normal(offcoord);
+            // float depth = texelFetch(LowPrecisionDepth, offcoord, 0).x;
+        #endif
 
-        float weight = gaussian_weights_5[abs(i)];
+        // Tried to use low precision depth, but makes no difference in terms of performance
+        float depth = get_lin_z(offcoord * 2);
+
+        float weight = gaussian_weights_7[abs(i)];
         float depth_diff = abs(depth - pixel_depth) > max_depth_diff ? 0.0 : 1.0;
         weight *= depth_diff;
 

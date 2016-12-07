@@ -37,12 +37,22 @@ class ComputeLowPrecisionNormalsStage(RenderStage):
 
     @property
     def produced_pipes(self):
-        return {"LowPrecisionNormals": self.target.color_tex}
+        return {
+            "LowPrecisionNormals": self.target.color_tex,
+            "LowPrecisionHalfresNormals": self.target_half.color_tex
+        }
 
     def create(self):
         self.target = self.create_target("ComputeLowPrecisionNormals")
-        self.target.add_color_attachment(bits=(8, 8, 8, 8))
+        self.target.add_color_attachment(bits=(8, 8, 0, 0))
         self.target.prepare_buffer()
+
+        self.target_half = self.create_target("DownscaleNormalsToHalf")
+        self.target_half.add_color_attachment(bits=(8, 8, 0, 0))
+        self.target_half.size = "50%"
+        self.target_half.prepare_buffer()
+        self.target_half.set_shader_input("SourceTex", self.target.color_tex)
 
     def reload_shaders(self):
         self.target.shader = self.load_shader("compute_low_precision_normals.frag.glsl")
+        self.target_half.shader = self.load_shader("downscale_normals.frag.glsl")

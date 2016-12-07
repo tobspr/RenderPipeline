@@ -173,5 +173,4 @@ allow-incomplete-render #t
 
 # gl-version 3 2
 
-
 no-singular-invert #f

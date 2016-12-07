@@ -34,7 +34,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/importance_sampling.inc.glsl"
 
-uniform sampler2D DownscaledDepth;
+uniform sampler2D LowPrecisionDepth;
 
 out vec2 result;
 
@@ -215,7 +215,7 @@ void main()
 
         // Check for intersection
         #if USE_LINEAR_DEPTH
-            float depth_sample = textureLod(DownscaledDepth, curr_coord, 0).x;
+            float depth_sample = textureLod(LowPrecisionDepth, curr_coord, 0).x;
         #else
             float depth_sample = textureLod(GBuffer.Depth, curr_coord, 0).x;
         #endif

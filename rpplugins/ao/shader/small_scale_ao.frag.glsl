@@ -36,7 +36,7 @@
 
 out vec2 result;
 
-uniform sampler2D DownscaledDepth;
+uniform sampler2D LowPrecisionDepth;
 uniform sampler2D AOResult;
 
 // use the extended gbuffer api
@@ -44,7 +44,7 @@ uniform sampler2D AOResult;
 #pragma include "includes/gbuffer.inc.glsl"
 
 float get_linear_depth_at(vec2 coord) {
-    return textureLod(DownscaledDepth, coord, 0).x;
+    return textureLod(LowPrecisionDepth, coord, 0).x;
 }
 
 void main() {

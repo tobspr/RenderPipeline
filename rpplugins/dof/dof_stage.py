@@ -32,7 +32,7 @@ class DoFStage(RenderStage):
     """ This stage does the DoF pass """
 
     required_inputs = []
-    required_pipes = ["ShadedScene", "GBuffer", "DownscaledDepth"]
+    required_pipes = ["ShadedScene", "GBuffer", "LowPrecisionDepth"]
 
     @property
     def produced_pipes(self):

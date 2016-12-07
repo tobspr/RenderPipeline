@@ -32,8 +32,9 @@ from rpcore.util.bilateral_upscaler import BilateralUpscaler
 class AOStage(RenderStage):
 
     required_inputs = []
-    required_pipes = ["GBuffer", "DownscaledDepth", "PreviousFrame::ResolvedAO[RG8,50%]",
-                      "CombinedVelocity", "LowPrecisionNormals", "PreviousFrame::SceneDepth[R32I]"]
+    required_pipes = ["GBuffer", "LowPrecisionDepth", "LowPrecisionHalfresDepth", "PreviousFrame::ResolvedAO[RG8,50%]",
+                      "CombinedVelocity", "LowPrecisionHalfresNormals", "LowPrecisionNormals",
+                      "PreviousFrame::SceneDepth[R32I]"]
 
     @property
     def produced_pipes(self):
@@ -108,7 +109,7 @@ class AOStage(RenderStage):
 
         # Optionally compute small scale (detailed) ao
         if self.enable_small_scale_ao:
-            self.target_detail_ao = self.create_target("DetailAO")
+            self.target_detail_ao = self.create_target("SmallScaleDetailAO")
             self.target_detail_ao.add_color_attachment(bits=ao_bits)
             self.target_detail_ao.prepare_buffer()
             self.target_detail_ao.set_shader_input("AOResult", self.upscaler.result_tex)
