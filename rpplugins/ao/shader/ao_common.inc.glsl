@@ -59,21 +59,32 @@ float compute_ao(ivec2 coord) {
     }
 
     float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
+    // t = 0;
     t += pixel_distance;
 
-    vec3 noise_vec = rand_rgb(coord + 0.32343 * t);
-    float rotation_factor = M_PI * rand(coord) + t * TWO_PI;
-    float scale_factor = mix(0.8, 1.2, abs(rand(coord + 0.1 * t)));
+    vec2 seed = ivec2(gl_FragCoord.xy) % 16 + t;
 
-    mat2 rotation_mat = make_rotate_mat2(rotation_factor);
+    // vec3 noise_vec = rand_rgb(coord + 0.32343 * t);
+    // float rotation_factor = M_PI * rand(coord) + t * TWO_PI;
+    float scale_factor = mix(0.1, 1.5, abs(rand(seed * 0.273523 + 0.84234)));
+
+    float hpr_x = rand(seed * 0.59834 + 0.62839) * TWO_PI;
+    float hpr_y = rand(seed * 0.48234 + 0.59383) * TWO_PI;
+    float hpr_z = rand(seed * 0.86342 + 0.91845) * TWO_PI;
+
+    mat2 perturb_mat_2d = make_rotate_mat2(hpr_x);
+    perturb_mat_2d *= make_scale_mat2(scale_factor);
+
+    // Generate 3D perturbation matrix
+    mat3 perturb_mat_3d = make_rotate_mat3(hpr_x, hpr_y, hpr_z);
+    perturb_mat_3d *= make_scale_mat3(scale_factor);
 
     vec3 pixel_view_normal = get_view_normal(texcoord);
     vec3 pixel_view_pos = get_view_pos_at(texcoord);
     vec3 pixel_world_normal = get_gbuffer_normal(GBuffer, texcoord);
 
-    float screen_scale = WINDOW_WIDTH / 800.0;
+    float screen_scale = WINDOW_WIDTH / 800.0 * 1.5;
     float kernel_scale = 2.0 / pixel_distance * screen_scale;
-
 
     // Increase kernel scale at obligue angles
     vec3 view_dir = normalize(pixel_view_pos);
@@ -98,11 +109,7 @@ float compute_ao(ivec2 coord) {
     #endif
 
 
-    result = pow(saturate(result), GET_SETTING(ao, occlusion_strength));
-    
-    // Increase AO in the distance
-    float pow_add = pixel_distance / 1000.0;    
-    result = pow(result, 6.0 + pow_add);
+    result = pow(result, 2 * GET_SETTING(ao, occlusion_strength));
 
     return result;
 }

@@ -86,9 +86,22 @@ vec3 calculate_surface_pos_ortho(float z, vec2 tcoord, float near, float far, ma
 
 // Computes the view position from a given Z value and texcoord
 vec3 calculate_view_pos(float z, vec2 tcoord) {
-    vec4 view_pos = MainSceneData.inv_proj_mat *
-    vec4(fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z, 1.0);
-    return view_pos.xyz / view_pos.w;
+
+    #if 1
+        vec4 view_pos = MainSceneData.inv_proj_mat *
+        vec4(fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z, 1.0);
+        return view_pos.xyz / view_pos.w;
+    #else
+        // XXX: BROKEN
+        float linz = get_linear_z_from_z(z);
+        return mix(
+            mix(MainSceneData.vs_frustum_directions[0],
+                MainSceneData.vs_frustum_directions[1], tcoord.x),
+            mix(MainSceneData.vs_frustum_directions[2],
+                MainSceneData.vs_frustum_directions[3], tcoord.x),
+            tcoord.y
+        ).xyz * linz;
+    #endif
 }
 
 // Computes the NDC position from a given view position

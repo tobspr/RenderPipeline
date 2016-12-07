@@ -168,7 +168,7 @@ class CommonResources(RPObject):
     def _load_skydome(self):
         """ Loads the skydome """
         # skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
-        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox-3.jpg")
+        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.jpg")
         skydome.set_wrap_u(SamplerState.WM_clamp)
         skydome.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.inputs["DefaultSkydome"] = skydome

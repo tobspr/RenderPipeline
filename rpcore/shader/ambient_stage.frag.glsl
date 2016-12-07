@@ -28,6 +28,7 @@
 
 // This shader applies the ambient term to the shaded scene
 
+#define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
@@ -35,7 +36,6 @@
 #pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
-uniform GBufferData GBuffer;
 uniform sampler3D PrefilteredBRDF;
 uniform sampler2D PrefilteredMetalBRDF;
 uniform sampler2D PrefilteredCoatBRDF;
@@ -73,8 +73,9 @@ uniform samplerCube DefaultEnvmap;
 out vec3 result;
 
 float compute_specular_occlusion(float NxV, float occlusion, float roughness) {
+    // return occlusion * 0.7 + 0.3;
     return occlusion;
-    // return saturate(pow(NxV + occlusion, roughness) - 1 + occlusion);
+    // return saturate(pow((1 - NxV) + occlusion, roughness) - 1 + occlusion);
 }
 
 // From: http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
@@ -132,7 +133,11 @@ void main() {
     // Sample precomputed occlusion and multiply the ambient term with it
     #if HAVE_PLUGIN(ao)
         vec2 occlusion_raw = textureLod(AmbientOcclusion, texcoord, 0).xy;
-        occlusion = occlusion_raw.x;
+
+        // It is important that we pow the occlusion here, and not earlier, since
+        // we are working with 8 bit targets in the ao pass
+        occlusion = pow(occlusion_raw.x, 2.0);
+
 
         // SkyAO is packed into the ao texture
         #if HAVE_PLUGIN(sky_ao)
@@ -245,6 +250,7 @@ void main() {
         specular_ambient = fresnel * ibl_specular;
     }
 
+
     float specular_occlusion = compute_specular_occlusion(NxV, occlusion, roughness);
 
 
@@ -289,6 +295,19 @@ void main() {
         // Pass through debug modes
         result = texture(EnvmapAmbientDiff, texcoord).xyz;
         return;
+    #endif
+
+    #if SPECIAL_MODE_ACTIVE(INVALID_NORMALS)
+        // Detect invalid normals by comparing the material normal to the actual depth-based
+        // normal
+        vec3 depth_based_nrm = get_world_normal_from_depth(texcoord);
+        
+        float diff = dot(depth_based_nrm, m.normal);
+        float threshold = 0.2;
+        if (diff < threshold) {
+            result = vec3(10, 0, 0);
+            return;
+        }
     #endif
 
     result = scene_color + ambient + scattering_color;

@@ -35,19 +35,17 @@ to approximate AO.
 */
 
 
-const float sample_radius = GET_SETTING(ao, alchemy_sample_radius);
+const float sample_radius = GET_SETTING(ao, alchemy_sample_radius) * kernel_scale * 2.5;
+const float max_dist = GET_SETTING(ao, alchemy_max_distance) * 1.0;
 
-float max_dist = GET_SETTING(ao, alchemy_max_distance);
 float accum = 0.0;
 int accum_count = 0;
-vec2 offset_scale = pixel_size * sample_radius * 0.5;
-
+vec2 offset_scale = pixel_size * sample_radius;
 
 START_ITERATE_SEQUENCE(ao, alchemy_sequence, vec2 offset)
 
-    offset = mix(offset, noise_vec.xy, 0.3);
-
-    vec2 offcoord = texcoord + offset * offset_scale;
+    
+    vec2 offcoord = texcoord + offset * perturb_mat_2d * offset_scale;
 
     // Get view position at that offset
     vec3 off_pos = get_view_pos_at(offcoord);
@@ -68,5 +66,4 @@ END_ITERATE_SEQUENCE();
 
 // Normalize values
 accum /= max(1.0, float(accum_count));
-accum *= 0.5;
 result = 1 - accum;

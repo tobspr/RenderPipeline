@@ -27,17 +27,22 @@
 
 
 
-const float sample_radius = GET_SETTING(ao, hbao_sample_radius) * 2;
+const float sample_radius = GET_SETTING(ao, hbao_sample_radius) * 7 * kernel_scale;
 const int num_angles = GET_SETTING(ao, hbao_ray_count);
 const int num_ray_steps = GET_SETTING(ao, hbao_ray_steps);
 const float tangent_bias = GET_SETTING(ao, hbao_tangent_bias);
-const float max_sample_distance = GET_SETTING(ao, hbao_max_distance) * 0.3;
+const float max_sample_distance = GET_SETTING(ao, hbao_max_distance) * 0.15;
 
 float accum = 0.0;
 
-for (int i = 0; i < num_angles; ++i) {
-    float angle = (i + 2 * noise_vec.x) / float(num_angles) * TWO_PI;
+vec3 noise_vec = vec3(0);
 
+float perturb_angle = rand(seed * 0.523423 + 0.85923);
+float perturb_radius = rand(seed * 0.96344 + 0.329423);
+
+for (int i = 0; i < num_angles; ++i) {
+
+    float angle = (i + perturb_angle) / float(num_angles) * TWO_PI;
     vec2 sample_dir = vec2(cos(angle), sin(angle));
 
     // Find the tangent andle
@@ -55,7 +60,7 @@ for (int i = 0; i < num_angles; ++i) {
 
         // Get new texture coordinate
         vec2 texc = texcoord +
-            sample_dir * (k + 2.0 + 2 * noise_vec.y) /
+            sample_dir * (k + 2.0 + 1.0 * perturb_radius) /
                 num_ray_steps * pixel_size * sample_radius * 0.3;
 
         // Fetch view pos at that position and compare it
@@ -82,4 +87,5 @@ for (int i = 0; i < num_angles; ++i) {
 
 // Normalize samples
 accum /= num_angles;
+accum = 1 - pow(1 - accum, 1.8);
 result = 1 - accum;

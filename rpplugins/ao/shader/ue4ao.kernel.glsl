@@ -36,18 +36,17 @@ unocluded vector.
 
 */
 
-const float sample_radius = GET_SETTING(ao, ue4ao_sample_radius);
-const float max_distance = GET_SETTING(ao, ue4ao_max_distance);
+const float sample_radius = GET_SETTING(ao, ue4ao_sample_radius) * kernel_scale * 2.5;
+const float max_distance = GET_SETTING(ao, ue4ao_max_distance) * 1.5;
 
 float accum = 0.0;
 float accum_count = 0.0;
 
-vec2 offset_scale = pixel_size * sample_radius * 0.4;
+vec2 offset_scale = pixel_size * sample_radius;
 
 START_ITERATE_SEQUENCE(ao, ue4ao_sample_sequence, vec2 offset)
 
-    offset = mix(offset, noise_vec.xy, 0.3);
-    vec2 offcoord = offset * offset_scale;
+    vec2 offcoord = offset * perturb_mat_2d * offset_scale;
 
     // Get offset coordinates
     vec2 texc_a = texcoord + offcoord;
@@ -91,5 +90,6 @@ START_ITERATE_SEQUENCE(ao, ue4ao_sample_sequence, vec2 offset)
 
 END_ITERATE_SEQUENCE();
 
+// Normalize values
 accum /= max(1.0, accum_count);
 result = 1 - accum;

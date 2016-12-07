@@ -39,5 +39,5 @@ vec3 get_halfres_normal(vec2 coord) { return unpack_normal_unsigned(textureLod(L
 vec3 get_halfres_normal(ivec2 coord) { return unpack_normal_unsigned(texelFetch(LowPrecisionHalfresNormals, coord, 0).xy); }
 
 
-const float max_depth_diff_base = 1.0 / 50.0;
+const float max_depth_diff_base = 1.0 / 250.0;
 const float max_nrm_diff_base = 0.2;

@@ -37,17 +37,17 @@ of the spheres volume is then used to compute AO.
 
 
 
-vec2 sphere_radius = GET_SETTING(ao, ssvo_sphere_radius) * pixel_size;
-float max_depth_diff = GET_SETTING(ao, ssvo_max_distance) / kernel_scale;
+vec2 sphere_radius = GET_SETTING(ao, ssvo_sphere_radius) * pixel_size * kernel_scale * 3.5;
+float max_depth_diff = GET_SETTING(ao, ssvo_max_distance) * 1.8;
 
 float accum = 0.0;
-float pixel_linz = get_linear_z_from_z(pixel_depth);
+float pixel_linz = pixel_distance;
 
 START_ITERATE_SEQUENCE(ao, ssvo_sequence, vec2 offset)
 
-    offset = mix(offset, noise_vec.xy, 0.3);
+    // offset = mix(offset, noise_vec.xy, 0.3);
 
-    vec2 offc = offset * sphere_radius * 5.0;
+    vec2 offc = (offset * perturb_mat_2d) * sphere_radius * 5.0;
 
     // Use paired samples, this enables us to hide depth buffer discontinuities
     vec2 offcoord_a = texcoord + offc;
@@ -95,8 +95,5 @@ START_ITERATE_SEQUENCE(ao, ssvo_sequence, vec2 offset)
 END_ITERATE_SEQUENCE();
 
 NORMALIZE_SEQUENCE(ao, ssvo_sequence, accum);
-
-// Normalize kernel to match up with other techniques
-accum = accum * 0.5 + 0.5;
 
 result = accum;

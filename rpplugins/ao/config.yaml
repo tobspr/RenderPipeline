@@ -44,6 +44,17 @@ settings: !!omap
             Controls how long to keep AO samples in the history. Bigger values
             will produce a smoother effect but might also produce artifacts,
             especially when moving.
+    
+    - max_resolve_dist:
+        type: float
+        range: [0.0, 1.0]
+        default: 0.15
+        shader_runtime: true
+        label: Maximum resolve distance
+        description: >
+            When reprojecting a sample, this is the maximum distance in
+            world space that the previous frame sample may have. Higher values
+            leead to less flickering, but also might produce smearing.
 
     # Small scale ao settings
     - enable_small_scale_ao:

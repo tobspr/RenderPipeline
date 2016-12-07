@@ -64,7 +64,7 @@ void main() {
     vec3 last_pos = calculate_surface_pos(last_depth, vec2(last_native_coord), MainSceneData.last_inv_view_proj_mat_no_jitter);
     vec3 curr_pos = calculate_surface_pos(curr_depth, vec2(curr_coord), MainSceneData.inv_view_proj_mat_no_jitter);
 
-    const float max_dist = 0.05;
+    const float max_dist = GET_SETTING(ao, max_resolve_dist);
     float distance_factor = step(max_dist * max_dist, distance_squared(last_pos, curr_pos));
 
     float weight = mix(1 - 1.0 / 9.0, 0.0, distance_factor);

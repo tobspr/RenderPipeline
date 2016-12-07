@@ -30,3 +30,4 @@ render_modes:
   - { name: "Probe Count", key: "ENVPROBE_COUNT", requires: "env_probes" }
   - { name: "Light Tiles", key: "LIGHT_TILES", special: true }
   - { name: "Bilateral Misses", key: "BILATERAL_MISSES", special: true }
+  - { name: "Invalid Normals", key: "INVALID_NORMALS", special: true }

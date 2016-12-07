@@ -43,6 +43,14 @@ mat2 make_ident_mat2() {
     );
 }
 
+// Creates a scale matrix
+mat2 make_scale_mat2(float scale) {
+    return mat2(
+        scale, 0,
+        0, scale
+    );
+}
+
 // Creates a identity mat
 mat3 make_ident_mat3() {
     return mat3(
@@ -88,4 +96,14 @@ mat3 make_rotate_mat3(float rotate_x, float rotate_y, float rotate_z) {
     return make_rotate_mat3_x(rotate_x) *
            make_rotate_mat3_y(rotate_y) *
            make_rotate_mat3_z(rotate_z);
+}
+
+
+// Creates a scale matrix
+mat3 make_scale_mat3(float scale) {
+    return mat3(
+        scale, 0, 0,
+        0, scale, 0,
+        0, 0, scale
+    );
 }

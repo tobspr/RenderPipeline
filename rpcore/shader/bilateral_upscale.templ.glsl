@@ -63,6 +63,11 @@ void main() {
 
     ivec2 bil_start_coord = get_bilateral_coord(coord);
 
+    #if 0
+        result = texelFetch(SourceTex, coord / 2, 0);
+        return;
+    #endif
+
     // Get current pixel data
     float mid_depth = get_gbuffer_depth(GBuffer, ss_coord);
     float mid_depth_linear = get_linear_z_from_z(mid_depth);

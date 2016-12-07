@@ -67,7 +67,7 @@ void main() {
     float accum_w = 0.0;
 
     // Amount of samples, don't forget to change the weights array in case you change this.
-    const int blur_size = 7;
+    const int blur_size = 6;
 
     // Get the mid pixel normal and depth
     vec3 pixel_nrm = get_normal(screen_coord);
@@ -111,7 +111,7 @@ void main() {
         // Tried to use low precision depth, but makes no difference in terms of performance
         float depth = get_lin_z(offcoord * 2);
 
-        float weight = gaussian_weights_7[abs(i)];
+        float weight = gaussian_weights_6[abs(i)];
         float depth_diff = abs(depth - pixel_depth) > max_depth_diff ? 0.0 : 1.0;
         weight *= depth_diff;
 

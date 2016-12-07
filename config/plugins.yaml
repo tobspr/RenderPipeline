@@ -6,7 +6,6 @@
 enabled:
     - ao
     - smaa
-    # - temporal_aa
     # - bloom
     # - clouds
     # - color_correction
@@ -20,6 +19,7 @@ enabled:
     # - skin_shading
     # - sky_ao
     # - ssr
+    # - temporal_aa
     # - volumetrics
     # - vxgi
 
@@ -30,11 +30,12 @@ overrides:
         occlusion_strength: 2.5
         border_fade: 0.05
         clip_length: 4
+        max_resolve_dist: 0.15
         enable_small_scale_ao: True
         sc_occlusion_strength: 0.5
         sc_occlusion_range: 7.5
         sc_occlusion_max_dist: 0.25
-        technique: SSAO
+        technique: UE4AO
         ssao_sample_radius: 50.0
         ssao_sequence: halton_3D_16
         ssao_bias: 0.0333
