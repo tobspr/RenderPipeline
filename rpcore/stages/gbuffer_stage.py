@@ -54,8 +54,8 @@ class GBufferStage(RenderStage):
 
     def create(self):
         self.target = self.create_target("GBuffer")
-        self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_depth_attachment(bits=32)
+        self.target.add_color_attachment(bits=16, alpha=True)
         self.target.add_aux_attachments(bits=16, count=2)
         self.target.prepare_render(Globals.base.cam)
 

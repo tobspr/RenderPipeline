@@ -83,7 +83,7 @@ void main() {
 
     // Reconstruct last frame texcoord
     vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
-    vec3 pos = calculate_surface_pos(intersection_depth, texcoord - film_offset_bias);
+    vec3 pos = reconstruct_ws_position(intersection_depth, texcoord - film_offset_bias);
     vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
     vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
 

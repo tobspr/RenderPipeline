@@ -159,7 +159,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
 
 // Shades the material from the per cell light buffer
-vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
+vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) {
 
     #if DEBUG_MODE && !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
         return vec3(0);
@@ -174,7 +174,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     // Find per tile lights
     int cell_index = texelFetch(CellIndices, tile, 0).x;
     int count_offs = cell_index * (1 + LIGHT_CLS_COUNT); // 1 for total count, rest for light classes
-    uint num_total_lights  = texelFetch(PerCellLightsCounts, count_offs).x;
+    uint num_total_lights = texelFetch(PerCellLightsCounts, count_offs).x;
 
     // Early out when no lights are there
     #if !SPECIAL_MODE_ACTIVE(LIGHT_TILES)
@@ -242,8 +242,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
     }
 
     // Fade out lights as they reach the culling distance
-    float curr_dist = distance(m.position, MainSceneData.camera_pos);
-    float fade = saturate(curr_dist / LC_MAX_DISTANCE);
+    float fade = saturate(linear_dist / LC_MAX_DISTANCE);
     fade = 1 - pow(fade, 10.0);
 
 
@@ -252,7 +251,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
         // Show tiles
         #if IS_SCREEN_SPACE
 
-            if (num_total_lights > 0) {
+            // if (num_total_lights > 0) {
         
                 float light_factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
                 shading_result = saturate(shading_result) * 0.2;
@@ -262,13 +261,20 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
                     int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
                     shading_result += 0.1;
                 }
+                
                 // shading_result += light_factor;
                 vec3 bg_color = vec3(0, 1, 0);
+                
                 if (num_total_lights > 5) {
                     bg_color = vec3(1, 1, 0);
                 }
+
                 if (num_total_lights > 10) {
                     bg_color = vec3(1, 0, 0);
+                }
+
+                if (num_total_lights == LC_MAX_LIGHTS_PER_CELL) {
+                    bg_color = vec3(10, 0, 0);
                 }
 
                 shading_result += bg_color * 0.2;
@@ -277,7 +283,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile) {
 
                 shading_result += vec3(render_number(tile_start + ivec2(3, 3), num_total_lights));
             
-            }
+            // }
 
         #endif
     #endif

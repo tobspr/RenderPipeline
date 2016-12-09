@@ -28,23 +28,21 @@
 
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/normal_packing.inc.glsl"
+#pragma include "includes/gbuffer2.inc.glsl"
 
 out vec2 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec3 normal = get_gbuffer_normal(GBuffer, texcoord);    
+    vec3 normal = gbuffer_get_normal(texcoord);    
 
     // Smooth out normal usign depth based normal, to avoid having
     // too high frequences
     #if 0
-        vec3 depth_based_normal = get_world_normal_from_depth(texcoord);
+        vec3 depth_based_normal = gbuffer_reconstruct_ws_normal_from_depth(texcoord);
         normal = mix(normal, depth_based_normal, 0.6);
         normal = normalize(normal);
     #endif
 
     result = pack_normal_unsigned(normal);
-
 }

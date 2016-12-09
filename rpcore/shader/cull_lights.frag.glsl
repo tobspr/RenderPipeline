@@ -38,8 +38,8 @@ layout(early_fragment_tests) in;
 #pragma include "includes/light_classification.inc.glsl"
 
 uniform isamplerBuffer CellListBuffer;
-uniform usamplerBuffer FrustumLights;
-uniform isamplerBuffer FrustumLightsCount;
+uniform usamplerBuffer PerSliceLights;
+uniform isamplerBuffer PerSliceLightsCount;
 
 uniform writeonly uimageBuffer PerCellLightsBuffer;
 layout(r32i) uniform iimageBuffer PerCellLightCountsBuffer;
@@ -69,29 +69,28 @@ void main() {
     int cell_x, cell_y, cell_slice;
     unpack_cell_data(packed_cell_data, cell_x, cell_y, cell_slice);
 
-    // Amount to increment the minimum and maximum distance of the slice. This
-    // avoids false negatives in culling.
-    const float distance_bias = 0.0;
-
     // Find the tiles minimum and maximum distance
-    float min_distance = get_distance_from_slice(cell_slice) - distance_bias;
-    float max_distance = get_distance_from_slice(cell_slice + 1) + distance_bias;
+    float min_distance = get_distance_from_slice(cell_slice);
+    float max_distance = get_distance_from_slice(cell_slice + 1);
 
     // Get the offset in the per-cell light list
     int storage_offs = LC_MAX_LIGHTS_PER_CELL * idx;
-    int num_rendered_lights = 0;
 
-    // Get amount of visible lights in frustum
-    int max_frustum_lights = texelFetch(FrustumLightsCount, 0).x;
+    // Get amount of visible lights in slice
+    int max_slice_lights = texelFetch(PerSliceLightsCount, cell_slice).x;
 
-    Frustum view_frustum = make_view_frustum(cell_x, cell_y, precompute_size, min_distance, max_distance);
+    int slice_offs = cell_slice * LC_MAX_LIGHTS;
+
+    Frustum view_frustum = make_view_frustum(
+        cell_x, cell_y, precompute_size, min_distance, max_distance);
 
     // Cull all lights
-    for (int i = local_offset;
-            i < max_frustum_lights && num_rendered_lights < LC_MAX_LIGHTS_PER_CELL; 
-            i += LC_CULL_THREADS) {
+    for (int i = local_offset; i < max_slice_lights; i += LC_CULL_THREADS) {
 
-        int light_index = int(texelFetch(FrustumLights, i).x);
+        // int light_index = int(texelFetch(PerSliceLights, ivec2(cell_slice, i), 0).x);
+
+        // int light_index = int(texelFetch(PerSliceLights, ivec2(0, i), 0).x);
+        int light_index = int(texelFetch(PerSliceLights, slice_offs + i).x);
 
         // Fetch data of current light
         LightData light_data = read_light_data(AllLightsData, light_index);
@@ -102,12 +101,17 @@ void main() {
 
         // Write the light to the light buffer
         if (visible) {
+            int num_rendered_lights = imageAtomicAdd(PerCellLightCountsBuffer, idx, 1).x;
 
-            // Add one since the first element is the counter storing the total count
-            int num_lights = imageAtomicAdd(PerCellLightCountsBuffer, idx, 1).x;
-            imageStore(PerCellLightsBuffer, storage_offs + num_lights, uvec4(light_index));
+            // When we reached the maximum amount of lights for this tile, stop.
+            // At this point, its actually too late, because another thread might
+            // have written over the bounds already. But to improve performance,
+            // we stop iterating.
+            if (num_rendered_lights >= LC_MAX_LIGHTS_PER_CELL) {
+                break;
+            }
 
-            num_rendered_lights = num_lights;
+            imageStore(PerCellLightsBuffer, storage_offs + num_rendered_lights, uvec4(light_index));
         }
     }
 }

@@ -26,6 +26,9 @@
 
 #version 430
 
+// Processes all commands coming from the GPU, like adding lights, removing lights,
+// and so on ..
+
 #pragma include "render_pipeline_base.inc.glsl"
 
 uniform samplerBuffer CommandQueue;
@@ -62,6 +65,7 @@ void main() {
 
     // Process each command
     for (int command_index = 0; command_index < commandCount; ++command_index) {
+
         stack_ptr = command_index * 32;
         int command_type = read_int(stack_ptr);
 
@@ -105,7 +109,7 @@ void main() {
                 int slot = read_int(stack_ptr);
                 int offs = slot * 5;
 
-                // Copy the data over
+                // Copy the data to the light data buffer
                 for (int i = 0; i < 5; ++i) {
                     imageStore(SourceData, offs + i, read_vec4(stack_ptr));
                 }
@@ -130,11 +134,8 @@ void main() {
             }
 
 
-
-            // .. further commands will follow here
+            // ... further commands will follow here
 
         }
-
-
     }
 }

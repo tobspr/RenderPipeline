@@ -21,7 +21,7 @@ global_stage_order:
   # Main scene
   - GBufferStage
   - ShadowStage
-  - DownscaleZStage
+  - ConvertDepthStage
   - ComputeLowPrecisionNormalsStage
   - CombineVelocityStage
 
@@ -48,7 +48,6 @@ global_stage_order:
   - ApplyCloudsStage
   - GodrayStage
   - VolumetricsStage
-
 
   - AutoExposureStage
   - ManualExposureStage

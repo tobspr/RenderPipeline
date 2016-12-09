@@ -34,14 +34,11 @@
 // is available.
 #define IS_SCREEN_SPACE 1
 
+#pragma include "includes/gbuffer2.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/lighting_pipeline.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
 
 out vec4 result;
-
-uniform GBufferData GBuffer;
 
 // Used for velocity rendering mode
 #if MODE_ACTIVE(VELOCITY)
@@ -51,10 +48,12 @@ uniform GBufferData GBuffer;
 void main() {
 
     // Extract material properties
+    ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_texcoord();
-    Material m = unpack_material(GBuffer);
-    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy),
-        get_linear_z_from_z(get_gbuffer_depth(GBuffer, texcoord)));
+    Material m = gbuffer_get_material();
+
+    float linear_depth = gbuffer_get_linear_depth_32bit(texcoord);
+    ivec3 tile = get_lc_cell_index(coord, linear_depth);
 
     // Don't shade pixels out of the shading range
     #if !DEBUG_MODE
@@ -65,7 +64,7 @@ void main() {
     #endif
 
     // Apply all lights
-    result = vec4(shade_material_from_tile_buffer(m, tile), 1);
+    result = vec4(shade_material_from_tile_buffer(m, tile, linear_depth), 1);
 
     /*
 

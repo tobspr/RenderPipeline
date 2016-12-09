@@ -30,6 +30,7 @@ uniform mat4 trans_clip_of_mainCam_to_mainRender;
 uniform mat4 trans_mainRender_to_view_of_mainCam;
 uniform mat4 trans_mainRender_to_clip_of_mainCam;
 
+
 // Computes linear Z from a given Z value, and near and far plane
 float get_linear_z_from_z(float z, float near, float far) {
     return 2.0 * near * far / (far + near - (z * 2.0 - 1) * (far - near));
@@ -51,7 +52,7 @@ float get_linear_z_from_z_ortographic(float z, float near, float far) {
 }
 
 // Computes the surface position based on a given Z, a texcoord, and the Inverse MVP matrix
-vec3 calculate_surface_pos(float z, vec2 tcoord, mat4 inverse_mvp) {
+vec3 reconstruct_ws_position(float z, vec2 tcoord, mat4 inverse_mvp) {
     vec3 ndc_pos = fma(vec3(tcoord.xy, z), vec3(2.0), vec3(-1.0));
     float clip_w = get_z_from_ndc(ndc_pos);
 
@@ -60,9 +61,9 @@ vec3 calculate_surface_pos(float z, vec2 tcoord, mat4 inverse_mvp) {
 }
 
 // Computes the surface position based on a given Z and a texcoord
-vec3 calculate_surface_pos(float z, vec2 tcoord) {
+vec3 reconstruct_ws_position(float z, vec2 tcoord) {
     #if 0
-    return calculate_surface_pos(z, tcoord, trans_clip_of_mainCam_to_mainRender);
+    return reconstruct_ws_position(z, tcoord, trans_clip_of_mainCam_to_mainRender);
     #else
     float linz = get_linear_z_from_z(z);
     return mix(
@@ -77,7 +78,7 @@ vec3 calculate_surface_pos(float z, vec2 tcoord) {
 
 // Computes the surface position based on a given Z and a texcoord, aswell as a
 // custom near and far plane, and the inverse MVP. This is for orthographic projections
-vec3 calculate_surface_pos_ortho(float z, vec2 tcoord, float near, float far, mat4 inverse_mvp) {
+vec3 reconstruct_ws_position_ortho(float z, vec2 tcoord, float near, float far, mat4 inverse_mvp) {
     vec3 ndc_pos = fma(vec3(tcoord.xy, z), vec3(2.0), vec3(-1.0));
     float clip_w = get_linear_z_from_z_ortographic(z, near, far);
     vec4 result = inverse_mvp * vec4(ndc_pos * clip_w, clip_w);
@@ -85,27 +86,14 @@ vec3 calculate_surface_pos_ortho(float z, vec2 tcoord, float near, float far, ma
 }
 
 // Computes the view position from a given Z value and texcoord
-vec3 calculate_view_pos(float z, vec2 tcoord) {
-
-    #if 1
-        vec4 view_pos = MainSceneData.inv_proj_mat *
-        vec4(fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z, 1.0);
-        return view_pos.xyz / view_pos.w;
-    #else
-        // XXX: BROKEN
-        float linz = get_linear_z_from_z(z);
-        return mix(
-            mix(MainSceneData.vs_frustum_directions[0],
-                MainSceneData.vs_frustum_directions[1], tcoord.x),
-            mix(MainSceneData.vs_frustum_directions[2],
-                MainSceneData.vs_frustum_directions[3], tcoord.x),
-            tcoord.y
-        ).xyz * linz;
-    #endif
+vec3 reconstruct_vs_position(float z, vec2 tcoord) {
+    vec4 view_pos = MainSceneData.inv_proj_mat *
+    vec4(fma(tcoord.xy, vec2(2.0), vec2(-1.0)), z, 1.0);
+    return view_pos.xyz / view_pos.w;
 }
 
 // Computes the NDC position from a given view position
-vec3 view_to_screen(vec3 view_pos) {
+vec3 vs_to_ss(vec3 view_pos) {
     vec4 projected = MainSceneData.proj_mat * vec4(view_pos, 1);
     projected.xyz /= projected.w;
     projected.xy = fma(projected.xy, vec2(0.5), vec2(0.5));
@@ -113,7 +101,7 @@ vec3 view_to_screen(vec3 view_pos) {
 }
 
 // Converts a view space normal to world space
-vec3 view_normal_to_world(vec3 view_normal) {
+vec3 vs_normal_to_ws(vec3 view_normal) {
     // We need to transform the coordinate system, should not be required,
     // seems to be some panda bug?
     view_normal = view_normal.xzy * vec3(1, -1, 1);

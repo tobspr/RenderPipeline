@@ -1,7 +1,9 @@
 
 # This file controls the order of all render stages.
+
 # Usually you do not have to modify this, except if you are adding new plugins.
 # If you move stages, you should know what you do.
+
 # Commenting out a stage won't disable it, but instead produce an error when
 # it is created.
 
@@ -12,13 +14,15 @@ global_stage_order:
   - PSSMDistShadowStage
   - PSSMSceneShadowStage
   - ScatteringEnvmapStage
+  - SkyAOCaptureStage
   - EnvironmentCaptureStage
   - VoxelizationStage
 
   # Main scene
   - GBufferStage
   - ShadowStage
-  - DownscaleZStage
+  - ConvertDepthStage
+  - ComputeLowPrecisionNormalsStage
   - CombineVelocityStage
 
   # Light(-culling)
@@ -29,26 +33,37 @@ global_stage_order:
 
   # Plugins
   - CloudVoxelStage
+  - SkyAOStage
   - AOStage
   - ApplyLightsStage
-  - PSSMStage
   - ScatteringStage
+  - PSSMStage
   - ApplyEnvprobesStage
   - VXGIStage
   - SSRStage
-  - SSSRStage
+
   - AmbientStage
+  - ForwardStage
+
   - ApplyCloudsStage
   - GodrayStage
   - VolumetricsStage
+
   - AutoExposureStage
   - ManualExposureStage
 
   # Post AA & Effects
   - BloomStage
   - TonemappingStage
+  - SRGBCorrectionStage
+  
+  # Past this point, we work on 8 bit targets
   - SMAAStage
   - FXAAStage
+
+  # Past this stage, we can not rely on the depth buffer anymore
+  - TemporalAAStage
+
   - DoFStage
   - MotionBlurStage
   - SkinShadingStage

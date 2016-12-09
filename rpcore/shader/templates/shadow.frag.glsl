@@ -26,6 +26,7 @@
 
 #version 430
 
+
 %defines%
 
 #pragma include "render_pipeline_base.inc.glsl"
@@ -37,7 +38,7 @@
 layout(location = 0) in VertexOutput vOutput;
 
 #if OPT_ALPHA_TESTING
-uniform sampler2D p3d_Texture0;
+    uniform sampler2D p3d_Texture0;
 #endif
 
 void main() {

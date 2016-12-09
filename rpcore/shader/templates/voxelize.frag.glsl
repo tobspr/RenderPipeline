@@ -30,7 +30,7 @@
 
 %defines%
 
-#define USE_TIME_OF_DAY 1
+
 #pragma include "render_pipeline_base.inc.glsl"
 
 %includes%

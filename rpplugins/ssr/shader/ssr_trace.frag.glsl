@@ -158,8 +158,8 @@ void main()
     #endif
 
     // Convert start and end pos from view to screen space
-    vec3 ray_start_screen = view_to_screen(ray_start_vs);
-    vec3 ray_end_screen = view_to_screen(ray_start_vs + ray_len * ray_dir);
+    vec3 ray_start_screen = vs_to_ss(ray_start_vs);
+    vec3 ray_end_screen = vs_to_ss(ray_start_vs + ray_len * ray_dir);
 
     vec3 ray_pos = ray_start_screen;
     vec3 ray_dir_screen = ray_end_screen - ray_start_screen;

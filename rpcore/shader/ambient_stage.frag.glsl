@@ -30,7 +30,7 @@
 
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/gbuffer2.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
 #pragma include "includes/lights.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
@@ -52,9 +52,6 @@ uniform samplerCube DefaultEnvmap;
     uniform sampler2D AmbientOcclusion;
 #endif
 
-// #if HAVE_PLUGIN(sky_ao)
-//     uniform sampler2D SkyAO;
-// #endif
 
 #if HAVE_PLUGIN(vxgi)
     // uniform sampler2D VXGISpecular;
@@ -86,12 +83,10 @@ vec3 compute_bloom_luminance(vec3 bloom_color, float bloom_ec, float current_ev)
 
 void main() {
     vec2 texcoord = get_texcoord();
-    Material m = unpack_material(GBuffer);
+    Material m = gbuffer_get_material();
+
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
-
-    // Store the accumulated ambient term in a variable
     vec3 ambient = vec3(0);
-
 
     vec3 scattering_color = vec3(0);
 
@@ -200,7 +195,7 @@ void main() {
         ibl_specular = ibl_specular * (1 - ssr_spec.w) + ssr_spec.xyz;
     #endif
 
-    #if USE_WHITE_ENVIRONMENT
+    #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
         ibl_specular = vec3(1);
         ibl_diffuse = vec3(1);
     #endif
@@ -288,12 +283,10 @@ void main() {
         #endif
     #endif
 
-    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-
 
     #if MODE_ACTIVE(ENVPROBE_COUNT)
         // Pass through debug modes
-        result = texture(EnvmapAmbientDiff, texcoord).xyz;
+        result = textureLod(EnvmapAmbientDiff, texcoord, 0).xyz;
         return;
     #endif
 
@@ -309,6 +302,15 @@ void main() {
             return;
         }
     #endif
+
+
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+
+    #if DEBUG_MODE
+        result = scene_color;
+        return;
+    #endif
+
 
     result = scene_color + ambient + scattering_color;
 

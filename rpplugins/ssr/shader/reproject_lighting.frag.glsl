@@ -67,10 +67,10 @@ void main() {
 
         // TODO: Should probably use the 3x3 AABB for this, but might be too
         // performance heavy. I think this should work out well.
-        vec3 curr_pos = calculate_surface_pos(curr_depth, texcoord);
+        vec3 curr_pos = reconstruct_ws_position(curr_depth, texcoord);
         float last_depth = textureLod(Previous_SceneDepth, last_coord, 0).x;
 
-        vec3 last_pos = calculate_surface_pos(last_depth, last_coord,
+        vec3 last_pos = reconstruct_ws_position(last_depth, last_coord,
             MainSceneData.last_inv_view_proj_mat_no_jitter);
 
         if (distance(curr_pos, last_pos) > 0.9) {

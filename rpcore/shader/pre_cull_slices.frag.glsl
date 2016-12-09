@@ -26,9 +26,10 @@
 
 #version 430
 
-// This shader takes the list of all lights, and evaluates whether they are
-// in the camera frustum. This improves the performance of the actual culling
-// pass.
+layout(early_fragment_tests) in;
+
+// This shader takes the list of all camera frustum lights, and evaluates whether they 
+// are in the given slice
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
@@ -36,37 +37,43 @@
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/light_classification.inc.glsl"
 
-uniform writeonly uimageBuffer FrustumLights;
-layout(r32i) uniform iimageBuffer FrustumLightsCount;
+uniform usamplerBuffer FrustumLights;
+uniform isamplerBuffer FrustumLightsCount;
+
+layout(r16ui) uniform writeonly uimageBuffer PerSliceLights;
+layout(r32i) uniform iimageBuffer PerSliceLightsCount;
 
 uniform samplerBuffer AllLightsData;
-uniform int maxLightIndex;
+
 
 void main() {
 
-    const int tile_size = 16;
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    const int thread_count = 128;
 
-    int start_offset = coord.y * tile_size + coord.x;
-    
-    Frustum view_frustum = make_view_frustum(0, 0, ivec2(1, 1), 0.0, LC_MAX_DISTANCE);
+    int slice = int(gl_FragCoord.x);
 
-    // Check for all lights if they are in the view frustum, to reduce load
-    // on the upcoming detailed culling pass
-    for (int i = start_offset; i <= maxLightIndex; i += tile_size * tile_size) {
-        LightData light_data = read_light_data(AllLightsData, i);
 
-        // XXX: Might first read the type, then skip early
-        int light_type = get_light_type(light_data);
+    int thread_offset = int(gl_FragCoord.y);
+    int max_light_count = texelFetch(FrustumLightsCount, 0).x;
 
-        // Skip Null-Lights
-        if (light_type < 1) continue;
+    float start_dist = get_distance_from_slice(slice);
+    float end_dist = get_distance_from_slice(slice + 1);
 
+    Frustum view_frustum = make_view_frustum(0, 0, ivec2(1, 1), start_dist, end_dist);
+
+    // Check for all lights if they are in current slice
+    for (int i = thread_offset; i < max_light_count; i += thread_count) {   
+        int light_index = int(texelFetch(FrustumLights, i).x);
+
+        LightData light_data = read_light_data(AllLightsData, light_index);
         bool visible = cull_light(light_data, view_frustum);
 
+        // visible = true;
         if (visible) {
-            int index = imageAtomicAdd(FrustumLightsCount, 0, 1);
-            imageStore(FrustumLights, index, uvec4(i));
+            int num_rendered_lights = imageAtomicAdd(PerSliceLightsCount, slice, 1).x;
+            imageStore(PerSliceLights, slice * LC_MAX_LIGHTS + num_rendered_lights, uvec4(light_index));
         }
     }
+
+
 }

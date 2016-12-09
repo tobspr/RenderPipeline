@@ -22,92 +22,92 @@ materials_to_test = []
 
 GOLD_F0 = (1, 0.867136, 0.358654)
 
-# materials_to_test.append({
-#         "name": "Gold",
-#         "basecolor": GOLD_F0,
-#         "roughness": 0.1,
-#         "type": "metallic",
-#         "material_src": "Au"
-#     })
+materials_to_test.append({
+        "name": "Gold",
+        "basecolor": GOLD_F0,
+        "roughness": 0.1,
+        "type": "metallic",
+        "material_src": "Au"
+    })
 
-# materials_to_test.append({
-#         "name": "Foliage",
-#         "basecolor": (0.6, 0.9, 0.6),
-#         "roughness": 0.6,
-#         "type": "foliage"
-#     })
+materials_to_test.append({
+        "name": "Foliage",
+        "basecolor": (0.6, 0.9, 0.6),
+        "roughness": 0.6,
+        "type": "foliage"
+    })
 
-# materials_to_test.append({
-#         "name": "GoldRough",
-#         "basecolor": GOLD_F0,
-#         "roughness": 0.4,
-#         "type": "metallic",
-#         "material_src": "Au"
-#     })
-
-
-# materials_to_test.append({
-#         "name": "Test-R0",
-#         "basecolor": (0, 0, 0),
-#         "ior": 1.51,
-#         "roughness": 0.3
-#     })
-
-# materials_to_test.append({
-#         "name": "Test-IOR1.1",
-#         "basecolor": (0, 0, 1),
-#         "ior": 1.1,
-#         "roughness": 0.0
-#     })
-
-# materials_to_test.append({
-#         "name": "Test-IOR2",
-#         "basecolor": (0, 0, 1),
-#         "ior": 2.0,
-#         "roughness": 0.0
-#     })
-
-# materials_to_test.append({
-#         "name": "Test-IOR2.5",
-#         "basecolor": (0, 0, 1),
-#         "ior": 2.5,
-#         "roughness": 0.0
-#     })
+materials_to_test.append({
+        "name": "GoldRough",
+        "basecolor": GOLD_F0,
+        "roughness": 0.4,
+        "type": "metallic",
+        "material_src": "Au"
+    })
 
 
-# materials_to_test.append({
-#         "name": "Test-SpecOnly",
-#         "basecolor": (0, 0, 0),
-#         "ior": 1.5,
-#         "roughness": 0.0
-#     })
+materials_to_test.append({
+        "name": "Test-R0",
+        "basecolor": (0, 0, 0),
+        "ior": 1.51,
+        "roughness": 0.3
+    })
 
-# materials_to_test.append({
-#         "name": "Test-SpecOnly-R0.3",
-#         "basecolor": (0, 0, 0),
-#         "ior": 1.5,
-#         "roughness": 0.3
-#     })
+materials_to_test.append({
+        "name": "Test-IOR1.1",
+        "basecolor": (0, 0, 1),
+        "ior": 1.1,
+        "roughness": 0.0
+    })
 
-# materials_to_test.append({
-#         "name": "Nonrefractive-Diffuse",
-#         "basecolor": (0.5, 0.5, 0.5),
-#         "ior": 1.0,
-#         "roughness": 1.0
-#     })
+materials_to_test.append({
+        "name": "Test-IOR2",
+        "basecolor": (0, 0, 1),
+        "ior": 2.0,
+        "roughness": 0.0
+    })
 
-# materials_to_test.append({
-#         "name": "Rough-Diffuse",
-#         "basecolor": (0.5, 0.5, 0.5),
-#         "ior": 1.5,
-#         "roughness": 0.8
-#     })
-# materials_to_test.append({
-#         "name": "Normal-Diffuse",
-#         "basecolor": (00.5, 0.5, 0.5),
-#         "ior": 1.5,
-#         "roughness": 0.4
-#     })
+materials_to_test.append({
+        "name": "Test-IOR2.5",
+        "basecolor": (0, 0, 1),
+        "ior": 2.5,
+        "roughness": 0.0
+    })
+
+
+materials_to_test.append({
+        "name": "Test-SpecOnly",
+        "basecolor": (0, 0, 0),
+        "ior": 1.5,
+        "roughness": 0.0
+    })
+
+materials_to_test.append({
+        "name": "Test-SpecOnly-R0.3",
+        "basecolor": (0, 0, 0),
+        "ior": 1.5,
+        "roughness": 0.3
+    })
+
+materials_to_test.append({
+        "name": "Nonrefractive-Diffuse",
+        "basecolor": (0.5, 0.5, 0.5),
+        "ior": 1.0,
+        "roughness": 1.0
+    })
+
+materials_to_test.append({
+        "name": "Rough-Diffuse",
+        "basecolor": (0.5, 0.5, 0.5),
+        "ior": 1.5,
+        "roughness": 0.8
+    })
+materials_to_test.append({
+        "name": "Normal-Diffuse",
+        "basecolor": (00.5, 0.5, 0.5),
+        "ior": 1.5,
+        "roughness": 0.4
+    })
 
 
 for i in range(11):
@@ -120,29 +120,29 @@ for i in range(11):
         "roughness": roughness
     })
 
-    # materials_to_test.append({
-    #         "name": "Gold-R" + str(roughness),
-    #         "basecolor": GOLD_F0,
-    #         "ior": 1.51,
-    #         "type": "metallic",
-    #         "material_src": "Au",
-    #         "roughness": roughness
-    #     })
+    materials_to_test.append({
+            "name": "Gold-R" + str(roughness),
+            "basecolor": GOLD_F0,
+            "ior": 1.51,
+            "type": "metallic",
+            "material_src": "Au",
+            "roughness": roughness
+        })
 
-    # materials_to_test.append({
-    #         "name": "Clearcoat-R" + str(roughness),
-    #         "basecolor": (1, 0.85, 0.345),
-    #         "material_src": "Au",
-    #         "type": "clearcoat",
-    #         "roughness": roughness
-    #     })
+    materials_to_test.append({
+            "name": "Clearcoat-R" + str(roughness),
+            "basecolor": (1, 0.85, 0.345),
+            "material_src": "Au",
+            "type": "clearcoat",
+            "roughness": roughness
+        })
 
-    # materials_to_test.append({
-    #         "name": "Diffuse-R" + str(roughness),
-    #         "basecolor": (0.8, 0.8, 0.8),
-    #         "ior": 1.16,
-    #         "roughness": roughness
-    #     })
+    materials_to_test.append({
+            "name": "Diffuse-R" + str(roughness),
+            "basecolor": (0.8, 0.8, 0.8),
+            "ior": 1.16,
+            "roughness": roughness
+        })
 
 
 for material in materials_to_test:

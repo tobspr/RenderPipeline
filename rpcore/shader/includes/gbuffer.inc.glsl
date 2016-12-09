@@ -30,8 +30,6 @@
 #pragma include "includes/normal_packing.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
 
-uniform mat4 p3d_ProjectionMatrix;
-
 /*
 
 GBuffer - Unpacking
@@ -47,6 +45,8 @@ struct GBufferData {
     sampler2D Data1;
     sampler2D Data2;
 };
+
+#warning Please use the new gbuffer2.inc.glsl include!
 
 // Checks whether the given material is the skybox
 bool is_skybox(vec3 pos, vec3 camera_pos) {
@@ -73,14 +73,14 @@ float get_gbuffer_depth(GBufferData data, ivec2 coord) {
 // Returns the world space position at a given texcoord
 vec3 get_gbuffer_position(GBufferData data, vec2 coord) {
     float depth = get_gbuffer_depth(data, coord);
-    return calculate_surface_pos(depth, coord);
+    return reconstruct_ws_position(depth, coord);
 }
 
 // Returns the world space position at a given texcoord
 vec3 get_gbuffer_position(GBufferData data, ivec2 coord) {
     float depth = get_gbuffer_depth(data, coord);
     vec2 tcoord = (coord + 0.5) / SCREEN_SIZE;
-    return calculate_surface_pos(depth, tcoord);
+    return reconstruct_ws_position(depth, tcoord);
 }
 
 
@@ -172,12 +172,12 @@ Material unpack_material(GBufferData data) {
 
     // Returns the view space position at a given texcoord
     vec3 get_view_pos_at(vec2 coord) {
-        return calculate_view_pos(get_depth_at(coord), coord);
+        return reconstruct_vs_position(get_depth_at(coord), coord);
     }
 
     // Returns the world space position at a given texcoord
     vec3 get_world_pos_at(vec2 coord) {
-        return calculate_surface_pos(get_depth_at(coord), coord);
+        return reconstruct_ws_position(get_depth_at(coord), coord);
     }
 
     // Returns the velocity given texcoord
@@ -204,11 +204,9 @@ Material unpack_material(GBufferData data) {
         vec3 dx_ny = get_view_pos_at(coord + pixel_size * vec2(0, -1)) - view_pos;
         
         // TODO: Handle screen edges
-
         // Find the closest distance in depth
         vec3 dx_x = abs(dx_px.z) < abs(dx_nx.z) ? vec3(dx_px) : vec3(dx_nx);
         vec3 dx_y = abs(dx_py.z) < abs(dx_ny.z) ? vec3(dx_py) : vec3(dx_ny);
-
 
         return normalize(cross(dx_x, dx_y));
     }
@@ -226,7 +224,7 @@ Material unpack_material(GBufferData data) {
     }
 
     vec3 get_world_normal_from_depth(vec2 coord) {
-        return view_normal_to_world(get_view_normal_from_depth(coord));
+        return vs_normal_to_ws(get_view_normal_from_depth(coord));
     }
 
     // Returns the view space normal at a given texcoord. This approximates
@@ -240,16 +238,6 @@ Material unpack_material(GBufferData data) {
         vec3 dx_x = view_pos - get_view_pos_at(coord + pixel_size * vec2(1, 0));
         vec3 dx_y = view_pos - get_view_pos_at(coord + pixel_size * vec2(0, 1));
         return normalize(cross(dx_x, dx_y));
-    }
-
-    // Returns the cameras velocity
-    vec2 get_camera_velocity(vec2 texcoord) {
-        vec2 film_offset_bias = MainSceneData.current_film_offset *
-        vec2(1.0, 1.0 / ASPECT_RATIO);
-        vec3 pos = get_world_pos_at(texcoord - film_offset_bias);
-        vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
-        vec2 last_coord = fma(last_proj.xy / last_proj.w, vec2(0.5), vec2(0.5));
-        return last_coord - texcoord;
     }
 
 #endif

@@ -64,7 +64,7 @@ from rpcore.light_manager import LightManager
 from rpcore.stages.ambient_stage import AmbientStage
 from rpcore.stages.gbuffer_stage import GBufferStage
 from rpcore.stages.final_stage import FinalStage
-from rpcore.stages.downscale_z_stage import DownscaleZStage
+from rpcore.stages.convert_depth_stage import ConvertDepthStage
 from rpcore.stages.combine_velocity_stage import CombineVelocityStage
 from rpcore.stages.upscale_stage import UpscaleStage
 from rpcore.stages.compute_low_precision_normals_stage import ComputeLowPrecisionNormalsStage
@@ -678,29 +678,22 @@ class RenderPipeline(RPObject):
     def _init_common_stages(self):
         """ Inits the commonly used stages, which don't belong to any plugin,
         but yet are necessary and widely used. """
-        add_stage = self.stage_mgr.add_stage
-        self._ambient_stage = AmbientStage(self)
-        add_stage(self._ambient_stage)
-        self._gbuffer_stage = GBufferStage(self)
-        add_stage(self._gbuffer_stage)
-        self._final_stage = FinalStage(self)
-        add_stage(self._final_stage)
-        self._downscale_stage = DownscaleZStage(self)
-        add_stage(self._downscale_stage)
-        self._combine_velocity_stage = CombineVelocityStage(self)
-        add_stage(self._combine_velocity_stage)
-        self._compute_normals = ComputeLowPrecisionNormalsStage(self)
-        add_stage(self._compute_normals)
+        builtin_stages = [
+            AmbientStage, GBufferStage, FinalStage, ConvertDepthStage,
+            CombineVelocityStage, ComputeLowPrecisionNormalsStage
+        ]
 
         # Add an upscale/downscale stage in case we render at a different resolution
         if abs(1 - self.settings["pipeline.resolution_scale"]) > 0.005:
-            self._upscale_stage = UpscaleStage(self)
-            add_stage(self._upscale_stage)
+            builtin_stages.append(UpscaleStage)
 
         # Add simple SRGB stage in case we have no color correction plugin
         if not self.plugin_mgr.is_plugin_enabled("color_correction"):
-            self._srgb_stage = SRGBCorrectionStage(self)
-            add_stage(self._srgb_stage)
+            builtin_stages.append(SRGBCorrectionStage)
+
+        for stage in builtin_stages:
+            self.stage_mgr.add_stage(stage(self))
+
 
     def _get_serialized_material_name(self, material, index=0):
         """ Returns a serializable material name """

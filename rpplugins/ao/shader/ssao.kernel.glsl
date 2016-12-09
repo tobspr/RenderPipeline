@@ -60,7 +60,7 @@ START_ITERATE_SEQUENCE(ao, ssao_sequence, vec3 offset)
     vec3 offset_pos = pixel_view_pos + offset * sample_offset;
 
     // Project offset position to screen space
-    vec3 projected = view_to_screen(offset_pos);
+    vec3 projected = vs_to_ss(offset_pos);
 
     if (!in_unit_box(projected))
         continue;

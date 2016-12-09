@@ -33,34 +33,45 @@
 
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/gbuffer2.inc.glsl"
 
 out vec2 result;
 
+vec2 get_camera_velocity(vec2 texcoord) {
+    vec2 film_offset_bias = MainSceneData.current_film_offset * vec2(1.0, 1.0 / ASPECT_RATIO);
+    vec3 pos = gbuffer_reconstruct_ws_position(texcoord - film_offset_bias);
+    vec4 last_proj = MainSceneData.last_view_proj_mat_no_jitter * vec4(pos, 1);
+    vec2 last_coord = (last_proj.xy / last_proj.w) * 0.5 + 0.5;
+    return last_coord - texcoord;
+}
+
 void main() {
     vec2 texcoord = get_texcoord();
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec3 closest = vec3(texcoord, 1);
 
-    vec3 closest = vec3(0, 0, 1);
-    const int filter_size = 1;
+    //  v Disabled, since the resolve passes do this already
+    #if 0
+        // Take velocity of closest fragment. This improves shilouettes under motion
+        const int filter_size = 1;
 
-    // Take velocity of closest fragment
-    for (int i = -filter_size; i <= filter_size; ++i) {
-        for (int j = -filter_size; j <= filter_size; ++j) {
-            if ((i == 0 && j == 0) || (abs(i) == 2 && abs(j) == 2)) {
-                vec2 offcoord = texcoord + vec2(i, j) / SCREEN_SIZE;
-                float depth = get_depth_at(offcoord);
-                if (depth < closest.z) {
-                    closest = vec3(offcoord, depth);
+        for (int i = -filter_size; i <= filter_size; ++i) {
+            for (int j = -filter_size; j <= filter_size; ++j) {
+                if ((i == 0 && j == 0) || (abs(i) == 2 && abs(j) == 2)) {
+                    vec2 offcoord = texcoord + vec2(i, j) / SCREEN_SIZE;
+                    float depth = gbuffer_get_depth(offcoord);
+                    if (depth < closest.z) {
+                        closest = vec3(offcoord, depth);
+                    }
                 }
             }
         }
-    }
+    #endif
 
     // Combine camera and per object velocity.
     // XXX: Most likely this is wrong. But since per-object velocity currently
     // is disabled, its not an issue.
     vec2 camera_velocity = get_camera_velocity(closest.xy);
-    vec2 per_object_velocity = get_object_velocity_at(closest.xy);
+    vec2 per_object_velocity = gbuffer_get_object_velocity(closest.xy);
     result = camera_velocity + per_object_velocity;
 }
+

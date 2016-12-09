@@ -68,9 +68,10 @@ class PostProcessRegion(RPObject):
         vdata = GeomVertexData("vertices", vformat, Geom.UH_static)
         vdata.set_num_rows(3)
         vwriter = GeomVertexWriter(vdata, "vertex")
-        vwriter.add_data3f(-1, 0, -1)
-        vwriter.add_data3f(3, 0, -1)
-        vwriter.add_data3f(-1, 0, 3)
+        multiplier = 5 # XXXX
+        vwriter.add_data3f(-1 * multiplier, 0, -1 * multiplier)
+        vwriter.add_data3f(3 * multiplier, 0, -1 * multiplier)
+        vwriter.add_data3f(-1 * multiplier, 0, 3 * multiplier)
         gtris = GeomTriangles(Geom.UH_static)
         gtris.add_next_vertices(3)
         geom = Geom(vdata)

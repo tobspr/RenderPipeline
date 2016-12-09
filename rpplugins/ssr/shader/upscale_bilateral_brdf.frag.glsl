@@ -105,7 +105,7 @@ void main() {
             float intersection_depth = get_gbuffer_depth(GBuffer, intersection);
 
             // Get world space position of intersection pixel
-            vec3 ws_intersection = calculate_surface_pos(intersection_depth, intersection);
+            vec3 ws_intersection = reconstruct_ws_position(intersection_depth, intersection);
 
             // Find distance and vector to intersection based on the pixels position
             float distance_to_intersection = 1e-9 + distance(ws_intersection, m.position);

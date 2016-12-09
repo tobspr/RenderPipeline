@@ -3,23 +3,31 @@
 # This is the config file used to configure basic settings for Panda3D.
 # The pipeline loads it at startup to ensure the environment is setup properly.
 
-# --------------  Debugging options  --------------
+# --------------  Development options  --------------
 
-# gl-dump-compiled-shaders #t
-# notify-level-glgsg debug
-# notify-level-glgsg warning
-# notify-level-gobj debug
 pstats-gpu-timing #t
-pstats-max-rate 200
 gl-debug #t
 gl-debug-object-labels #t
-sync-video #f
+#notify-level-glgsg debug
+
+# -------------- Production options ---------------
+
+# pstats-gpu-timing #f
+# gl-debug #f
+# gl-debug-object-labels #f
 
 # ----------------- Misc Settings -----------------
 
+# Disable V-Sync
+sync-video #f
+
+# Limit the pstats-rate. This causes huge lag on windows 10.
+pstats-max-rate 200
+
 # No stack trace on assertion, set this to true to make panda crash on assertions
 # (which will allow to debug it)
-assert-abort #t
+# assert-abort #t
+# show-dll-error-dialog #f
 
 # File system should be case sensitive
 # NOTICE: Set this to #f if you are using tempfile, since it returns
@@ -30,22 +38,16 @@ vfs-case-sensitive #t
 state-cache #t
 transform-cache #t
 
-# Frame rate meter style
-frame-rate-meter-milliseconds #t
-frame-rate-meter-update-interval 1.0
-frame-rate-meter-text-pattern %0.2f fps
-frame-rate-meter-ms-text-pattern %0.3f ms
-frame-rate-meter-layer-sort 1000
-frame-rate-meter-scale 0.036
-frame-rate-meter-side-margins 0.4
+# Hide frame rate meter (we have our own)
 show-frame-rate-meter #f
 
 # Set text settings
 text-minfilter linear
 text-magfilter linear
 text-page-size 512 512
+text-wrap-mode border_color
 
-# Better text performance since rdb's patch
+# Better text performance
 text-flatten 0
 text-dynamic-merge 1
 
@@ -55,10 +57,11 @@ text-dynamic-merge 1
 # Threading, really buggy!
 #threading-model App/Cull/Draw
 
+# Disable stencil, not supported/required
 support-stencil #f
 framebuffer-stencil #f
 
-# Don't use srgb correction, we do that ourself
+# Don't use srgb correction, we do that in the final shader
 framebuffer-srgb #f
 
 # Don't use multisamples
@@ -68,20 +71,16 @@ multisamples 0
 # Don't rescale textures which are no power-of-2
 textures-power-2 none
 
-# This is required, the pipeline does not support resizing yet
-win-fixed-size #t
-
 # Set default texture filters
-texture-anisotropic-degree 8
+texture-anisotropic-degree 16
 texture-magfilter linear
 texture-minfilter linear
 texture-quality-level fastest
 
-# Enable seamless cubemap filtering, thats important for environment filtering
+# Enable seamless cubemap filtering, important for environment filtering
 gl-cube-map-seamless #t
 
-# Set model cache dir
-model-cache-dir $USER_APPDATA/Panda3D-1.9/cache
+# Disable caching of textures
 model-cache-textures #f
 
 # Disable the annoying SRGB warning from pnmimage
@@ -142,27 +141,28 @@ support-threads #f
 
 # Let the driver generate the mipmaps
 driver-generate-mipmaps #t
-#gl-ignore-mipmaps #t
 
 # Use immutable texture storage, it is *supposed* to be faster, but might not be
+# XXX: Seems to produce an GL_INVALID_VALUE when disabled
 gl-immutable-texture-storage #t
-
-# auto-flip #f
 
 # Default window settings
 # depth-bits 0
 color-bits 0
-
 framebuffer-depth #f
 
+# Small performance gain by specifying fixed vertex attribute locations.
+# Might cause issues with some (incorrectly converted/loaded) meshes though
 gl-fixed-vertex-attrib-locations #f
+
+# Bind all images as writeonly
+gl-force-image-bindings-writeonly #t
 
 # Disable the fragment shader performance warning
 gl-validate-shaders #f
 gl-skip-shader-recompilation-warnings #t
 
 alpha-scale-via-texture #f
-bounds-type best # best/fastest/sphere/box
 pstats-name Render Pipeline Stats
 rescale-normals #f
 screenshot-extension png
@@ -170,3 +170,7 @@ screenshot-extension png
 # Required for correct velocity
 always-store-prev-transform #t
 allow-incomplete-render #t
+
+# gl-version 3 2
+
+no-singular-invert #f

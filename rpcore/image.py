@@ -94,7 +94,9 @@ class Image(RPObject, Texture, ImageFormatTypes):
     @classmethod
     def create_counter(cls, name):
         """ Creates a new 1x1 R32I texture to be used as an atomic counter """
-        return cls.create_buffer(name, 1, "R32I")
+        img = cls("ImgCounter-" + name)
+        img.setup_buffer(1, "R32I")
+        return img
 
     @classmethod
     def create_2d(cls, name, w, h, component_format):

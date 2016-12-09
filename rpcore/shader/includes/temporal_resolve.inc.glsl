@@ -151,10 +151,10 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
                 }
             #endif
 
-            vec3 curr_pos = calculate_surface_pos(curr_z, curr_coord, MainSceneData.inv_view_proj_mat_no_jitter);
+            vec3 curr_pos = reconstruct_ws_position(curr_z, curr_coord, MainSceneData.inv_view_proj_mat_no_jitter);
             float last_z = textureLod(Previous_SceneDepth, last_coord, 0).x;
 
-            vec3 last_pos = calculate_surface_pos(
+            vec3 last_pos = reconstruct_ws_position(
                 last_z, last_coord, MainSceneData.last_inv_view_proj_mat_no_jitter);
 
             float max_distance = RS_DISTANCE_SCALE / curr_linz * 120.0;

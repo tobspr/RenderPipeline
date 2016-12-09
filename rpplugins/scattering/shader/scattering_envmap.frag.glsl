@@ -26,7 +26,7 @@
 
 #version 430
 
-#define USE_TIME_OF_DAY 1
+
 #pragma include "render_pipeline_base.inc.glsl"
 
 layout(r11f_g11f_b10f) uniform imageCube RESTRICT DestCubemap;

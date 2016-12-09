@@ -49,7 +49,7 @@ float render_digit(ivec2 coord, uint digit) {
 }
 
 float render_number(ivec2 coord, uint number) {
-    int num_digits = get_digit_count(number);
+    int num_digits = max(1, get_digit_count(number));
     float accum = 0.0;
     for (int i = num_digits - 1; i >= 0; --i) {
         accum += render_digit(coord + ivec2(i * (spacing + digit_width), 0), number % 10);

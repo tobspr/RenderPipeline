@@ -29,9 +29,9 @@ from __future__ import division
 from rpcore.render_stage import RenderStage
 
 
-class DownscaleZStage(RenderStage):
+class ConvertDepthStage(RenderStage):
 
-    """ This stage downscales the depth buffer """
+    """ This stage converts the depth buffer to 16 bit """
 
     required_pipes = ["GBuffer"]
 
@@ -43,7 +43,7 @@ class DownscaleZStage(RenderStage):
         }
 
     def create(self):
-        self.target = self.create_target("ConvertDepth16bit")
+        self.target = self.create_target("ConvertDepthTo16bit")
         self.target.add_color_attachment(bits=(16, 0, 0, 0))
         self.target.prepare_buffer()
 

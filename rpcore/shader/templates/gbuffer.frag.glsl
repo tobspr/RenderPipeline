@@ -26,6 +26,7 @@
 
 #version 430
 
+
 // Default GBuffer fragment shader. Supports normal mapping, parallax mapping,
 // and sampling default textures.
 
@@ -83,8 +84,8 @@ void main() {
         float sampled_ior = 0.0;
         float sampled_roughness = 0.0;
     #else
-        float sampled_ior = texture(p3d_Texture2, texcoord).x;
-        float sampled_roughness = texture(p3d_Texture3, texcoord).x;
+        float sampled_ior = texture(p3d_Texture2, texcoord, GBUFFER_LOD_BIAS).x;
+        float sampled_roughness = texture(p3d_Texture3, texcoord, GBUFFER_LOD_BIAS).x;
     #endif
 
     #if OPT_ALPHA_TESTING
@@ -95,7 +96,8 @@ void main() {
             // camera. This prevents alpha tested objects getting too thin when
             // viewed from a high distance.
             // TODO: Might want to make the alpha testing distance configurable
-            vec4 sampled_diffuse = texture(p3d_Texture0, texcoord);
+            vec4 sampled_diffuse = texture(p3d_Texture0, texcoord, GBUFFER_LOD_BIAS);
+
             float dist_to_camera = distance(MainSceneData.camera_pos, vOutput.position);
             float alpha_factor = mix(0.99, 0.4, saturate(dist_to_camera / 12.0));
             if (sampled_diffuse.w < alpha_factor) discard;
@@ -107,7 +109,7 @@ void main() {
         #if DONT_FETCH_DEFAULT_TEXTURES
             vec3 sampled_diffuse = vec3(0);
         #else
-            vec3 sampled_diffuse = texture(p3d_Texture0, texcoord).xyz;
+            vec3 sampled_diffuse = texture(p3d_Texture0, texcoord, GBUFFER_LOD_BIAS).xyz;
         #endif
     #endif
 
@@ -120,7 +122,8 @@ void main() {
         #else
             {
                 // Perform normal mapping if enabled
-                vec3 sampled_normal = unpack_texture_normal(texture(p3d_Texture1, texcoord).xyz);
+                vec3 packed_normal = texture(p3d_Texture1, texcoord, GBUFFER_LOD_BIAS).xyz;
+                vec3 sampled_normal = unpack_texture_normal(packed_normal);
                 material_nrm = apply_normal_map(
                     vOutput.normal, sampled_normal, mInput.normalfactor);
             }

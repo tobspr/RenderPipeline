@@ -50,10 +50,7 @@
 #endif
 
 #pragma include "/$$rptemp/$$main_scene_data.inc.glsl"
-
-#ifdef USE_TIME_OF_DAY
 #pragma include "/$$rptemp/$$daytime_config.inc.glsl"
-#endif
 
 // Screen size macro
 #define WINDOW_WIDTH MainSceneData.screen_size.x
@@ -133,7 +130,10 @@
 #define SUN_VECTOR_HORIZON 0.0
 
 // Whether to use a completely white environment, only used in reference mode
-#define USE_WHITE_ENVIRONMENT 0
+#define USE_WHITE_ENVIRONMENT 1
 
+// Increases / Decreases the mipmap of the gbuffer textures
+// #define GBUFFER_LOD_BIAS -2.0
+#define GBUFFER_LOD_BIAS -0.5
 
 #pragma include "includes/common_functions.inc.glsl"

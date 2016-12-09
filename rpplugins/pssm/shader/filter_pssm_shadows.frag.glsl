@@ -28,7 +28,7 @@
 
 #pragma optionNV (unroll all)
 
-#define USE_TIME_OF_DAY 1
+
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
@@ -248,7 +248,7 @@ void main() {
         //     // Reconstruct intersection position
         //     // TODO: This is totally slow! Pass it as input
         //     mat4 inverse_mvp = inverse(mvp);
-        //     vec3 intersection_pos = calculate_surface_pos_ortho(shadow_sample, projected_skin.xy, split_near_far.x, split_near_far.y, inverse_mvp);
+        //     vec3 intersection_pos = reconstruct_ws_position_ortho(shadow_sample, projected_skin.xy, split_near_far.x, split_near_far.y, inverse_mvp);
 
         //     // Get the distance the light traveled through the medium
         //     float distance_through_medium = distance(m.position, intersection_pos.xyz);

@@ -46,9 +46,23 @@ from rpcore.gui.text import Text
 from rpcore.gui.draggable_window import DraggableWindow
 
 
+class EmptyStage(object):
+    """ Stage for render targets without any attachments """
+    def __init__(self, name, x_size, y_size):
+        self.name = name
+        self.x_size = x_size
+        self.y_size = y_size
+
+    def get_x_size(self):
+        return self.x_size
+
+    def get_y_size(self):
+        return self.y_size
+
 class BufferViewer(DraggableWindow):
 
     """ This class provides a view into the buffers to inspect them """
+
 
     def __init__(self, pipeline, parent):
         """ Constructs the buffer viewer """
@@ -57,6 +71,7 @@ class BufferViewer(DraggableWindow):
         self._pipeline = pipeline
         self._scroll_height = 3000
         self._display_images = False
+        self._display_empties = True
         self._stages = []
         self._create_components()
         self._tex_preview = TexturePreview(self._pipeline, parent)
@@ -125,12 +140,21 @@ class BufferViewer(DraggableWindow):
         self._content_node.set_z(self._scroll_height)
         self._chb_show_images = LabeledCheckbox(
             parent=self._node, x=10, y=43, chb_callback=self._set_show_images,
-            chb_checked=False, text="Display image resources",
-            text_color=Vec3(0.4), expand_width=330)
+            chb_checked=self._display_images, text="Display image resources",
+            text_color=Vec3(0.4), expand_width=230)
+        self._chb_show_empties = LabeledCheckbox(
+            parent=self._node, x=240, y=43, chb_callback=self._set_show_empties,
+            chb_checked=self._display_empties, text="Display targets without attachments",
+            text_color=Vec3(0.4), expand_width=300)
 
     def _set_show_images(self, arg):
         """ Sets whether images and textures will be shown """
         self._display_images = arg
+        self._perform_update()
+
+    def _set_show_empties(self, arg):
+        """ Sets whether empty render targets will be shown """
+        self._display_empties = arg
         self._perform_update()
 
     def _set_scroll_height(self, height):
@@ -156,8 +180,16 @@ class BufferViewer(DraggableWindow):
                     self._stages.append(entry)
             # Can not use isinstance or we get circular import references
             elif entry.__class__.__name__ == "RenderTarget":
-                for target in itervalues(entry.targets):
-                    self._stages.append(target)
+                empty = True
+                target_order = ["depth", "color", "aux0", "aux1", "aux2", "aux3", "aux4"]
+                for target in target_order:
+                    if target in entry.targets:
+                        self._stages.append(entry.targets[target])
+                        empty = False
+                if empty and self._display_empties:
+                    size = entry.size
+                    self._stages.append(EmptyStage(entry.debug_name, size.x, size.y))
+
             else:
                 self.warn("Unrecognized instance!", entry.__class__)
 
@@ -187,13 +219,14 @@ class BufferViewer(DraggableWindow):
         # Store already processed images
         processed = set()
         index = -1
+
         # Iterate over all stages
         for stage_tex in self._stages:
             if stage_tex in processed:
                 continue
             processed.add(stage_tex)
             index += 1
-            stage_name = stage_tex.get_name()
+            stage_name = stage_tex.name
 
             xoffs = index % entries_per_row
             yoffs = index // entries_per_row
@@ -204,6 +237,8 @@ class BufferViewer(DraggableWindow):
             r, g, b = 0.2, 0.2, 0.2
             if isinstance(stage_tex, Image):
                 r, g, b = 0.2, 0.4, 0.6
+            elif isinstance(stage_tex, EmptyStage):
+                r, g, b = 0.6, 0.4, 0.2
 
             stage_name = stage_name.replace("render_pipeline_internal:", "")
             parts = stage_name.split(":")
@@ -219,35 +254,42 @@ class BufferViewer(DraggableWindow):
                 DGG.ENTER, partial(self._on_texture_hovered, frame_hover))
             frame_hover.bind(
                 DGG.EXIT, partial(self._on_texture_blurred, frame_hover))
-            frame_hover.bind(
-                DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
             Text(text=stage_name, x=15, y=29, parent=node, size=12, color=Vec3(0.8))
 
-            # Scale image so it always fits
             w, h = stage_tex.get_x_size(), stage_tex.get_y_size()
-            padd_x, padd_y = 24, 57
-            scale_x = (entry_width - padd_x) / max(1, w)
-            scale_y = (entry_height - padd_y) / max(1, h)
-            scale_factor = min(scale_x, scale_y)
 
-            if stage_tex.get_texture_type() == Image.TT_buffer_texture:
-                scale_factor = 1
-                w = entry_width - padd_x
-                h = entry_height - padd_y
+            if not isinstance(stage_tex, EmptyStage):        
+                frame_hover.bind(
+                    DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
-            preview = Sprite(
-                image=stage_tex, w=scale_factor * w, h=scale_factor * h,
-                any_filter=False, parent=node, x=7, y=40, transparent=False)
-            preview.set_shader_input("mipmap", 0)
-            preview.set_shader_input("slice", 0)
-            preview.set_shader_input("brightness", 1)
-            preview.set_shader_input("tonemap", False)
-            preview.set_shader_input("DisplayTex", stage_tex)
+                # Scale image so it always fits
+                padd_x, padd_y = 24, 57
+                scale_x = (entry_width - padd_x) / max(1, w)
+                scale_y = (entry_height - padd_y) / max(1, h)
+                scale_factor = min(scale_x, scale_y)
 
-            preview_shader = DisplayShaderBuilder.build(
-                stage_tex, scale_factor * w, scale_factor * h)
-            preview.set_shader(preview_shader)
+                if stage_tex.get_texture_type() == Image.TT_buffer_texture:
+                    scale_factor = 1
+                    w = entry_width - padd_x
+                    h = entry_height - padd_y
+
+                preview = Sprite(
+                    image=stage_tex, w=scale_factor * w, h=scale_factor * h,
+                    any_filter=False, parent=node, x=7, y=40, transparent=False)
+                preview.set_shader_input("mipmap", 0)
+                preview.set_shader_input("slice", 0)
+                preview.set_shader_input("brightness", 1)
+                preview.set_shader_input("tonemap", False)
+                preview.set_shader_input("DisplayTex", stage_tex)
+
+                preview_shader = DisplayShaderBuilder.build(
+                    stage_tex, scale_factor * w, scale_factor * h)
+                preview.set_shader(preview_shader)
+
+            else:
+                Text(text="NO ATTACHMENTS", x=15, y=70, parent=node, size=16, color=Vec3(0.8))
+                Text(text="{} x {}".format(w, h), x=15, y=84, parent=node, size=12, color=Vec3(0.8))
 
         num_rows = (index + entries_per_row) // entries_per_row
 

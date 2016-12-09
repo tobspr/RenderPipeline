@@ -188,6 +188,12 @@ float blend_ior(float material_specular, float sampled_specular) {
 #define get_quarter_native_texcoord() (vec2(ivec2(gl_FragCoord.xy) + 0.5) / ivec2(SCREEN_SIZE / 4))
 
 
+// Converts from [0 .. SCREEN_SIZE] to [0 .. 1] including the +0.5 pixel offset to
+// sample in the center of each pixel
+vec2 int_coord_to_float(ivec2 coord) {
+    return (coord + 0.5) / SCREEN_SIZE;
+}
+
 // Converts degree (0 .. 360) to radians (0 .. 2 PI)
 float degree_to_radians(float degree) {
     return degree / 180.0 * M_PI;

@@ -61,8 +61,8 @@ void main() {
         return;
     #endif
 
-    vec3 last_pos = calculate_surface_pos(last_depth, vec2(last_native_coord), MainSceneData.last_inv_view_proj_mat_no_jitter);
-    vec3 curr_pos = calculate_surface_pos(curr_depth, vec2(curr_coord), MainSceneData.inv_view_proj_mat_no_jitter);
+    vec3 last_pos = reconstruct_ws_position(last_depth, vec2(last_native_coord), MainSceneData.last_inv_view_proj_mat_no_jitter);
+    vec3 curr_pos = reconstruct_ws_position(curr_depth, vec2(curr_coord), MainSceneData.inv_view_proj_mat_no_jitter);
 
     const float max_dist = GET_SETTING(ao, max_resolve_dist);
     float distance_factor = step(max_dist * max_dist, distance_squared(last_pos, curr_pos));

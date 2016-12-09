@@ -115,7 +115,12 @@ class RenderTarget(RPObject):
         self._aux_bits = bits
         self._aux_count += count
 
-    @setter
+    @property
+    def size(self):
+        """ Returns the current size of this target in pixels """
+        return self._size
+
+    @size.setter
     def size(self, params):
         """ Sets the render target size. This can be either a single integer,
         in which case it applies to both dimensions, or two integers.

@@ -11,7 +11,7 @@
 
 render_modes:
   - { name: "Shading Model", key: "SHADING_MODEL" }
-  - { name: "Diffuse", key: "DIFFUSE" }
+  - { name: "Base Color", key: "DIFFUSE" }
   - { name: "Roughness", key: "ROUGHNESS" }
   - { name: "Specular", key: "SPECULAR" }
   - { name: "Normal", key: "NORMAL" }

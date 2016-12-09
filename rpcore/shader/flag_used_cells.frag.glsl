@@ -28,24 +28,16 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/light_culling.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
-
-#define USE_GBUFFER_EXTENSIONS 1
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/gbuffer2.inc.glsl"
 
 uniform writeonly image2DArray RESTRICT cellGridFlags;
 
 void main() {
     vec2 texcoord = get_texcoord();
-
-    // Get the distance to the camera
-    // vec3 surf_pos = get_world_pos_at(texcoord);
-    // float surf_dist = distance(MainSceneData.camera_pos, surf_pos);
-    float surf_dist = get_linear_z_from_z(get_depth_at(texcoord));
-
+    float linear_depth = gbuffer_get_linear_depth_32bit(texcoord);
 
     // Find the affected cell
-    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy), surf_dist);
+    ivec3 tile = get_lc_cell_index(ivec2(gl_FragCoord.xy), linear_depth);
 
     // Mark the cell as used
     imageStore(cellGridFlags, tile, vec4(1));

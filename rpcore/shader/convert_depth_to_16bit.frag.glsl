@@ -28,12 +28,11 @@
 
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
-#pragma include "includes/transforms.inc.glsl"
+#pragma include "includes/gbuffer2.inc.glsl"
 
 out float result;
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
-    result = get_linear_z_from_z(get_depth_at(coord));
+    result = gbuffer_get_linear_depth_32bit(coord);
 }

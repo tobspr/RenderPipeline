@@ -194,6 +194,7 @@ class LightManager(RPObject):
         """ Inits the common defines """
         defines = self.pipeline.stage_mgr.defines
         defines["LC_TILE_SIZE_X"] = self.tile_size.x
+        defines["LC_MAX_LIGHTS"] = self.MAX_LIGHTS
         defines["LC_TILE_SIZE_Y"] = self.tile_size.y
         defines["LC_TILE_SLICES"] = self.pipeline.settings["lighting.culling_grid_slices"]
         defines["LC_MAX_DISTANCE"] = self.pipeline.settings["lighting.culling_max_distance"]

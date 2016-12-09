@@ -4,8 +4,8 @@
 # Any formatting and comments will be lost
 
 enabled:
-    - ao
-    - smaa
+    # - ao
+    # - smaa
     # - bloom
     # - clouds
     # - color_correction

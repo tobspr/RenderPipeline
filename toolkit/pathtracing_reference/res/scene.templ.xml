@@ -86,8 +86,8 @@ Conversion is: Swap Y and Z and then negate X
 	</shape>
 
 	<emitter type="envmap">
-		<string name="filename" value="tex/envmap.png" />
-		<!-- <string name="filename" value="tex/white.png" /> -->
+		<!--<string name="filename" value="tex/envmap.png" />-->
+		 <string name="filename" value="tex/white.png" /> 
 		<float name="gamma" value="1.0" />
 
 	</emitter>

@@ -46,6 +46,7 @@ class CullLightsStage(RenderStage):
             self.fatal("lighting.max_lights_per_cell must be <=", 2**16, "!")
 
         self.slice_width = pipeline.settings["lighting.culling_slice_width"]
+        self.culling_grid_slices = pipeline.settings["lighting.culling_grid_slices"]
         self.cull_threads = 32
 
         # Amount of light classes. Has to match the ones in LightClassification.inc.glsl
@@ -67,67 +68,91 @@ class CullLightsStage(RenderStage):
         }
 
     def create(self):
-        self.target_visible = self.create_target("GetVisibleLights")
+
+        # Create all required buffers
+        self.frustum_lights_ctr = Image.create_counter("VisibleLightCount")
+        self.frustum_lights = Image.create_buffer("FrustumLights", self._pipeline.light_mgr.MAX_LIGHTS, "R16UI")
+        
+        self.per_slice_lights = Image.create_buffer("PerSliceLights", self.culling_grid_slices * self._pipeline.light_mgr.MAX_LIGHTS, "R16UI")
+        self.per_slice_lights_ctr = Image.create_buffer("PerSliceLightsCounter", self.culling_grid_slices, "R32I")
+
+        self.per_cell_lights = Image.create_buffer("PerCellLights", 0, "R16UI")
+        self.per_cell_light_counts = Image.create_buffer("PerCellLightCounts", 0, "R32I") # Needs to be R32 for atomic add in cull stage
+        
+        self.grouped_cell_lights = Image.create_buffer("GroupedPerCellLights", 0, "R16UI")
+        self.grouped_cell_lights_counts = Image.create_buffer("GroupedPerCellLightsCount", 0, "R16UI")
+
+        # Target to take the list of all lights, and output a list of all lights
+        # in the current camera frustum
+        # TODO: Use no oversized triangle in this stage
+        self.target_visible = self.create_target("ViewFrustumCull")
         self.target_visible.size = 16, 16
         self.target_visible.prepare_buffer()
+        self.target_visible.set_shader_input("FrustumLights", self.frustum_lights)
+        self.target_visible.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
 
+        # Target which takes the frustum lights and outputs a list of intersected lights
+        # for each slice of the culling frustum
+        # TODO: Use no oversized triangle in this stage
+        self.target_cull_slices = self.create_target("PreCullSlices")
+        self.target_cull_slices.size = self.culling_grid_slices, 128
+        self.target_cull_slices.prepare_buffer()
+        self.target_cull_slices.set_shader_input("FrustumLights", self.frustum_lights)
+        self.target_cull_slices.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
+        self.target_cull_slices.set_shader_input("PerSliceLights", self.per_slice_lights)
+        self.target_cull_slices.set_shader_input("PerSliceLightsCount", self.per_slice_lights_ctr)
+
+        # Target which takes the per-slice culled lights, and produces the list of visible
+        # lights for each voxel in our clustered frustum
         # TODO: Use no oversized triangle in this stage
         self.target_cull = self.create_target("CullLights")
         self.target_cull.size = 0, 0
         self.target_cull.prepare_buffer()
-
+        self.target_cull.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
+        self.target_cull.set_shader_input("PerCellLightCountsBuffer", self.per_cell_light_counts)
+        self.target_cull.set_shader_input("PerSliceLights", self.per_slice_lights)
+        self.target_cull.set_shader_input("PerSliceLightsCount", self.per_slice_lights_ctr)
+        self.target_cull.set_shader_input("threadCount", self.cull_threads)
+        
+        # Target which takes the per-voxel light list and sorts it by light type, to
+        # get better branching coherency
         # TODO: Use no oversized triangle in this stage
         self.target_group = self.create_target("GroupLightsByClass")
         self.target_group.size = 0, 0
         self.target_group.prepare_buffer()
-
-        self.frustum_lights_ctr = Image.create_counter("VisibleLightCount")
-        self.frustum_lights = Image.create_buffer(
-            "FrustumLights", self._pipeline.light_mgr.MAX_LIGHTS, "R16UI")
-        self.per_cell_lights = Image.create_buffer(
-            "PerCellLights", 0, "R16UI")
-        self.per_cell_light_counts = Image.create_buffer(
-            "PerCellLightCounts", 0, "R32I") # Needs to be R32 for atomic add in cull stage
-        self.grouped_cell_lights = Image.create_buffer(
-            "GroupedPerCellLights", 0, "R16UI")
-        self.grouped_cell_lights_counts = Image.create_buffer(
-            "GroupedPerCellLightsCount", 0, "R16UI")
-
-        self.target_visible.set_shader_input("FrustumLights", self.frustum_lights)
-        self.target_visible.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
-        self.target_cull.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
-        self.target_cull.set_shader_input("PerCellLightCountsBuffer", self.per_cell_light_counts)
-        self.target_cull.set_shader_input("FrustumLights", self.frustum_lights)
-        self.target_cull.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
         self.target_group.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
         self.target_group.set_shader_input("PerCellLightCountsBuffer", self.per_cell_light_counts)
         self.target_group.set_shader_input("GroupedCellLightsBuffer", self.grouped_cell_lights)
         self.target_group.set_shader_input("GroupedPerCellLightsCountBuffer", self.grouped_cell_lights_counts)
-
-        self.target_cull.set_shader_input("threadCount", self.cull_threads)
         self.target_group.set_shader_input("threadCount", 1)
-
-    def reload_shaders(self):
-        self.target_cull.shader = self.load_shader(
-            "tiled_culling.vert.glsl", "cull_lights.frag.glsl")
-        self.target_group.shader = self.load_shader(
-            "tiled_culling.vert.glsl", "group_lights.frag.glsl")
-        self.target_visible.shader = self.load_shader(
-            "view_frustum_cull.frag.glsl")
 
     def update(self):
         self.frustum_lights_ctr.clear_image()
+        self.per_slice_lights_ctr.clear_image()
+        # self.per_slice_lights.clear_image()# XXX
 
     def set_dimensions(self):
+        # Updates the dimensions of all textures / buffers which depend on the screen size
+
         max_cells = self._pipeline.light_mgr.total_tiles
+
         num_rows_threaded = int(
             math.ceil((max_cells * self.cull_threads) / float(self.slice_width)))
         num_rows = int(math.ceil(max_cells / float(self.slice_width)))
+
+        # Update the size of the buffer which keeps the per-cell lights, since the cell count might have changed
         self.per_cell_lights.set_x_size(max_cells * self.max_lights_per_cell)
         self.per_cell_light_counts.set_x_size(max_cells)
+
         self.grouped_cell_lights.set_x_size(
             max_cells * (self.max_lights_per_cell + self.num_light_classes))
+        self.grouped_cell_lights_counts.set_x_size(max_cells * (1 + self.num_light_classes))
+
         self.target_cull.size = self.slice_width, num_rows_threaded
         self.target_group.size = self.slice_width, num_rows
 
-        self.grouped_cell_lights_counts.set_x_size(max_cells * (1 + self.num_light_classes))
+    def reload_shaders(self):
+        self.target_cull.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")
+        self.target_group.shader = self.load_shader("tiled_culling.vert.glsl", "group_lights.frag.glsl")
+        self.target_visible.shader = self.load_shader("view_frustum_cull.frag.glsl")
+        self.target_cull_slices.shader = self.load_shader("pre_cull_slices.frag.glsl")

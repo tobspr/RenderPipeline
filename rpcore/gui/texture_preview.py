@@ -26,12 +26,14 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Vec3, SamplerState
+from panda3d.core import Vec3, SamplerState, PNMImage
 
+from rpcore.globals import Globals
 from rpcore.image import Image
 from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
+from rpcore.gui.button import Button
 from rpcore.gui.slider import Slider
 from rpcore.gui.labeled_checkbox import LabeledCheckbox
 
@@ -143,11 +145,16 @@ class TexturePreview(DraggableWindow):
 
         # Slider to enable reinhard tonemapping
         self._tonemap_box = LabeledCheckbox(
-            parent=self._content_node, x=x_pos, y=60, text="Tonemap",
+            parent=self._content_node, x=x_pos, y=58, text="Tonemap",
             text_color=Vec3(1, 0.4, 0.4), chb_checked=False,
             chb_callback=self._set_enable_tonemap,
             text_size=18, expand_width=90)
         x_pos += 90 + 30
+
+        # Button to export impage
+        self._btn_export = Button(parent=self._content_node, x=x_pos, y=58, text="Export",
+            width=120, callback=self._export_image)
+        x_pos += 120 + 30
 
         image.set_shader_input("slice", 0)
         image.set_shader_input("mipmap", 0)
@@ -191,3 +198,36 @@ class TexturePreview(DraggableWindow):
         """ Internal method to init the components """
         DraggableWindow._create_components(self)
         self._content_node = self._node.attach_new_node("content")
+
+    def _export_image(self, event):
+        """ Exports the image to disk """
+        self.debug("Exporting image")
+
+        Globals.base.graphics_engine.extract_texture_data(self._current_tex, Globals.base.win.get_gsg())
+
+        name = self._current_tex.get_name()
+        name = name.replace(" ", "_").replace(":", "_")
+        self._current_tex.write(name + ".png")
+
+        comp = self._current_tex.get_component_type()
+        if comp in [Image.T_int, Image.T_unsigned_short, Image.T_short, Image.T_unsigned_int]:
+            self.debug("Exporting csv")
+
+            img = PNMImage(self._current_tex.get_x_size(), self._current_tex.get_y_size(), 1, 2**16-1)
+
+            self._current_tex.store(img)
+
+            output_lines = []
+            # output_lines.append([name, self._current_tex.get_component_type(), self._current_tex.get_format()]) 
+            for y in range(self._current_tex.get_y_size()):
+                line = []
+                for x in range(self._current_tex.get_x_size()):
+                    line.append(img.get_gray_val(x, y))
+                output_lines.append(line)
+
+            with open(name + ".csv", "w") as handle:
+                for line in output_lines:
+                    handle.write(";".join([str(i) for i in line]) + "\n")
+
+
+        self.debug("Done.")

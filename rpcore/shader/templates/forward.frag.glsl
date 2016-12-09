@@ -34,7 +34,7 @@
 %defines%
 
 #define VIEWSPACE_SHADING 1
-#define USE_TIME_OF_DAY 1
+
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"

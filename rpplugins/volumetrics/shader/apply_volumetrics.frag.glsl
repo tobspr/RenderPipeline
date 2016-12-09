@@ -26,7 +26,7 @@
 
 #version 430
 
-#define USE_TIME_OF_DAY 1
+
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
@@ -55,7 +55,7 @@ void main() {
     vec2 texcoord = get_texcoord();
 
     float depth = get_depth_at(texcoord);
-    vec3 surface_pos = calculate_surface_pos(depth, texcoord);
+    vec3 surface_pos = reconstruct_ws_position(depth, texcoord);
 
     #if GET_SETTING(volumetrics, enable_volumetric_shadows)
         vec4 volumetrics = textureLod(VolumetricsTex, texcoord, 0);
