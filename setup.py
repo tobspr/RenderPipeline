@@ -282,8 +282,9 @@ def setup():
 
     if not CMD_ARGS.ci_build:
         print_step("Precomputing clouds ..")
-        exec_python_file("rpplugins/clouds/resources/precompute.py",
-            troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-clouds")
+        # XXX: Disabled, need to rework clouds plugin first
+        # exec_python_file("rpplugins/clouds/resources/precompute.py",
+            # troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-clouds")
 
     write_flag("data/install.flag", True)
 

@@ -193,7 +193,7 @@ class Debugger(RPObject):
         if self.python_warning:
             self.python_warning.set_pos(
                 (Globals.native_resolution.x // self.gui_scale - 1054) // 2,
-                (Globals.native_resolution.y // self.gui_scale - 118 - 40))
+                (Globals.native_resolution.y // self.gui_scale - 118 - 90))
 
         for text in self.debug_lines:
             text.set_pixel_size(16 * max(0.8, self.gui_scale))

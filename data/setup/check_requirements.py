@@ -52,6 +52,10 @@ class Application(ShowBase):
         if not self.win.gsg.supports_compute_shaders:
             _error("Compute shaders not supported! Please update your driver, or get a newer gpu.")
 
+        # Check if we have zlib
+        panda_sys = PandaSystem.get_global_ptr()
+        if not panda_sys.has_system("zlib"):
+            _error("Your Panda3D build was compiled without zlib, please add --use-zlib to your build options!")
 
         print("All checks passed successfully")
 
