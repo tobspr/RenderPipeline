@@ -81,7 +81,7 @@ texture-quality-level fastest
 gl-cube-map-seamless #t
 
 # Disable caching of textures
-model-cache-textures #f
+# model-cache-textures #f
 
 # Disable the annoying SRGB warning from pnmimage
 notify-level-pnmimage error

@@ -43,6 +43,7 @@ from rpcore.util.display_shader_builder import DisplayShaderBuilder
 class TexturePreview(DraggableWindow):
 
     """ Small window which provides a preview of a texture """
+
     def __init__(self, pipeline, parent):
         DraggableWindow.__init__(self, width=1600, height=900, parent=parent,
                                  title="Texture Viewer")
@@ -149,11 +150,12 @@ class TexturePreview(DraggableWindow):
             text_color=Vec3(1, 0.4, 0.4), chb_checked=False,
             chb_callback=self._set_enable_tonemap,
             text_size=18, expand_width=90)
-        x_pos += 90 + 30
+        x_pos += 90 + 50
 
         # Button to export impage
         self._btn_export = Button(parent=self._content_node, x=x_pos, y=58, text="Export",
-            width=120, callback=self._export_image)
+                                  width=120, callback=self._export_image, bg=(0.34, 0.564, 0.192, 1))
+
         x_pos += 120 + 30
 
         image.set_shader_input("slice", 0)
@@ -203,7 +205,8 @@ class TexturePreview(DraggableWindow):
         """ Exports the image to disk """
         self.debug("Exporting image")
 
-        Globals.base.graphics_engine.extract_texture_data(self._current_tex, Globals.base.win.get_gsg())
+        Globals.base.graphics_engine.extract_texture_data(
+            self._current_tex, Globals.base.win.get_gsg())
 
         name = self._current_tex.get_name()
         name = name.replace(" ", "_").replace(":", "_")
@@ -213,12 +216,13 @@ class TexturePreview(DraggableWindow):
         if comp in [Image.T_int, Image.T_unsigned_short, Image.T_short, Image.T_unsigned_int]:
             self.debug("Exporting csv")
 
-            img = PNMImage(self._current_tex.get_x_size(), self._current_tex.get_y_size(), 1, 2**16-1)
+            img = PNMImage(self._current_tex.get_x_size(),
+                           self._current_tex.get_y_size(), 1, 2**16 - 1)
 
             self._current_tex.store(img)
 
             output_lines = []
-            # output_lines.append([name, self._current_tex.get_component_type(), self._current_tex.get_format()]) 
+            # output_lines.append([name, self._current_tex.get_component_type(), self._current_tex.get_format()])
             for y in range(self._current_tex.get_y_size()):
                 line = []
                 for x in range(self._current_tex.get_x_size()):
@@ -228,6 +232,5 @@ class TexturePreview(DraggableWindow):
             with open(name + ".csv", "w") as handle:
                 for line in output_lines:
                     handle.write(";".join([str(i) for i in line]) + "\n")
-
 
         self.debug("Done.")

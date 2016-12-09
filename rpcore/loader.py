@@ -43,19 +43,20 @@ class timed_loading_operation(object):  # noqa # pylint: disable=invalid-name,to
 
     WARNING_COUNT = 0
 
-    def __init__(self, resource):
-        self.resource = resource
-        if isinstance(self.resource, (list, tuple)):
-            self.resource = ', '.join(self.resource)
+    def __init__(self, resource_id):
+        self.resource_id = resource_id
+        if isinstance(self.resource_id, (list, tuple)):
+            self.resource_id = ', '.join(self.resource_id)
 
     def __enter__(self):
+        # RPObject.global_debug("Loading", self.resource_id)
         self.start_time = time.clock()
 
     def __exit__(self, *args):
         duration = (time.clock() - self.start_time) * 1000.0
         if duration > 80.0 and timed_loading_operation.WARNING_COUNT < 5:
             RPObject.global_warn(
-                "RPLoader", "Loading '" + self.resource + "' took", round(duration, 2), "ms")
+                "RPLoader", "Loading '" + self.resource_id + "' took", round(duration, 2), "ms")
             timed_loading_operation.WARNING_COUNT += 1
             if timed_loading_operation.WARNING_COUNT == 5:
                 RPObject.global_warn(

@@ -36,21 +36,25 @@ class Button(RPObject):
 
     """ Simple wrapper around DirectButton, providing a simpler interface """
 
-    def __init__(self, text="", parent=None, x=0, y=0, width=120, callback=None):
+    def __init__(self, text="", parent=None, x=0, y=0, width=80, callback=None, bg=(0, 0, 0, 1)):
         RPObject.__init__(self)
         color = Vec4(1)
         font = Globals.font
-        self._width, self._height = width, 20
+        self._width, self._height = width, 13
         self._initial_pos = self._translate_pos(x, y)
+
         self._node = DirectButton(
-            text=text, parent=parent, pos=self._initial_pos, scale=(self._width * 0.2),
-            text_font=font, state=DGG.NORMAL, frameColor=(0, 0, 0, 0.5), text_fg=color)
+            text=text, parent=parent, pos=self._initial_pos, scale=(1, 1, 1),
+            text_font=font, state=DGG.NORMAL, frameColor=bg, text_fg=color,
+            text_scale=17, text_bg=(0, 0, 0, 0), pressEffect=1, relief=DGG.FLAT,
+            frameSize=(-self._width // 2, self._width // 2, 10 + self._height, -self._height))
+
         if callback:
             self._node.bind(DGG.B1PRESS, callback)
 
     def _translate_pos(self, x, y):
         """ Converts 2d coordinates to pandas coordinate system """
-        return Vec3(x + self._width / 2.0, 1, -y - self._height / 2.0)
+        return Vec3(x + self._width / 2.0, 1, -y - self._height)
 
     def set_text(self, text):
         """ Changes the text, remember to pass may_change to the constructor,

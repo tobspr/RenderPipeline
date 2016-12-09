@@ -259,7 +259,7 @@ class BufferViewer(DraggableWindow):
 
             w, h = stage_tex.get_x_size(), stage_tex.get_y_size()
 
-            if not isinstance(stage_tex, EmptyStage):        
+            if not isinstance(stage_tex, EmptyStage):
                 frame_hover.bind(
                     DGG.B1PRESS, partial(self._on_texture_clicked, stage_tex))
 
