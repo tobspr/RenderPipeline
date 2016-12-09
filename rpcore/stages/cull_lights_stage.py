@@ -129,7 +129,6 @@ class CullLightsStage(RenderStage):
     def update(self):
         self.frustum_lights_ctr.clear_image()
         self.per_slice_lights_ctr.clear_image()
-        # self.per_slice_lights.clear_image()# XXX
 
     def set_dimensions(self):
         # Updates the dimensions of all textures / buffers which depend on the screen size

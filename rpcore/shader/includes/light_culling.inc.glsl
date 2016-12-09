@@ -96,14 +96,18 @@ void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int c
 
 // Returns the ray direction in view space for a given culling cell
 vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size) {
-    vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / precompute_size;
-    return normalize(mix(
-        mix(MainSceneData.vs_frustum_directions[0].xyz,
-            MainSceneData.vs_frustum_directions[1].xyz, cell_pos.x),
-        mix(MainSceneData.vs_frustum_directions[2].xyz,
-            MainSceneData.vs_frustum_directions[3].xyz, cell_pos.x),
-        cell_pos.y
-    ));
+    vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / (precompute_size - 1);
+    #if 0
+        return reconstruct_vs_position(1, cell_pos);
+    #else
+        return mix(
+            mix(MainSceneData.vs_frustum_directions[0],
+                MainSceneData.vs_frustum_directions[1], cell_pos.x),
+            mix(MainSceneData.vs_frustum_directions[2],
+                MainSceneData.vs_frustum_directions[3], cell_pos.x),
+            cell_pos.y
+        ).xyz;
+    #endif
 }
 
 // Computes a plane based on two points, the third point is assumed to be (0, 0, 0)
@@ -192,8 +196,7 @@ bool sphere_inside_frustum(Sphere sphere, Frustum frustum)
         return false;
 
     // Then check frustum planes
-    for (int i = 0; i < 6; ++i)
-    {
+    for (int i = 0; i < 6; ++i) {
         if (sphere_inside_plane(sphere, frustum.planes[i]))
             return false;
     }

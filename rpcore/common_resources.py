@@ -87,7 +87,7 @@ class CommonResources(RPObject):
             ("native_screen_size", "ivec2"),
             ("lc_tile_count", "ivec2"),
             ("ws_frustum_directions", "mat4"),
-            ("vs_frustum_directions", "mat4"),
+            ("vs_frustum_directions", "mat4"), # XXX: Unused
         )
         for name, ipt_type in inputs:
             self._input_ubo.register_pta(name, ipt_type)

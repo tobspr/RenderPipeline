@@ -52,7 +52,6 @@ void main() {
 
     int slice = int(gl_FragCoord.x);
 
-
     int thread_offset = int(gl_FragCoord.y);
     int max_light_count = texelFetch(FrustumLightsCount, 0).x;
 
@@ -68,7 +67,9 @@ void main() {
         LightData light_data = read_light_data(AllLightsData, light_index);
         bool visible = cull_light(light_data, view_frustum);
 
+        // Uncomment to detect culling issues
         // visible = true;
+
         if (visible) {
             int num_rendered_lights = imageAtomicAdd(PerSliceLightsCount, slice, 1).x;
             imageStore(PerSliceLights, slice * LC_MAX_LIGHTS + num_rendered_lights, uvec4(light_index));
