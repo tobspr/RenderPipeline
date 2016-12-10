@@ -50,13 +50,14 @@ void main() {
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    int thread_id = (coord.x + coord.y * LC_CULLING_SLICE_WIDTH);
+    int thread_id = coord.x + coord.y * LC_CULLING_SLICE_WIDTH;
     int local_offset = thread_id % LC_CULL_THREADS;
 
     // Find the index of the cell we are about to process
-    int idx = 1 + thread_id / LC_CULL_THREADS;
+    // Add one since the first pixel is the count of visible cells
+    int idx = 1 + thread_id / LC_CULL_THREADS; 
     int num_total_cells = texelFetch(CellListBuffer, 0).x;
-    ivec2 precompute_size = MainSceneData.lc_tile_count;
+    ivec2 tile_size = ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
 
     // If we found no remaining cell, we are done, so just return and hope for
     // good coherency.
@@ -69,7 +70,7 @@ void main() {
     int cell_x, cell_y, cell_slice;
     unpack_cell_data(packed_cell_data, cell_x, cell_y, cell_slice);
 
-    // Find the tiles minimum and maximum distance
+    // Find the tiles minimum and mapximum distance
     float min_distance = get_distance_from_slice(cell_slice);
     float max_distance = get_distance_from_slice(cell_slice + 1);
 
@@ -79,17 +80,15 @@ void main() {
     // Get amount of visible lights in slice
     int max_slice_lights = texelFetch(PerSliceLightsCount, cell_slice).x;
 
+    // Offset of the per-slice data, stored in a buffer texture instead of
+    // texture2D due to a panda bug.
     int slice_offs = cell_slice * LC_MAX_LIGHTS;
 
     Frustum view_frustum = make_view_frustum(
-        cell_x, cell_y, precompute_size, min_distance, max_distance);
+        cell_x, cell_y, tile_size, min_distance, max_distance);
 
     // Cull all lights
     for (int i = local_offset; i < max_slice_lights; i += LC_CULL_THREADS) {
-
-        // int light_index = int(texelFetch(PerSliceLights, ivec2(cell_slice, i), 0).x);
-
-        // int light_index = int(texelFetch(PerSliceLights, ivec2(0, i), 0).x);
         int light_index = int(texelFetch(PerSliceLights, slice_offs + i).x);
 
         // Fetch data of current light
@@ -105,8 +104,7 @@ void main() {
 
             // When we reached the maximum amount of lights for this tile, stop.
             // At this point, its actually too late, because another thread might
-            // have written over the bounds already. But to improve performance,
-            // we stop iterating.
+            // have written over the bounds already, but we try to prevent further errors.
             if (num_rendered_lights >= LC_MAX_LIGHTS_PER_CELL) {
                 break;
             }

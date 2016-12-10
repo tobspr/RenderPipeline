@@ -694,7 +694,6 @@ class RenderPipeline(RPObject):
         for stage in builtin_stages:
             self.stage_mgr.add_stage(stage(self))
 
-
     def _get_serialized_material_name(self, material, index=0):
         """ Returns a serializable material name """
         return str(index) + "-" + (material.get_name().replace(" ", "").strip() or "unnamed")

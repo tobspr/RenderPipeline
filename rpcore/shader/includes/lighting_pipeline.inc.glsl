@@ -130,9 +130,11 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float slope_bias = 0.001;
-    const float normal_bias = 0.0001;
-    const float const_bias = 0.003;
+    const float slope_bias = 0.001 * 0.0;
+    const float normal_bias = 0.0001 * 0.0;
+    const float const_bias = 0.003 * 0.0;
+
+
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 
     vec3 projected = project(mvp, biased_pos);
@@ -184,10 +186,11 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
     #endif
 
     // Get the per-class light counts
-    uint num_spot_noshadow  = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x;
-    uint num_spot_shadow    = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x;
-    uint num_point_noshadow = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_NOSHADOW).x;
-    uint num_point_shadow   = texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_SHADOW).x;
+    // To be safe, we use a min() to avoid huge loops in case some texture is not cleared or so.
+    uint num_spot_noshadow  = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x);
+    uint num_spot_shadow    = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x);
+    uint num_point_noshadow = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_NOSHADOW).x);
+    uint num_point_shadow   = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_SHADOW).x);
 
     // Compute the index into the culled lights list
     int data_offs = cell_index * LC_MAX_LIGHTS_PER_CELL;

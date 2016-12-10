@@ -171,20 +171,17 @@ class LightManager(RPObject):
 
     def init_stages(self):
         """ Inits all required stages for the lighting """
-
         add_stage = self.pipeline.stage_mgr.add_stage
 
-        self.flag_cells_stage = FlagUsedCellsStage(self.pipeline)
-        add_stage(self.flag_cells_stage)
+        required_stages = [
+            FlagUsedCellsStage,
+            CollectUsedCellsStage,
+            CullLightsStage,
+            ApplyLightsStage
+        ]
 
-        self.collect_cells_stage = CollectUsedCellsStage(self.pipeline)
-        add_stage(self.collect_cells_stage)
-
-        self.cull_lights_stage = CullLightsStage(self.pipeline)
-        add_stage(self.cull_lights_stage)
-
-        self.apply_lights_stage = ApplyLightsStage(self.pipeline)
-        add_stage(self.apply_lights_stage)
+        for stage in required_stages:
+            add_stage(stage(self.pipeline))
 
         self.shadow_stage = ShadowStage(self.pipeline)
         self.shadow_stage.size = self.shadow_manager.get_atlas_size()
@@ -198,7 +195,6 @@ class LightManager(RPObject):
         defines["LC_TILE_SIZE_Y"] = self.tile_size.y
         defines["LC_TILE_SLICES"] = self.pipeline.settings["lighting.culling_grid_slices"]
         defines["LC_MAX_DISTANCE"] = self.pipeline.settings["lighting.culling_max_distance"]
-        defines["LC_CULLING_SLICE_WIDTH"] = self.pipeline.settings["lighting.culling_slice_width"]
         defines["LC_MAX_LIGHTS_PER_CELL"] = self.pipeline.settings["lighting.max_lights_per_cell"]
         defines["SHADOW_ATLAS_SIZE"] = self.pipeline.settings["shadows.atlas_size"]
 

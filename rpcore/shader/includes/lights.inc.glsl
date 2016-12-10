@@ -57,6 +57,7 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
     // so the rescaling is performed. 
     float linear_angle = (cos_angle - fov) / (1 - fov);
     float angle_att = saturate(linear_angle);
+    return angle_att;
     float ies_factor = get_ies_factor(ies_profile, linear_angle, 0);
     return ies_factor * angle_att * angle_att * dist_attenuation;
 }
@@ -84,8 +85,8 @@ float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) 
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow,
     vec3 transmittance, float energy, float clearcoat_energy, vec3 l_diffuse) {
 
-    // Debugging: Fast rendering path
     #if 0
+        // Debugging: Fast rendering path
         return light_color * attenuation;
     #endif
 

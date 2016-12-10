@@ -69,6 +69,9 @@ struct Cone
 };
 
 // Returns the slice index based on the distance
+// TODO: Use tuned clustering sequence.
+// Suggested from avalanche games is:
+// [0.1, 5.0, 6.8, 9.2, 12.6, 17.1, 23.2, 31.5, 42.9, 58.3, 79.2, 108, 146, 199, 271, 368, 500]
 int get_slice_from_distance(float dist) {
     float flt_dist = dist / LC_MAX_DISTANCE;
     return int(log(flt_dist * SLICE_EXP_FACTOR + 1.0) /
@@ -95,8 +98,15 @@ void unpack_cell_data(int packed_data, out int cell_x, out int cell_y, out int c
 }
 
 // Returns the ray direction in view space for a given culling cell
-vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, vec2 precompute_size) {
-    vec2 cell_pos = (vec2(cell_x, cell_y) + dir * 0.5 + 0.5) / (precompute_size - 1);
+vec3 transform_raydir(vec2 dir, int cell_x, int cell_y, ivec2 tile_size) {
+
+    // We have to convert the cell position, because it might be that not all
+    // tiles fit on screen (if the screen resolution is not a multiple of the tile size).
+    // In this case, we are actually reconstructing a view space position outside of the
+    // camera frustum, but due how the matrices work, this is fine.
+    vec2 cell_pos = vec2(cell_x, cell_y) + dir * 0.5 + 0.5;
+    cell_pos *= tile_size / SCREEN_SIZE;
+
     #if 0
         return reconstruct_vs_position(1, cell_pos);
     #else
@@ -122,11 +132,11 @@ Plane compute_plane(vec3 p1, vec3 p2)
 
 // Computes the six planes of the view frustum, or depending on the parameters, of the
 // given culling cell
-Frustum make_view_frustum(int cell_x, int cell_y, vec2 precompute_size, float min_dist, float max_dist) { 
-    vec3 rd_tr = transform_raydir(vec2(1, 1), cell_x, cell_y, precompute_size);
-    vec3 rd_tl = transform_raydir(vec2(-1, 1), cell_x, cell_y, precompute_size);
-    vec3 rd_br = transform_raydir(vec2(1, -1), cell_x, cell_y, precompute_size);
-    vec3 rd_bl = transform_raydir(vec2(-1, -1), cell_x, cell_y, precompute_size);
+Frustum make_view_frustum(int cell_x, int cell_y, ivec2 tile_size, float min_dist, float max_dist) { 
+    vec3 rd_tr = transform_raydir(vec2(1, 1), cell_x, cell_y, tile_size);
+    vec3 rd_tl = transform_raydir(vec2(-1, 1), cell_x, cell_y, tile_size);
+    vec3 rd_br = transform_raydir(vec2(1, -1), cell_x, cell_y, tile_size);
+    vec3 rd_bl = transform_raydir(vec2(-1, -1), cell_x, cell_y, tile_size);
 
     Frustum view_frustum;
 

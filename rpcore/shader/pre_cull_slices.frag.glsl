@@ -45,23 +45,20 @@ layout(r32i) uniform iimageBuffer PerSliceLightsCount;
 
 uniform samplerBuffer AllLightsData;
 
-
 void main() {
-
-    const int thread_count = 128;
 
     int slice = int(gl_FragCoord.x);
 
     int thread_offset = int(gl_FragCoord.y);
-    int max_light_count = texelFetch(FrustumLightsCount, 0).x;
+    int max_light_count = min(LC_MAX_LIGHTS, texelFetch(FrustumLightsCount, 0).x);
 
     float start_dist = get_distance_from_slice(slice);
     float end_dist = get_distance_from_slice(slice + 1);
 
-    Frustum view_frustum = make_view_frustum(0, 0, ivec2(1, 1), start_dist, end_dist);
+    Frustum view_frustum = make_view_frustum(0, 0, SCREEN_SIZE_INT, start_dist, end_dist);
 
     // Check for all lights if they are in current slice
-    for (int i = thread_offset; i < max_light_count; i += thread_count) {   
+    for (int i = thread_offset; i < max_light_count; i += LC_SLICE_CULL_THREADS) {   
         int light_index = int(texelFetch(FrustumLights, i).x);
 
         LightData light_data = read_light_data(AllLightsData, light_index);
@@ -75,6 +72,4 @@ void main() {
             imageStore(PerSliceLights, slice * LC_MAX_LIGHTS + num_rendered_lights, uvec4(light_index));
         }
     }
-
-
 }

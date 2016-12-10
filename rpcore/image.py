@@ -158,7 +158,7 @@ class Image(RPObject, Texture, ImageFormatTypes):
 
     def __del__(self):
         """ Destroys the image """
-        self.warn("Image destructor not implemented yet")
+        # TODO: Free data
 
     def write(self, pth):
         """ Writes the image to disk """

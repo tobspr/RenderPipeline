@@ -38,19 +38,21 @@ class CullLightsStage(RenderStage):
     required_pipes = ["CellListBuffer"]
     required_inputs = ["AllLightsData", "maxLightIndex"]
 
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.max_lights_per_cell = pipeline.settings["lighting.max_lights_per_cell"]
-
-        if self.max_lights_per_cell > 2**16:
-            self.fatal("lighting.max_lights_per_cell must be <=", 2**16, "!")
-
-        self.slice_width = pipeline.settings["lighting.culling_slice_width"]
         self.culling_grid_slices = pipeline.settings["lighting.culling_grid_slices"]
-        self.cull_threads = 32
+        self.culling_slice_width = 2048
+        self.slice_cull_threads = 128
+        self.cull_threads = 128
+        self.view_cullers_sqrt = 64
 
         # Amount of light classes. Has to match the ones in LightClassification.inc.glsl
         self.num_light_classes = 4
+
+        if self.max_lights_per_cell > 2**16:
+            self.fatal("lighting.max_lights_per_cell must be <=", 2**16, "!")
 
     @property
     def produced_pipes(self):
@@ -62,9 +64,11 @@ class CullLightsStage(RenderStage):
     @property
     def produced_defines(self):
         return {
-            "LC_SLICE_WIDTH": self.slice_width,
+            "LC_CULLING_SLICE_WIDTH": self.culling_slice_width,
             "LC_CULL_THREADS": self.cull_threads,
-            "LC_LIGHT_CLASS_COUNT": self.num_light_classes
+            "LC_LIGHT_CLASS_COUNT": self.num_light_classes,
+            "LC_SLICE_CULL_THREADS": self.slice_cull_threads,
+            "LC_VIEW_CULLERS_SQRT": self.view_cullers_sqrt
         }
 
     def create(self):
@@ -86,7 +90,7 @@ class CullLightsStage(RenderStage):
         # in the current camera frustum
         # TODO: Use no oversized triangle in this stage
         self.target_visible = self.create_target("ViewFrustumCull")
-        self.target_visible.size = 16, 16
+        self.target_visible.size = self.view_cullers_sqrt, self.view_cullers_sqrt
         self.target_visible.prepare_buffer()
         self.target_visible.set_shader_input("FrustumLights", self.frustum_lights)
         self.target_visible.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
@@ -95,7 +99,7 @@ class CullLightsStage(RenderStage):
         # for each slice of the culling frustum
         # TODO: Use no oversized triangle in this stage
         self.target_cull_slices = self.create_target("PreCullSlices")
-        self.target_cull_slices.size = self.culling_grid_slices, 128
+        self.target_cull_slices.size = self.culling_grid_slices, self.slice_cull_threads
         self.target_cull_slices.prepare_buffer()
         self.target_cull_slices.set_shader_input("FrustumLights", self.frustum_lights)
         self.target_cull_slices.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
@@ -136,8 +140,8 @@ class CullLightsStage(RenderStage):
         max_cells = self._pipeline.light_mgr.total_tiles
 
         num_rows_threaded = int(
-            math.ceil((max_cells * self.cull_threads) / float(self.slice_width)))
-        num_rows = int(math.ceil(max_cells / float(self.slice_width)))
+            math.ceil((max_cells * self.cull_threads) / float(self.culling_slice_width)))
+        num_rows = int(math.ceil(max_cells / float(self.culling_slice_width)))
 
         # Update the size of the buffer which keeps the per-cell lights, since the cell count might have changed
         self.per_cell_lights.set_x_size(max_cells * self.max_lights_per_cell)
@@ -147,8 +151,8 @@ class CullLightsStage(RenderStage):
             max_cells * (self.max_lights_per_cell + self.num_light_classes))
         self.grouped_cell_lights_counts.set_x_size(max_cells * (1 + self.num_light_classes))
 
-        self.target_cull.size = self.slice_width, num_rows_threaded
-        self.target_group.size = self.slice_width, num_rows
+        self.target_cull.size = self.culling_slice_width, num_rows_threaded
+        self.target_group.size = self.culling_slice_width, num_rows
 
     def reload_shaders(self):
         self.target_cull.shader = self.load_shader("tiled_culling.vert.glsl", "cull_lights.frag.glsl")

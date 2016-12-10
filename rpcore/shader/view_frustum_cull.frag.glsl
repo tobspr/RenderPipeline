@@ -44,16 +44,18 @@ uniform int maxLightIndex;
 
 void main() {
 
-    const int tile_size = 16;
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    int start_offset = coord.y * tile_size + coord.x;
+    int start_offset = coord.y * LC_VIEW_CULLERS_SQRT + coord.x;
     
-    Frustum view_frustum = make_view_frustum(0, 0, ivec2(1, 1), 0.0, LC_MAX_DISTANCE);
+    Frustum view_frustum = make_view_frustum(0, 0, SCREEN_SIZE_INT, 0.0, LC_MAX_DISTANCE);
+
+    // Make sure we do not run into an infinite/huge loop
+    int num_lights = min(LC_MAX_LIGHTS + 1, maxLightIndex);
 
     // Check for all lights if they are in the view frustum, to reduce load
     // on the upcoming detailed culling pass
-    for (int i = start_offset; i <= maxLightIndex; i += tile_size * tile_size) {
+    for (int i = start_offset; i <= num_lights; i += LC_VIEW_CULLERS_SQRT * LC_VIEW_CULLERS_SQRT) {
         LightData light_data = read_light_data(AllLightsData, i);
 
         // XXX: Might first read the type, then skip early
