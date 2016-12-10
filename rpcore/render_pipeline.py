@@ -496,6 +496,7 @@ class RenderPipeline(RPObject):
         self._showbase.addTask(self._plugin_pre_render_update, "RP_Plugin_BeforeRender", sort=12)
         self._showbase.addTask(self._plugin_post_render_update, "RP_Plugin_AfterRender", sort=15)
         self._showbase.addTask(self._update_inputs_and_stages, "RP_UpdateInputsAndStages", sort=18)
+        self._showbase.addTask(self._cleanup_after_frame, "RP_CleanupAfterFrame", sort=10000)
         self._showbase.taskMgr.doMethodLater(0.5, self._clear_state_cache, "RP_ClearStateCache")
         if self.settings["pipeline.auto_reload_plugin_shaders"]:
             self._initialize_plugin_watchdog()
@@ -525,6 +526,11 @@ class RenderPipeline(RPObject):
             self.debugger.handle_window_resize()
             self.plugin_mgr.trigger_hook("window_resized")
 
+    def _cleanup_after_frame(self, task=None):
+        """ Task which invokes cleanup routines after the frame has been rendered """
+        self.light_mgr.internal_mgr.post_render_callback()
+        return task.cont
+
     def _clear_state_cache(self, task=None):
         """ Task which repeatedly clears the state cache to avoid storing
         unused states. While running once a while, this task prevents over-polluting
@@ -532,8 +538,8 @@ class RenderPipeline(RPObject):
         state garbarge collector, which does a great job, but still cannot clear
         up all states. """
         task.delayTime = 2.0
-        # TransformState.clear_cache()
-        # RenderState.clear_cache()
+        TransformState.clear_cache()
+        RenderState.clear_cache()
         return task.again
 
     def _process_plugin_reload_queue(self, task=None):
@@ -740,3 +746,20 @@ class RenderPipeline(RPObject):
                 ))
 
         RenderState.clear_cache()
+
+    def add_dynamic_region(self, region):
+        """ Adds a new dynamic region. All shadow sources in this region
+        will be regenerated each frame. This equals calling invalidate_region
+        each frame. """
+        return self.light_mgr.internal_mgr.add_dynamic_region(region)
+
+    def remove_dynamic_region(self, region):
+        """ Removes a previously added dynamic region. """
+        self.light_mgr.internal_mgr.remove_dynamic_region(region)
+
+    def invalidate_region(self, region):
+        """ Invalidates a region, this forces all shadows in that region
+        to be updated """
+        self.light_mgr.internal_mgr.invalidate_region(region)
+
+    

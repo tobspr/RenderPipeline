@@ -32,11 +32,11 @@
 
 // Computes the quadratic attenuation curve
 float attenuation_curve(float dist_square, float radius) {
-    #if 0
+    #if 1
         return step(dist_square, radius * radius);
     #endif
 
-    #if 1
+    #if 1 
         float factor = dist_square / (radius * radius);
         float smooth_factor = saturate(1.0 - factor * factor);
         return smooth_factor * smooth_factor / max(0.01 * 0.01, dist_square);
@@ -57,7 +57,6 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
     // so the rescaling is performed. 
     float linear_angle = (cos_angle - fov) / (1 - fov);
     float angle_att = saturate(linear_angle);
-    return angle_att;
     float ies_factor = get_ies_factor(ies_profile, linear_angle, 0);
     return ies_factor * angle_att * angle_att * dist_attenuation;
 }

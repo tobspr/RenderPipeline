@@ -356,15 +356,18 @@ void InternalLightManager::update_shadow_sources() {
 
     // Find all dirty shadow sources and make a list of them
     vector<ShadowSource*> sources_to_update;
+    sources_to_update.reserve(_shadow_manager->get_max_updates());
+
      for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
         ShadowSource* source = *iter;
         if (source) {
             const BoundingSphere& bounds = source->get_bounds();
 
             // Check if source is in range
+            // TODO: Check in camera bounds
             float distance_to_camera = (_camera_pos - bounds.get_center()).length() - bounds.get_radius();
             if (distance_to_camera < _shadow_update_distance) {
-                if (source->get_needs_update()) {
+                if (source->get_needs_update() || needs_invalidate(source)) {
                     sources_to_update.push_back(source);
                 }
             } else {
@@ -387,6 +390,10 @@ void InternalLightManager::update_shadow_sources() {
     std::sort(sources_to_update.begin(), sources_to_update.end(), [this](const ShadowSource* a, const ShadowSource* b) {
         return this->compare_shadow_sources(a, b);
     });
+
+    // Uniquify sources
+    auto last = std::unique(sources_to_update.begin(), sources_to_update.end());
+    sources_to_update.erase(last, sources_to_update.end());
 
     // Get a handle to the atlas, will be frequently used
     ShadowAtlas *atlas = _shadow_manager->get_atlas();
@@ -422,6 +429,26 @@ void InternalLightManager::update_shadow_sources() {
         source->set_needs_update(false);
         gpu_update_source(source);
     }
+}
+
+/**
+ * @brief Checks whether a shadow source is in an update region
+ * @details This checks whether a given shadow source is in an invalidated region,
+ *   which can be added by invalidate_region, or add_dynamic_region.
+ * @return  whether the source needs to get recomputed
+ */
+bool InternalLightManager::needs_invalidate(const ShadowSource* source) const {
+
+    const BoundingSphere& source_bounds = source->get_bounds();
+    for (const BoundingVolume* bounds : _dynamic_regions) {
+      if (bounds->contains(&source_bounds) != BoundingVolume::IF_no_intersection)
+        return true;
+    }
+    for (const BoundingVolume* bounds : _invalidated_regions) {
+      if (bounds->contains(&source_bounds) != BoundingVolume::IF_no_intersection)
+        return true;
+    }
+    return false;
 }
 
 /**

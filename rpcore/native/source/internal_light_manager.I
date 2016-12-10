@@ -24,6 +24,7 @@
  *
  */
 
+#include "perf_utility.h"
 
 /**
  * @brief Returns the maximum light index
@@ -137,4 +138,37 @@ inline void InternalLightManager::set_shadow_update_distance(float dist) {
  */
 inline ShadowManager* InternalLightManager::get_shadow_manager() const {
   return _shadow_manager;
+}
+
+/**
+ * @brief Clears up the light manager after the frame was rendered
+ * @details This clears the invalidated regions after each frame, and should be
+ *   executed at the very end of each frame.
+ */
+inline void InternalLightManager::post_render_callback() {
+  _invalidated_regions.clear();
+}
+
+/**
+ * @brief Invalidates all shadow sources in a given region 
+ */
+inline void InternalLightManager::invalidate_region(CPT(BoundingVolume) region) {
+  _invalidated_regions.push_back(region);
+}
+
+/**
+ * @brief Adds a new dynamic region
+ * @detail Adds a region where all shadow sources are updated each frame. Equals to
+ *   calling invalidate_region() with that region each frame.
+ */
+inline void InternalLightManager::add_dynamic_region(CPT(BoundingVolume) region) {
+  _dynamic_regions.push_back(region);
+}
+
+/**
+ * @brief Removes a dynamic region
+ * @detail Removes a previously added dynamic region
+ */
+inline void InternalLightManager::remove_dynamic_region(CPT(BoundingVolume) region) {
+  performance::vector_erase_if_contains(_dynamic_regions, region);
 }

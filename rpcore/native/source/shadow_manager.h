@@ -61,6 +61,9 @@ class ShadowManager : public ReferenceCount {
         inline size_t get_num_update_slots_left() const;
         MAKE_PROPERTY(num_update_slots_left, get_num_update_slots_left);
 
+        inline size_t get_max_updates() const;
+        MAKE_PROPERTY(max_updates, get_max_updates);
+
         inline ShadowAtlas* get_atlas() const;
         MAKE_PROPERTY(atlas, get_atlas);
 

@@ -26,7 +26,7 @@ THE SOFTWARE.
 from __future__ import print_function
 from rplibs.six.moves import range  # pylint: disable=import-error
 
-from panda3d.core import Vec3
+from panda3d.core import Vec3, BoundingVolume
 
 from rpcore.pynative.pointer_slot_storage import PointerSlotStorage
 from rpcore.pynative.gpu_command import GPUCommand
@@ -47,6 +47,8 @@ class InternalLightManager(object):
         self._shadow_manager = None
         self._camera_pos = Vec3(0)
         self._shadow_update_distance = 100.0
+        self._dynamic_regions = []
+        self._invalidated_regions = []
 
     def get_max_light_index(self):
         return self._lights.get_max_index()
@@ -175,13 +177,12 @@ class InternalLightManager(object):
         sources_to_update = []
 
         for source in self._shadow_sources.begin():
-            # if source and source.get_needs_update():
-                # sources_to_update.append(source)
             if source:
                 bounds = source.get_bounds()
                 distance_to_camera = (self._camera_pos - bounds.get_center()) - bounds.get_radius()
                 if distance_to_camera < self._shadow_update_distance:
-                    sources_to_update.append(source)
+                    if source.get_needs_update() or self.needs_invalidate(source):
+                        sources_to_update.append(source)
                 else:
                     if source.has_region():
                         self._shadow_manager.get_atlas().free_region(source.get_region())
@@ -191,7 +192,7 @@ class InternalLightManager(object):
             dist = (source.get_bounds().get_center() - self._camera_pos).length()
             return -dist + (10**10 if source.has_region() else 0)
 
-        sorted_sources = list(sorted(sources_to_update, key=get_source_score))
+        sorted_sources = list(set(sorted(sources_to_update, key=get_source_score)))
 
         atlas = self._shadow_manager.get_atlas()
         update_slots = min(
@@ -219,3 +220,26 @@ class InternalLightManager(object):
     def update(self):
         self.update_lights()
         self.update_shadow_sources()
+
+    def post_render_callback(self):
+        self._invalidated_regions = []
+
+    def invalidate_region(self, region):
+        self._invalidated_regions.append(region)
+
+    def add_dynamic_region(self, region):
+        self._dynamic_regions.append(region)
+
+    def remove_dynamic_region(self, region):
+        if region in self._dynamic_regions:
+            self._dynamic_regions.remove(region)
+
+    def needs_invalidate(self, source):
+        source_bounds = source.get_bounds()
+        for bounds in self._dynamic_regions:
+            if bounds.contains(source_bounds) != BoundingVolume.IF_no_intersection:
+                return True
+        for bounds in self._invalidated_regions:
+            if bounds.contains(source_bounds) != BoundingVolume.IF_no_intersection:
+                return True
+        return False

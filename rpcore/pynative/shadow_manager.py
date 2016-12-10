@@ -54,6 +54,9 @@ class ShadowManager(object):
             print("Warning: max_updates set to 0, no shadow updates will happen")
         self._max_updates = max_updates
 
+    def get_max_updates(self):
+        return self._max_updates
+
     def set_atlas_size(self, atlas_size):
         self._atlas_size = atlas_size
 

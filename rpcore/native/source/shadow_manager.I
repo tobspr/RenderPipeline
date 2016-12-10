@@ -190,3 +190,12 @@ inline bool ShadowManager::add_update(const ShadowSource* source) {
 inline size_t ShadowManager::get_num_update_slots_left() const {
     return _max_updates - _queued_updates.size();
 }
+
+/**
+ * @brief Returns the maximum number of shadow updates per frame
+ * @details see @brief
+ * @return see @brief
+ */
+inline size_t ShadowManager::get_max_updates() const {
+    return _max_updates;
+}

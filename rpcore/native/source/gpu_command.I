@@ -54,9 +54,9 @@ inline float GPUCommand::convert_int_to_float(int v) const {
         return (float)v;
 
     #else
-        assert(sizeof(float) == 4); // We really need this for packing! Better
+        static_assert(sizeof(float) == 4, "Need 4bytes float"); // We really need this for packing! Better
                                     // throw an error if the compiler uses more
-                                    // than 4 bytes.
+                                    // than 4 bytes
         // Simple binary conversion, assuming sizeof(int) == sizeof(float)
         union { int32_t _int; float _float; } converter = { (int32_t)v };
         return converter._float;

@@ -75,6 +75,12 @@ class InternalLightManager {
 
         inline void set_command_list(GPUCommandList *cmd_list);
 
+        inline void post_render_callback();        
+
+        inline void invalidate_region(CPT(BoundingVolume) region);
+        inline void add_dynamic_region(CPT(BoundingVolume) region);
+        inline void remove_dynamic_region(CPT(BoundingVolume) region);
+
     protected:
 
         void gpu_update_light(RPLight* light);
@@ -88,11 +94,16 @@ class InternalLightManager {
         void update_lights();
         void update_shadow_sources();
 
+        bool needs_invalidate(const ShadowSource* source) const;
+
         GPUCommandList* _cmd_list;
         ShadowManager* _shadow_manager;
 
         PointerSlotStorage<RPLight*, MAX_LIGHT_COUNT> _lights;
         PointerSlotStorage<ShadowSource*, MAX_SHADOW_SOURCES> _shadow_sources;
+
+        vector<CPT(BoundingVolume)> _dynamic_regions;
+        vector<CPT(BoundingVolume)> _invalidated_regions;
 
         LPoint3f _camera_pos;
         float _shadow_update_distance;
