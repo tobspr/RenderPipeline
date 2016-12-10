@@ -89,24 +89,32 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     vec3 position = get_light_position(light_data);
     int ies_profile = get_ies_profile(light_data);
     vec3 l = position - m.position;
-    float l_len_square = length_squared(l);
+    // float l_len_square = length_squared(l);
 
-    float energy = 1.0 / FOUR_PI;
-    float dist_sq = l_len_square;
+    float energy = 1.0;
+    // float dist_sq = l_len_square;
     float clearcoat_energy = energy;
     vec3 l_diff = l;
 
     // Spherical area light
-    if (inner_radius > 0.02) {
-        l_diff = get_spherical_area_light_horizon(l, m.normal, inner_radius);
-        l = get_spherical_area_light_vector(m.normal, l, view_vector, inner_radius);
-        energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
-        dist_sq = max(square(inner_radius) + 0.01, l_len_square - square(inner_radius));
-        clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
-    }
+    // if (inner_radius > 0.02) {
+    // l_diff = get_spherical_area_light_horizon(l, m.normal, inner_radius);
+    // energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
+    // dist_sq = max(0.01 * 0.01, square(sqrt(l_len_square) - inner_radius));
+    // clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
+    // }
 
+
+    float dist = max(0.01, length(l) - 0 * inner_radius); 
+    // dist_sq *= dist_sq;
+
+    energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist);
+
+    l = get_spherical_area_light_vector(m.normal, l, view_vector, inner_radius);
+    
     // Get the point light attenuation
-    float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
+    // float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
+    float attenuation = attenuation_curve(dist * dist, radius); // * get_ies_factor(-l, ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, normalize(l), get_light_color(light_data),

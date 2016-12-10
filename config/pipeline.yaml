@@ -33,7 +33,7 @@ pipeline:
     # Whether to render in a special reference mode, which displays the
     # environment map as a background, and disable special effects like color
     # grading and so on. This is used by the pathtracing reference.
-    reference_mode: false
+    reference_mode: true
 
 # This are the settings affecting the lighting part of the pipeline,
 # including builtin shadows and lights.

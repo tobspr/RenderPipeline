@@ -111,7 +111,7 @@ void main() {
 
             // When in reference mode, display the used environment cubemap as background
             #if USE_WHITE_ENVIRONMENT
-                result = vec3(1);
+                result = vec3(DEFAULT_ENVMAP_BRIGHTNESS);
             #else
                 result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0).xyz;
             #endif
@@ -196,8 +196,8 @@ void main() {
     #endif
 
     #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
-        ibl_specular = vec3(1);
-        ibl_diffuse = vec3(1);
+        ibl_specular = vec3(DEFAULT_ENVMAP_BRIGHTNESS);
+        ibl_diffuse = vec3(DEFAULT_ENVMAP_BRIGHTNESS);
     #endif
 
     vec3 material_f0 = get_material_f0(m);

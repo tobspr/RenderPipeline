@@ -293,7 +293,7 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 0.4
+            rp_light.inner_radius = 2.0
 
             self.add_light(rp_light)
             light.remove_node()
@@ -663,6 +663,7 @@ class RenderPipeline(RPObject):
         skybox.set_scale(size)
         skybox.reparent_to(Globals.render)
         skybox.set_bin("unsorted", 10000)
+        skybox.set_name("skybox")
         self.set_effect(skybox, "effects/skybox.yaml", {
             "render_shadow": False,
             "render_envmap": False,

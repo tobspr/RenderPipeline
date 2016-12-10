@@ -37,7 +37,7 @@ class ErrorMessageDisplay(RPObject):
     """ This is a gui element which listens to the panda output stream
     and shows errors """
 
-    ACTIVATED = True
+    ENABLED = False
 
     def __init__(self):
         RPObject.__init__(self)
@@ -54,7 +54,7 @@ class ErrorMessageDisplay(RPObject):
     def update(self):
         """ Updates the error display, fetching all new messages from the notify
         stream """
-        if not self.ACTIVATED:
+        if not self.ENABLED:
             return
 
         if not self._notify_stream:

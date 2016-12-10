@@ -350,5 +350,6 @@ vec3 get_metallic_fresnel_approx(Material m, float NxV) {
     vec3 metallic_energy_f90 = mix(vec3(1), 0.5 * m.basecolor, m.linear_roughness);
     vec3 metallic_fresnel = mix(metallic_energy_f0, metallic_energy_f90,
         pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
-    return metallic_fresnel;
+    return vec3(m.basecolor);
+    // return metallic_fresnel;
 }

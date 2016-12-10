@@ -61,6 +61,7 @@ class LightManager(RPObject):
         self.init_command_queue()
         self.init_shadow_manager()
         self.init_stages()
+        self.all_lights = []
 
     @property
     def total_tiles(self):
@@ -87,11 +88,13 @@ class LightManager(RPObject):
         """ Adds a new light """
         self.internal_mgr.add_light(light)
         self.pta_max_light_index[0] = self.internal_mgr.max_light_index
+        self.all_lights.append(light)
 
     def remove_light(self, light):
         """ Removes a light """
         self.internal_mgr.remove_light(light)
         self.pta_max_light_index[0] = self.internal_mgr.max_light_index
+        self.all_lights.remove(light)
 
     def update(self):
         """ Main update method to process the GPU commands """

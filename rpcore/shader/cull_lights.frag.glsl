@@ -96,7 +96,7 @@ void main() {
         bool visible = cull_light(light_data, view_frustum);
 
         // Uncomment this to see if the culling produces any issues
-        // visible = true;
+        visible = true; // XXX
 
         // Write the light to the light buffer
         if (visible) {

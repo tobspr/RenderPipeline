@@ -55,6 +55,8 @@ from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.render_target import RenderTarget
 from rpcore.image import Image
 
+from rpcore.util.mitsuba_exporter import MitsubaExporter
+
 
 class Debugger(RPObject):
 
@@ -213,6 +215,7 @@ class Debugger(RPObject):
         Globals.base.accept("m", self.start_material_editor)
         Globals.base.accept("p", self.start_plugin_editor)
         Globals.base.accept("t", self.start_daytime_editor)
+        Globals.base.accept("m", self.export_scene)
 
     def _show_and_launch(self, method):
         if Globals.base.render2d.is_hidden():
@@ -226,6 +229,12 @@ class Debugger(RPObject):
         editor = os.path.dirname(os.path.realpath(__file__))
         editor = os.path.join(editor, "..", "..", "toolkit", name, "main.py")
         subprocess.Popen([pth, editor], shell=True)        
+
+    def export_scene(self):
+        """ Exports the current scene to mitsuba """
+        exporter = MitsubaExporter(self.pipeline)
+        exporter.add(Globals.base.render)
+        exporter.write("exported")
 
     def start_material_editor(self):
         """ Starts the material editor """

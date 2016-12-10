@@ -32,14 +32,20 @@
 
 // Computes the quadratic attenuation curve
 float attenuation_curve(float dist_square, float radius) {
-    #if 1
+    #if 0
         return step(dist_square, radius * radius);
     #endif
 
-    #if 1 
-        float factor = dist_square / (radius * radius);
-        float smooth_factor = saturate(1.0 - factor * factor);
-        return smooth_factor * smooth_factor / max(0.01 * 0.01, dist_square);
+    #if 1
+        // float inv_square = ONE_BY_PI / max(0.01 * 0.01, dist_square);
+        // return inv_square;
+        // return 1;
+
+        // Fade out at the border to avoid culling issues
+        const float falloff = 1;
+        float linear_dist = 1 - dist_square / (radius * radius);
+        return sqrt(saturate(linear_dist / falloff));
+
     #endif
 }
 
@@ -75,8 +81,21 @@ vec3 get_spherical_area_light_horizon(vec3 l_unscaled, vec3 n, float radius) {
     return normalize(l_unscaled + n * (0.5 * radius));
 }
 
-float get_spherical_area_light_energy(float alpha, float radius, float dist_sq) {
-     return max(0.000005, alpha * alpha) / max(0.01, radius * radius) * 4 * M_PI;
+float get_spherical_area_light_energy(float alpha, float inner_radius, float d) {
+    //  return max(0.000005, alpha * alpha) / max(0.01, radius * radius) * 4 * M_PI;
+    // return 0.001 / (inner_radius * inner_radius * M_PI * M_PI);
+    // return 4.0 * 1.5 * inner_radius * inner_radius * M_PI * M_PI / sqrt(dist_sq);
+    // return inner_radius * inner_radius * 100 / pow(dist_sq, 0.5);
+    // float d = sqrt(dist_sq)
+
+    // Convert from luminous power to luminance
+    float nrm = 4.0 * M_PI * M_PI * inner_radius * inner_radius;
+
+    // return 0.01 / square(d / inner_radius + 1) * nrm;
+    return 1.0 / (d * d * d + 1) * nrm; // XXX: Why d^3, and not d^2 (physically correct is ^2 )?
+
+    // return 1.0 / ();
+    
 }
 
 // Computes a lights influence
@@ -86,7 +105,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     #if 0
         // Debugging: Fast rendering path
-        return light_color * attenuation;
+        return light_color * attenuation * energy;
     #endif
 
     float NxL = saturate(dot(m.normal, l_diffuse));
@@ -110,7 +129,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     // Diffuse contribution
     vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness)
-                            * m.basecolor * (1 - m.metallic);
+                            * m.basecolor * (1 - m.metallic) * energy * attenuation;
 
     // Specular contribution:
     // We add some roughness for clearcoat - this is due to the reason that
@@ -124,7 +143,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     // The division by 4 * NxV * NxL is done in the geometric (visibility) term
     // already, so to evaluate the complete brdf we just do a multiply
-    shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * energy;
+    shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * 0.0001;
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);
@@ -141,7 +160,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     }
 
     return max(vec3(0),
-        (shading_result * light_color) * (attenuation * shadow * NxL) * transmittance);
+        (shading_result * light_color) * (shadow * NxL) * transmittance);
 }
 
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,

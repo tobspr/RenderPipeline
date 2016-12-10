@@ -57,7 +57,7 @@ vec3 get_light_position(LightData data) {
 
 // Extracts the light color
 vec3 get_light_color(LightData data) {
-    return vec3(data.Data1.zw, data.Data2.x) * 100.0;
+    return vec3(data.Data1.zw, data.Data2.x) * 100.0; // * 100 since we store it packed
 }
 
 /*
