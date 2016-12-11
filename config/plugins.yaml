@@ -5,7 +5,7 @@
 
 enabled:
     # - ao
-    # - smaa
+    - smaa
     # - bloom
     # - clouds
     # - color_correction

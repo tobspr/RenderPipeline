@@ -35,18 +35,18 @@
  *
  * @param sphere-size Sphere size in world space
  */
-inline void RPSphereLight::set_sphere_size(float sphere_size) {
-    nassertv(sphere_size >= 0.0099); // Invalid size
-    _sphere_size = sphere_size;
+inline void RPSphereLight::set_sphere_radius(float sphere_radius) {
+    nassertv(sphere_radius >= 0.0099); // Invalid size
+    _sphere_radius = sphere_radius;
     set_needs_update(true);
 }
 
 /**
  * @brief Returns the sphere size of the light
  * @details This returns the sphere size of the light, previously set with
- *   RPSphereLight::set_sphere_size.
+ *   RPSphereLight::set_sphere_radius.
  * @return sphere size in world space units
  */
-inline float RPSphereLight::get_sphere_size() const {
-    return _sphere_size;
+inline float RPSphereLight::get_sphere_radius() const {
+    return _sphere_radius;
 }

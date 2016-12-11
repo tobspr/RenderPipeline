@@ -250,34 +250,30 @@ bool cull_light(LightData light, Frustum view_frustum) {
     vec3 light_pos = (MainSceneData.view_mat_z_up * vec4(get_light_position(light), 1)).xyz;
     float radius = get_max_cull_distance(light);
 
-    switch (get_light_type(light)) {
+    // Special case for spot lights, since we can cull them more efficient
+    if (get_light_type(light) == LT_SPOT_LIGHT) {
+        Cone cone;
+        cone.pos = light_pos;
+        cone.height = radius;
+        
+        // Need direction in view-space instead of world-space
+        vec3 direction_ws = get_spotlight_direction(light);
+        cone.direction = world_normal_to_view(direction_ws);
 
-        case LT_SPHERE_LIGHT: {
-            Sphere sphere;
-            sphere.radius = radius;
-            sphere.pos = light_pos; 
-            return sphere_inside_frustum(sphere, view_frustum);
-        }
+        // Compute radius from fov (fov is stored as cos(fov))
+        float cos_cone_fov = get_spotlight_fov(light);
+        float sin_cone_fov = sqrt(1 - cos_cone_fov * cos_cone_fov);
 
-        case LT_SPOT_LIGHT: {
-            Cone cone;
-            cone.pos = light_pos;
-            cone.height = radius;
-            
-            // Need direction in view-space instead of world-space
-            vec3 direction_ws = get_spotlight_direction(light);
-            cone.direction = world_normal_to_view(direction_ws);
+        float hypotenuse = cone.height / cos_cone_fov; 
 
-            // Compute radius from fov (fov is stored as cos(fov))
-            float cos_cone_fov = get_spotlight_fov(light);
-            float sin_cone_fov = sqrt(1 - cos_cone_fov * cos_cone_fov);
-
-            float hypotenuse = cone.height / cos_cone_fov; 
-
-            cone.radius = sin_cone_fov * hypotenuse; 
-            return cone_inside_frustum(cone, view_frustum);
-        }
+        cone.radius = sin_cone_fov * hypotenuse; 
+        return cone_inside_frustum(cone, view_frustum);
     }
 
-    return false;
+    // Fallback for everything
+    Sphere sphere;
+    sphere.radius = radius;
+    sphere.pos = light_pos; 
+    return sphere_inside_frustum(sphere, view_frustum);
+
 }

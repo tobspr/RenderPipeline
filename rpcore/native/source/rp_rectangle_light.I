@@ -24,39 +24,34 @@
  *
  */
 
-#ifndef RP_SPHERE_LIGHT_H
-#define RP_SPHERE_LIGHT_H
-
-#include "pandabase.h"
-#include "rp_light.h"
+/**
+ * @brief Sets the up vector of the light
+ */
+inline void RPRectangleLight::set_up_vector(const LVecBase3f& up_vector) {
+    nassertv(up_vector.length() >= 0.0099); // Invalid size
+    _up_vector = up_vector;
+    set_needs_update(true);
+}
 
 /**
- * @brief SphereLight class
- * @details This represents a sphere light, a light which has a position and
- *   size. Checkout the RenderPipeline documentation for more information
- *   about this type of light.
+ * @brief Returns the up vector of the light
  */
-class RPSphereLight : public RPLight {
+inline const LVecBase3f& RPRectangleLight::get_up_vector() const {
+    return _up_vector;
+}
 
-    PUBLISHED:
-        RPSphereLight();
+/**
+ * @brief Sets the right vector of the light
+ */
+inline void RPRectangleLight::set_right_vector(const LVecBase3f& right_vector) {
+    nassertv(right_vector.length() >= 0.0099); // Invalid size
+    _right_vector = right_vector;
+    set_needs_update(true);
+}
 
-        inline void set_sphere_radius(float sphere_radius);
-        inline float get_sphere_radius() const;
-        MAKE_PROPERTY(sphere_radius, get_sphere_radius, set_sphere_radius);
-
-    public:
-        virtual void write_to_command(GPUCommand &cmd);
-        virtual void update_shadow_sources();
-        virtual void init_shadow_sources();
-
-    protected:
-
-        virtual float get_conversion_factor(IntensityType from, IntensityType to) const;
-
-        float _sphere_radius;
-};
-
-#include "rp_sphere_light.I"
-
-#endif // RP_SPHERE_LIGHT_H
+/**
+ * @brief Returns the right vector of the light
+ */
+inline const LVecBase3f& RPRectangleLight::get_right_vector() const {
+    return _right_vector;
+}

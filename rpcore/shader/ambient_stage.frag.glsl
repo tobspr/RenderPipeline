@@ -113,7 +113,7 @@ void main() {
             #if USE_WHITE_ENVIRONMENT
                 result = vec3(DEFAULT_ENVMAP_BRIGHTNESS);
             #else
-                result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0).xyz;
+                result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
             #endif
         #endif
 

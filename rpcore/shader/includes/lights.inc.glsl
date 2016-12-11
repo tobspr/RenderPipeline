@@ -69,11 +69,11 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 
 
 // Closest point on spherical area light
-vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphere_size) {
+vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphere_radius) {
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 closest_point = l_unscaled + center_to_ray *
-        saturate(sphere_size / max(1e-6, length(center_to_ray)));
+        saturate(sphere_radius / max(1e-6, length(center_to_ray)));
     return closest_point;
 }
 
@@ -82,22 +82,21 @@ vec3 get_spherical_area_light_horizon(vec3 l_unscaled, vec3 n, float radius) {
     return normalize(l_unscaled + n * (0.5 * radius));
 } 
 
-vec2 get_spherelight_energy(float alpha, float sphere_size, float d) {
+vec2 get_spherelight_energy(float alpha, float sphere_radius, float d) {
 
-    // XXX: Should subtract sphere_size from d, but without it matches mitsuba better
-    float diff_energy = 0.125 / max(0.001, pow(max(0, d), 2.2) + sphere_size);
+    // XXX: Should subtract sphere_radius from d, but without it matches mitsuba better
+    float diff_energy = 0.15 / max(0.001, pow(max(0, d), 2.2) + sphere_radius);
     // diff_energy *= 0;
 
     // Fade out on high roughness
-    const float fade_factor = 1.1;
-    // float alpha1 = max(0, fade_factor - alpha) / fade_factor;
-    float alpha1 = 1;
+    const float fade_factor = 0.95;
+    float alpha1 = max(0.2, fade_factor - alpha) / fade_factor;
+    // float alpha1 = 1;
 
     float roughness_factor = pow(alpha, 1.6) * alpha1;
-    float spec_energy = roughness_factor / max(1.0, pow(sphere_size, 1.5)); // approximation
-    spec_energy *= 0.01 / max(1.0, d);
+    float spec_energy = roughness_factor / max(0.1, pow(sphere_radius, 1.5)); // approximation
+    spec_energy *= 0.05 / max(1.0, d);
 
-    // spec_energy *= 0.0002;
     return vec2(diff_energy, spec_energy);
 }
 
@@ -142,11 +141,12 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     // float distribution = brdf_distribution(NxH, m.roughness);
     float distribution = brdf_distribution(NxH, m.roughness); // xxx
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
-    vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
+    // vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
+    vec3 fresnel = brdf_schlick_fresnel(f0, NxV);
 
-    // shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * energy.y;
-    shading_result += (distribution * visibility) * fresnel * energy.y;
-
+    float mm = mix(M_PI * NxV * square(1 - m.roughness), 2.0, m.metallic); // we need this to match mitsuba ... but why?!
+    shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * energy.y * mm;
+    
 
      
     #if 0

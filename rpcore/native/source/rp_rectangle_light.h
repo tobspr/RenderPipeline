@@ -24,26 +24,31 @@
  *
  */
 
-#ifndef RP_SPHERE_LIGHT_H
-#define RP_SPHERE_LIGHT_H
+#ifndef RP_RECTANGLE_LIGHT
+#define RP_RECTANGLE_LIGHT
 
 #include "pandabase.h"
 #include "rp_light.h"
 
 /**
- * @brief SphereLight class
- * @details This represents a sphere light, a light which has a position and
- *   size. Checkout the RenderPipeline documentation for more information
+ * @brief RectangleLight class
+ * @details This represents a rectangle light, a light which is on a limited plane.
+ *   Checkout the RenderPipeline documentation for more information
  *   about this type of light.
  */
-class RPSphereLight : public RPLight {
+class RPRectangleLight : public RPLight {
 
     PUBLISHED:
-        RPSphereLight();
+        RPRectangleLight();
 
-        inline void set_sphere_radius(float sphere_radius);
-        inline float get_sphere_radius() const;
-        MAKE_PROPERTY(sphere_radius, get_sphere_radius, set_sphere_radius);
+        inline void set_up_vector(const LVecBase3f& up_vector);
+        inline const LVecBase3f& get_up_vector() const;
+        MAKE_PROPERTY(up_vector, get_up_vector, set_up_vector);
+
+        inline void set_right_vector(const LVecBase3f& right_vector);
+        inline const LVecBase3f& get_right_vector() const;
+        MAKE_PROPERTY(right_vector, get_right_vector, set_right_vector);
+        
 
     public:
         virtual void write_to_command(GPUCommand &cmd);
@@ -54,9 +59,11 @@ class RPSphereLight : public RPLight {
 
         virtual float get_conversion_factor(IntensityType from, IntensityType to) const;
 
-        float _sphere_radius;
+        // float _sphere_radius;
+        LVecBase3f _up_vector;
+        LVecBase3f _right_vector;
 };
 
-#include "rp_sphere_light.I"
+#include "rp_rectangle_light.I"
 
-#endif // RP_SPHERE_LIGHT_H
+#endif // RP_RECTANGLE_LIGHT

@@ -45,7 +45,7 @@ from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.rpobject import RPObject
 from rpcore.common_resources import CommonResources
-from rpcore.native import TagStateManager, SphereLight, SpotLight
+from rpcore.native import TagStateManager, SphereLight, SpotLight, RectangleLight
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
@@ -766,12 +766,28 @@ class RenderPipeline(RPObject):
 
     def make_light_geometry(self, light):
         """ Creates the appropriate geometry to represent the given light """
+
         if isinstance(light, SphereLight):
             material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
             model = RPLoader.load_model("/$$rp/data/builtin_models/lights/sphere.bam")
             model.set_material(material, 1000)
             model.reparent_to(render)
             model.set_pos(light.pos)
-            model.set_scale(light.sphere_size)
+            model.set_scale(light.sphere_radius)
+            model.set_name("LightDebugGeometry")
+            return model
+
+        elif isinstance(light, RectangleLight):
+            material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
+            model = RPLoader.load_model("/$$rp/data/builtin_models/lights/rectangle.bam")
+            print("up=", light.up_vector)
+            print(light.right_vector)
+            print(light.up_vector.cross(light.right_vector))
+            model.set_material(material, 1000)
+            model.look_at(light.up_vector.cross(light.right_vector))
+            model.set_sz(light.up_vector.length())
+            model.set_sx(light.right_vector.length())
+            model.reparent_to(render)
+            model.set_pos(light.pos)
             model.set_name("LightDebugGeometry")
             return model

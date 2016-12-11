@@ -67,7 +67,8 @@ classes_to_import = [
 # Classes which should get imported and renamed
 classes_to_import_and_rename = {
     "RPSphereLight": "SphereLight",
-    "RPSpotLight": "SpotLight"
+    "RPSpotLight": "SpotLight",
+    "RPRectangleLight": "RectangleLight",
 }
 
 native_module = None

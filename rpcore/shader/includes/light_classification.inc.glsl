@@ -29,12 +29,17 @@
 #pragma include "includes/light_data.inc.glsl"
 
 #define LIGHT_CLS_INVALID -1
+
 #define LIGHT_CLS_SPOT_NOSHADOW 0
-#define LIGHT_CLS_SPHERE_NOSHADOW 1
-#define LIGHT_CLS_SPOT_SHADOW 2
+#define LIGHT_CLS_SPOT_SHADOW 1
+
+#define LIGHT_CLS_SPHERE_NOSHADOW 2
 #define LIGHT_CLS_SPHERE_SHADOW 3
 
-#define LIGHT_CLS_COUNT 4
+#define LIGHT_CLS_RECTANGLE_NOSHADOW 4
+#define LIGHT_CLS_RECTANGLE_SHADOW 5
+
+#define LIGHT_CLS_COUNT 6
 
 #if LIGHT_CLS_COUNT != LC_LIGHT_CLASS_COUNT
     #error GLSL and Python lighting system class count do not match up!
@@ -46,7 +51,8 @@ int classify_light(int light_type, bool casts_shadows) {
             return casts_shadows ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
         case LT_SPHERE_LIGHT:
             return casts_shadows ? LIGHT_CLS_SPHERE_SHADOW : LIGHT_CLS_SPHERE_NOSHADOW;
-
+        case LT_RECTANGLE_LIGHT:
+            return casts_shadows ? LIGHT_CLS_RECTANGLE_SHADOW : LIGHT_CLS_RECTANGLE_NOSHADOW;
     };
     return LIGHT_CLS_INVALID;
 }

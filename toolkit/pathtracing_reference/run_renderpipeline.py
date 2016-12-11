@@ -43,7 +43,7 @@ class Application(ShowBase):
         light.pos = 10, -10, 10
         light.max_cull_dist = 1e20
         light.color = (1, 1, 1)
-        light.sphere_size = 4.0
+        light.sphere_radius = 4.0
         light.energy = 3
         self.render_pipeline.add_light(light)
 

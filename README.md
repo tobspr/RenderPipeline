@@ -18,11 +18,11 @@ Deferred Realtime Rendering Pipeline with Physically Based Shading for the <a hr
 
 You can click on the images to enlarge them. Besides of that, you can find many more screenshots in my <a href="https://www.dropbox.com/sh/dq4wu3g9jwjqnht/AAABSOPnglDHZYsG5HXR-mhWa" target="_blank">dropbox folder</a>.
 
+**Experimental Godrays**
+<img src="http://i.imgur.com/1KUNYZ1.png" />
+
 **Forest**
 <img src="http://i.imgur.com/fD88ZMU.png" />
-
-**Experimental Godrays**
-<img src="http://i.imgur.com/XAL5ZXS.png" />
 
 **Material demo**
 <img src="http://i.imgur.com/M5YtvYR.png" />
@@ -35,9 +35,6 @@ You can click on the images to enlarge them. Besides of that, you can find many 
 
 **Plugin and Time of Day editor:**
 <img src="http://i.imgur.com/a8VpiHS.png" />
-
-**Terrain and volumetric clouds**
-<img src="http://i.imgur.com/zE0ywPl.png" />
 
 
 See the <a target="_blank" href="https://github.com/tobspr/RenderPipeline/wiki/Features">Feature List</a>

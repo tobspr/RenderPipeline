@@ -180,25 +180,25 @@ class Debugger(RPObject):
         self.gui_scale = max(0.65, min(1.0, Globals.native_resolution.x / 1920.0))
         self.fullscreen_node.set_scale(self.gui_scale)
 
+        effective_w = float((Globals.native_resolution.x)) / self.gui_scale
+        effective_h = float((Globals.native_resolution.y)) / self.gui_scale
+
         if self.advanced_info:
-            self.exposure_node.set_pos(
-                Globals.native_resolution.x // self.gui_scale - 200,
-                1, -Globals.native_resolution.y // self.gui_scale + 120)
-        self.hint_reloading.set_pos(
-            float((Globals.native_resolution.x) // 2) / self.gui_scale - 465 // 2, 220)
-        self.keybinding_instructions.set_pos(
-            30, Globals.native_resolution.y // self.gui_scale - 510.0)
+            self.exposure_node.set_pos(effective_w - 200, 1, -effective_h + 120)
+        self.hint_reloading.set_pos((effective_w - 658) // 2, (effective_h - 80) // 2)
+
+        self.keybinding_instructions.set_pos(30, effective_h - 510.0)
         self.keybinding_text.np.set_pos(-Globals.base.get_aspect_ratio() + 0.07, 0, -0.9)
         self.keybinding_text.set_pixel_size(16 * max(0.8, self.gui_scale))
 
         self.overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         if self.python_warning:
             self.python_warning.set_pos(
-                (Globals.native_resolution.x // self.gui_scale - 1054) // 2,
-                (Globals.native_resolution.y // self.gui_scale - 118 - 90))
+                (effective_w - 1054) // 2,
+                (effective_h - 118 - 90))
 
         for text in self.debug_lines:
-            text.set_pixel_size(16 * max(0.8, self.gui_scale))
+            text.set_pixel_size(7 * max(1, self.gui_scale) * Globals.base.get_aspect_ratio())
 
         self.buffer_viewer.center_on_screen()
         self.pipe_viewer.center_on_screen()

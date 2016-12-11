@@ -32,7 +32,7 @@ from panda3d.core import PNMImage, TransformState, MaterialAttrib, TextureAttrib
 
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
-from rpcore.native import SphereLight, SpotLight
+from rpcore.native import SphereLight, SpotLight, RectangleLight
 
 def to_safe_name(name):
     """ Converts a string to a valid filename """
@@ -226,17 +226,35 @@ class MitsubaExporter(RPObject):
 
         self.debug("Exporting lights ..")
         for light in self.pipeline.light_mgr.all_lights:
-            print(light)
             if isinstance(light, SphereLight):
-                pos = light.pos
                 add("<shape type='sphere'>")
-                add("  <point name='center' x='{}' y='{}' z='{}' />".format(*pos))
-                add("  <float name='radius' value='{}' />".format(light.sphere_size))
+                add("  <point name='center' x='{}' y='{}' z='{}' />".format(*light.pos))
+                add("  <float name='radius' value='{}' />".format(light.sphere_radius))
                 add("  <emitter type='area'>")
                 add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
                 add("  </emitter>")
                 add("</shape>")
 
+            elif isinstance(light, SpotLight):
+                add("<emitter type='spot'>")
+                add("  <transform name='toWorld'>")
+                add("    <lookat origin='{}' target='{}' />".format(vec2xml(light.pos), vec2xml(light.pos + light.direction)))
+                add("  </transform>")
+                add("  <rgb name='intensity' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
+                add("  <float name='cutoffAngle' value='{}' />".format(0.5 * light.fov))
+                add("</emitter>")
+
+            elif isinstance(light, RectangleLight):
+                add("<shape type='rectangle'>")
+                add("  <transform name='toWorld'>")
+                add("    <scale x='{}' y='{}' z='1' />".format(light.right_vector.length(), light.up_vector.length()))
+                add("    <lookat origin='{}' target='{}' up='0, 0, 1' />".format(
+                    vec2xml(light.pos), vec2xml(light.pos + light.up_vector.cross(light.right_vector))))
+                add("  </transform>")
+                add("  <emitter type='area'>")
+                add("    <rgb name='intensity' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
+                add("  </emitter>")
+                add("</shape>")
 
         self.debug("Exporting materials ..")
         for obj_filename, (state, transform) in self.export_states.items():

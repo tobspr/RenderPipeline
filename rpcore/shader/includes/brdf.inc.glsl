@@ -80,6 +80,13 @@ float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
     return light_scatter * view_scatter * energy_factor / M_PI;
 }
 
+// Diffuse brdf tuned to match mitsuba
+float brdf_diffuse_tobspr(float NxV, float NxL, float LxH, float roughness) {
+    // return ONE_BY_PI * mix(1.0, NxV, 0.5 + 0.5 * sqrt(roughness));
+    // return ONE_BY_PI * mix(1.0, NxV, 0.5 + 0.5 * sqrt(roughness));
+    return ONE_BY_PI * pow(NxV, 0.5 + 0.3 * roughness);
+}
+
 /* Distribution functions */
 float brdf_distribution_blinn_phong(float NxH, float roughness) {
     float r_sq = roughness * roughness;
@@ -96,7 +103,7 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
 float brdf_distribution_ggx(float NxH, float alpha) {
     float r_square = alpha * alpha;
     float f = (NxH * r_square - NxH) * NxH + 1.0;
-    return r_square / max(1e-15, f * f);
+    return r_square / max(1e-15, f * f) * 4;
 }
 
 float brdf_distribution_exponential(float NxH, float roughness) {
@@ -160,13 +167,24 @@ float brdf_visibility_smith_ggx(float NxL, float NxV, float roughness) {
     return 0.5 / (lambda_GGXV + lambda_GGXL) * NxL;
 }
 
+// Tuned to match reference (mitsuba)
+float brdf_visibility_tobspr(float NxL, float NxV, float VxH, float roughness) {
+    float vis = VxH * VxH;
+    float roughness_factor = 1 - 0.6 * pow(roughness, 0.25);
+    vis *= roughness_factor * roughness_factor * roughness_factor * roughness_factor * roughness_factor;
+    vis *= 1 - pow(1 - NxL, 1.0 + 7 * roughness_factor);
+    vis *= 1 - pow(1 - NxV, 1.0 + 7 * roughness_factor);
+    return vis;
+}
+
 
 /* Fresnel functions */
 
 float ior_to_specular(float ior) {
     float f0 = (ior - AIR_IOR) / (ior + AIR_IOR);
     // Clamp between ior of 1 and 2.5
-    return clamp(f0 * f0, 0.0, 0.18);
+    const float max_ior = 2.5;
+    return clamp(f0 * f0, 0.0, (max_ior - AIR_IOR) / (max_ior + AIR_IOR)); // should get optimized out
 }
 
 float brdf_fresnel_cook_torrance(float LxH, float roughness, float ior) {
@@ -242,7 +260,8 @@ vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
 float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
 
     // Choose one:
-    return brdf_lambert();
+    // return brdf_lambert();
+    return brdf_diffuse_tobspr(NxV, NxL, LxH, roughness);
     // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
 }
 
@@ -266,12 +285,13 @@ float brdf_distribution(float NxH, float roughness)
 float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughness) {
 
     // Choose one:
-    float vis = brdf_visibility_neumann(NxV, NxL);
+    float vis = brdf_visibility_tobspr(NxL, NxV, VxH, roughness);
+    // float vis = brdf_visibility_neumann(NxV, NxL);
     // float vis = brdf_visibility_implicit(NxV, NxL);
-    // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
+    // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness) * NxL;
     // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
-    // float vis = brdf_visibility_smith(NxL, NxV, roughness);
+    // float vis = brdf_visibility_smith(NxL, NxV, roughness) * NxV * NxL;
 
 
     return vis;
@@ -281,7 +301,8 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 float brdf_fresnel(float LxH, float roughness) {
     // Default index of refraction
     // TODO: Maybe make this configurable?
-    const float ior = 1.5;
+    const float ior = 2.5;
+
 
     return brdf_fresnel_schlick(LxH, roughness, ior);
     // return brdf_fresnel_cook_torrance(LxH, roughness, ior);

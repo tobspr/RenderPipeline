@@ -71,7 +71,7 @@ Sphere Light Dataset
 */
 
 // Extracts the sphere size of a sphere light
-float get_spherelight_sphere_size(LightData data) {
+float get_spherelight_sphere_radius(LightData data) {
     return data.Data2.z;
 }
 
@@ -91,6 +91,20 @@ vec3 get_spotlight_direction(LightData data) {
     return vec3(data.Data2.w, data.Data3.xy);
 }
 
+/*
+
+Rectangle light dataset
+
+*/
+
+vec3 get_rectangle_upvector(LightData data) {
+    return vec3(data.Data2.zw, data.Data3.x);
+}
+
+
+vec3 get_rectangle_rightvector(LightData data) {
+    return data.Data3.yzw;
+}
 
 
 /*

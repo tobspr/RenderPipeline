@@ -78,9 +78,11 @@ void render_material(MaterialShaderOutput m) {
     // 0 ... 1 range
     float specular = clamp(m.specular_ior, 1.0001, 2.51);
     float metallic = saturate(m.metallic);
-    float roughness = clamp(m.roughness, 0.03, 1.0);
+    float roughness = clamp(m.roughness, MINIMUM_ROUGHNESS, 1.0);
 
-    roughness = adjust_roughness(roughness, length(m.normal));
+    #if !REFERENCE_MODE
+        roughness = adjust_roughness(roughness, length(m.normal));
+    #endif
 
     // Pack all values to the gbuffer
     gbuffer_out_0 = vec4(basecolor.r, basecolor.g, basecolor.b, roughness);
