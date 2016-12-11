@@ -73,7 +73,7 @@ vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphe
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 closest_point = l_unscaled + center_to_ray *
-        saturate(sphere_size / max(1e-3, length(center_to_ray)));
+        saturate(sphere_size / max(1e-6, length(center_to_ray)));
     return closest_point;
 }
 
@@ -83,15 +83,21 @@ vec3 get_spherical_area_light_horizon(vec3 l_unscaled, vec3 n, float radius) {
 } 
 
 vec2 get_spherelight_energy(float alpha, float sphere_size, float d) {
-    float diff_energy = 0.075 / max(0.001, pow(d, 2.2) + 1);
+
+    // XXX: Should subtract sphere_size from d, but without it matches mitsuba better
+    float diff_energy = 0.125 / max(0.001, pow(max(0, d), 2.2) + sphere_size);
     // diff_energy *= 0;
 
     // Fade out on high roughness
-    const float fade_factor = 0.6;
-    float alpha1 = max(0, fade_factor - alpha) / fade_factor;
+    const float fade_factor = 1.1;
+    // float alpha1 = max(0, fade_factor - alpha) / fade_factor;
+    float alpha1 = 1;
 
-    float roughness_factor = pow(alpha, 1.5) * alpha1;
-    float spec_energy = 0.0035 * roughness_factor / max(1.0, pow(sphere_size, 1.5)); // approximation
+    float roughness_factor = pow(alpha, 1.6) * alpha1;
+    float spec_energy = roughness_factor / max(1.0, pow(sphere_size, 1.5)); // approximation
+    spec_energy *= 0.01 / max(1.0, d);
+
+    // spec_energy *= 0.0002;
     return vec2(diff_energy, spec_energy);
 }
 

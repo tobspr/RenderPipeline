@@ -266,9 +266,9 @@ float brdf_distribution(float NxH, float roughness)
 float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughness) {
 
     // Choose one:
-    // float vis = brdf_visibility_neumann(NxV, NxL);
+    float vis = brdf_visibility_neumann(NxV, NxL);
     // float vis = brdf_visibility_implicit(NxV, NxL);
-    float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
+    // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
     // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     // float vis = brdf_visibility_smith(NxL, NxV, roughness);

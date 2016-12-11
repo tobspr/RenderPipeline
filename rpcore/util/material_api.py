@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3, Material, Vec4
+from panda3d.core import Vec3, Material, Vec4, MaterialAttrib
 
 from rpcore.rpobject import RPObject
 
@@ -60,3 +60,14 @@ class MaterialAPI(RPObject):
     def get_shading_model(cls, m):
         """ Extracts the shading model of a given material """
         return m.get_emission().x
+
+    @classmethod
+    def force_apply_material(cls, nodepath, material):
+        """ Forcedly overrides the material on the given nodepath """
+        for geom_np in nodepath.find_all_matches("**/+GeomNode"):
+            geom_node = geom_np.node()
+            for i in range(geom_node.get_num_geoms()):
+                geom_state = geom_node.get_geom_state(i)
+                new_state = geom_state.set_attrib(MaterialAttrib.make(material))
+                geom_node.set_geom_state(i, new_state)
+        nodepath.set_material(material, 1000)

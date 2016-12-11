@@ -216,7 +216,7 @@ class MitsubaExporter(RPObject):
         add("        </film>")
         add("    </sensor>")
         add("   <integrator type='path'>")
-        add("       <integer name='maxDepth' value='5' />")
+        add("       <integer name='maxDepth' value='2' />")
         add("   </integrator>")
 
         add("<emitter type='envmap'>")
@@ -250,6 +250,10 @@ class MitsubaExporter(RPObject):
             texture_attrib = state.get_attrib(TextureAttrib)
             if not texture_attrib:
                 self.warn("Skipping", obj_filename, "since no texture attrib is present!")
+                continue
+
+            if texture_attrib.get_num_on_stages() < 4:
+                self.warn("Skipping", obj_filename, "since not all textures are set!")
                 continue
 
             diff_tex = texture_attrib.get_on_texture(texture_attrib.get_on_stage(0))
