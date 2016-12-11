@@ -144,25 +144,20 @@ float rectangle_solid_angle(vec3 world_pos, vec3 p0, vec3 p1, vec3 p2, vec3 p3)
     return g0 + g1 + g2 + g3 - 2 * M_PI;
 }
 
-
 vec3 process_rectanglelight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
     
     vec3 up_vector = get_rectangle_upvector(light_data);
     vec3 right_vector = get_rectangle_rightvector(light_data);
     vec3 light_pos = get_light_position(light_data);
-    vec3 left_vector = -right_vector;
 
-    float half_height = length(up_vector) * 0.5;
-    float half_width = length(up_vector) * 0.5;
-
-    vec3 l = m.position - light_pos;
+    vec3 l_orig = m.position - light_pos;
     vec3 plane_normal = cross(up_vector, right_vector);
 
-    if (dot(l, plane_normal) > 0) {
-        vec3 p0 = light_pos + left_vector * -half_width + up_vector *  half_height;
-        vec3 p1 = light_pos + left_vector * -half_width + up_vector * -half_height;
-        vec3 p2 = light_pos + left_vector *  half_width + up_vector * -half_height;
-        vec3 p3 = light_pos + left_vector *  half_width + up_vector *  half_height;
+    if (dot(l_orig, plane_normal) > 0) {
+        vec3 p0 = light_pos + right_vector + up_vector;
+        vec3 p1 = light_pos + right_vector - up_vector;
+        vec3 p2 = light_pos - right_vector - up_vector;
+        vec3 p3 = light_pos - right_vector + up_vector;
 
         float solid_angle = rectangle_solid_angle(m.position, p0, p1, p2, p3);
         float illuminance = solid_angle * 0.2 * (
@@ -172,7 +167,31 @@ vec3 process_rectanglelight(Material m, LightData light_data, vec3 view_vector, 
             saturate(dot(normalize(p3 - m.position), m.normal)) +
             saturate(dot(normalize(light_pos - m.position), m.normal)));
 
-        return get_light_color(light_data) * illuminance * 0.001 * m.basecolor * (1 - m.metallic);        
+        vec3 ray_dir = normalize(reflect(-view_vector, m.normal));
+
+        float d = dot(light_pos - m.position, plane_normal) / dot(ray_dir, plane_normal);
+        vec3 plane_point = m.position + d * ray_dir;
+
+        vec3 local_vec = plane_point - light_pos; // point on plane
+
+        float u = dot(right_vector, local_vec) / length(right_vector);
+        float v = dot(up_vector, local_vec) / length(up_vector);
+
+        u = clamp(u, -1.0, 1.0);
+        v = clamp(v, -1.0, 1.0);
+
+        vec3 representative_point = light_pos + u * right_vector + v * up_vector;
+        vec3 l = representative_point - m.position;
+
+        float attenuation = illuminance;
+        vec3 transmittance = vec3(1);
+        vec2 energy = vec2(0.01, m.roughness * m.roughness * 0.03);
+        vec2 clearcoat_energy = energy;
+        vec3 l_diff = -l_orig;
+
+        return apply_light(m, view_vector, normalize(l), get_light_color(light_data),
+            attenuation, shadow_factor, transmittance, energy, clearcoat_energy, normalize(l_diff));
+       
     }
 
     return vec3(0);
