@@ -294,9 +294,9 @@ vec3 get_forward_light_shading(Material m) {
 
         // Shade depending on light type
         switch(light_type) {
-            case LT_POINT_LIGHT: {
-                float radius = get_pointlight_radius(light_data);
-                float inner_radius = get_pointlight_inner_radius(light_data);
+            case LT_SPHERE_LIGHT: {
+                /* FIXME */
+                float radius = get_spherelight_culldist(light_data);
                 float att = attenuation_curve(dot(l, l), radius);
                 float NxL = saturate(dot(m.normal, l) / l_len);
                 shading_result += saturate(att) * NxL * (m.basecolor * light_color);

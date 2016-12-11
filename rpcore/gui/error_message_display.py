@@ -37,7 +37,7 @@ class ErrorMessageDisplay(RPObject):
     """ This is a gui element which listens to the panda output stream
     and shows errors """
 
-    ENABLED = False
+    ENABLED = True
 
     def __init__(self):
         RPObject.__init__(self)

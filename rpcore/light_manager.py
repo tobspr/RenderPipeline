@@ -31,7 +31,7 @@ from panda3d.core import LVecBase2i, PTAInt
 from rpcore.globals import Globals
 from rpcore.gpu_command_queue import GPUCommandQueue
 from rpcore.image import Image
-from rpcore.native import InternalLightManager, PointLight, ShadowManager
+from rpcore.native import InternalLightManager, SphereLight, ShadowManager
 from rpcore.rpobject import RPObject
 
 from rpcore.stages.apply_lights_stage import ApplyLightsStage
@@ -202,6 +202,6 @@ class LightManager(RPObject):
         defines["SHADOW_ATLAS_SIZE"] = self.pipeline.settings["shadows.atlas_size"]
 
         # Register all light types as defines
-        for attr in dir(PointLight):
+        for attr in dir(SphereLight):
             if attr.startswith("LT_"):
-                defines[attr.upper()] = getattr(PointLight, attr)
+                defines[attr.upper()] = getattr(SphereLight, attr)

@@ -18,7 +18,7 @@ from panda3d.core import CS_zup_right, CS_yup_right, BamCache
 from direct.showbase.ShowBase import ShowBase
 
 sys.path.insert(0, "../../")
-from rpcore import RenderPipeline, PointLight  # noqa
+from rpcore import RenderPipeline, SphereLight  # noqa
 
 
 class Application(ShowBase):
@@ -152,18 +152,18 @@ class Application(ShowBase):
         self.render2d.hide()
         self.aspect2d.hide()
 
-        light = PointLight()
+        light = SphereLight()
         light.pos = 20.0, -0.85, -1.31
-        light.radius = 100.0
-        light.energy = 2500
+        light.max_culling_distance = 100.0
+        light.intensity_lumens = 2500
         light.set_color_from_temperature(8000)
         # self.render_pipeline.add_light(light)
 
-        light = PointLight()
+        light = SphereLight()
         light.pos = -11.2, -13.84, -9.24
-        light.radius = 1e20
+        light.max_culling_distance = 1e20
         light.set_color_from_temperature(8000)
-        light.energy = 2500
+        light.intensity_lumens = 2500
         # self.render_pipeline.add_light(light)
 
         # envprobe = self.render_pipeline.add_environment_probe()

@@ -96,7 +96,7 @@ float brdf_distribution_beckmann(float NxH, float roughness) {
 float brdf_distribution_ggx(float NxH, float alpha) {
     float r_square = alpha * alpha;
     float f = (NxH * r_square - NxH) * NxH + 1.0;
-    return r_square / (f * f);
+    return r_square / max(1e-15, f * f);
 }
 
 float brdf_distribution_exponential(float NxH, float roughness) {
@@ -251,15 +251,15 @@ float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) 
 float brdf_distribution(float NxH, float roughness)
 {
     NxH = max(1e-5, NxH);
-    roughness = max(0.0019, roughness);
+    // roughness = max(0.00, roughness); // Fixes precision errors
 
     // Choose one:
     // return brdf_distribution_blinn_phong(NxH, roughness);
     // return brdf_distribution_beckmann(NxH, roughness);
     // return brdf_distribution_exponential(NxH, roughness);
     // return brdf_distribution_gaussian(NxH, roughness);
-    return brdf_distribution_trowbridge_reitz(NxH, roughness);
-    // return brdf_distribution_ggx(NxH, roughness);
+    // return brdf_distribution_trowbridge_reitz(NxH, roughness);
+    return brdf_distribution_ggx(NxH, roughness);
 }
 
 // Geometric Visibility
@@ -267,8 +267,8 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 
     // Choose one:
     // float vis = brdf_visibility_neumann(NxV, NxL);
-    float vis = brdf_visibility_implicit(NxV, NxL);
-    // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
+    // float vis = brdf_visibility_implicit(NxV, NxL);
+    float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
     // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     // float vis = brdf_visibility_smith(NxL, NxV, roughness);
@@ -281,7 +281,7 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 float brdf_fresnel(float LxH, float roughness) {
     // Default index of refraction
     // TODO: Maybe make this configurable?
-    const float ior = 1.2;
+    const float ior = 1.5;
 
     return brdf_fresnel_schlick(LxH, roughness, ior);
     // return brdf_fresnel_cook_torrance(LxH, roughness, ior);

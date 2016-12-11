@@ -45,14 +45,16 @@ from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.rpobject import RPObject
 from rpcore.common_resources import CommonResources
-from rpcore.native import TagStateManager, PointLight, SpotLight
+from rpcore.native import TagStateManager, SphereLight, SpotLight
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
 
 from rpcore.util.task_scheduler import TaskScheduler
 from rpcore.util.network_communication import NetworkCommunication
+from rpcore.util.material_api import MaterialAPI
 from rpcore.util.ies_profile_loader import IESProfileLoader
+from rpcore.loader import RPLoader
 
 from rpcore.gui.debugger import Debugger
 from rpcore.gui.loading_screen import LoadingScreen
@@ -114,7 +116,6 @@ class RenderPipeline(RPObject):
         self.tag_mgr.cleanup_states()
         self.stage_mgr.reload_shaders()
         self.light_mgr.reload_shaders()
-        self._set_default_effect()
         self.plugin_mgr.trigger_hook("shader_reload")
         if self.settings["pipeline.display_debugger"]:
             self.debugger.set_reload_hint_visible(False)
@@ -286,9 +287,9 @@ class RenderPipeline(RPObject):
         lights = []
         for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
-            rp_light = PointLight()
+            rp_light = SphereLight()
             rp_light.pos = light.get_pos(Globals.base.render)
-            rp_light.radius = light_node.max_distance
+            rp_light.max_culling_radius = light_node.max_distance
             rp_light.energy = 20.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
@@ -352,10 +353,10 @@ class RenderPipeline(RPObject):
                     continue
 
                 material = state.get_attrib(MaterialAttrib).get_material()
-                shading_model = material.emission.x
+                shading_model = MaterialAPI.get_shading_model(material)
 
                 # SHADING_MODEL_TRANSPARENT
-                if shading_model == 3:
+                if shading_model == MaterialAPI.SM_TRANSPARENT:
                     if geom_count > 1:
                         self.error("Transparent materials must be on their own geom!\n"
                                    "If you are exporting from blender, split them into\n"
@@ -763,4 +764,14 @@ class RenderPipeline(RPObject):
         to be updated """
         self.light_mgr.internal_mgr.invalidate_region(region)
 
-    
+    def make_light_geometry(self, light):
+        """ Creates the appropriate geometry to represent the given light """
+        if isinstance(light, SphereLight):
+            material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
+            model = RPLoader.load_model("/$$rp/data/builtin_models/lights/sphere.bam")
+            model.set_material(material, 1000)
+            model.reparent_to(render)
+            model.set_pos(light.pos)
+            model.set_scale(light.sphere_size)
+            model.set_name("LightDebugGeometry")
+            return model

@@ -64,7 +64,7 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, float
     // Get the lights data
     int ies_profile = get_ies_profile(light_data);
     vec3 position = get_light_position(light_data);
-    float radius = get_spotlight_radius(light_data);
+    float radius = get_max_cull_distance(light_data);
     float fov = get_spotlight_fov(light_data);
     vec3 direction = get_spotlight_direction(light_data);
     vec3 l = position - m.position;
@@ -76,24 +76,22 @@ vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, float
     // Compute the lights influence
     return apply_light(
         m, view_vector, l_norm, get_light_color(light_data), attenuation,
-        shadow_factor, transmittance, ONE_BY_PI, ONE_BY_PI, l_norm);
+        shadow_factor, transmittance);
 }
 
 // Processes a point light
-vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
+vec3 process_spherelight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
     const vec3 transmittance = vec3(1); // <-- TODO
 
     // Get the lights data
-    float radius = get_pointlight_radius(light_data);
-    float inner_radius = get_pointlight_inner_radius(light_data);
+    float max_dist = get_max_cull_distance(light_data);
+    float sphere_size = get_spherelight_sphere_size(light_data);
     vec3 position = get_light_position(light_data);
     int ies_profile = get_ies_profile(light_data);
     vec3 l = position - m.position;
     // float l_len_square = length_squared(l);
 
-    float energy = 1.0;
     // float dist_sq = l_len_square;
-    float clearcoat_energy = energy;
     vec3 l_diff = l;
 
     // Spherical area light
@@ -105,20 +103,22 @@ vec3 process_pointlight(Material m, LightData light_data, vec3 view_vector, floa
     // }
 
 
-    float dist = max(0.01, length(l) - 0 * inner_radius); 
+    float dist = length(l); 
     // dist_sq *= dist_sq;
 
-    energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist);
+    vec2 energy = get_spherelight_energy(m.roughness, sphere_size, dist);
+    vec2 clearcoat_energy = energy;
 
-    l = get_spherical_area_light_vector(m.normal, l, view_vector, inner_radius);
+    // l = get_spherical_area_light_vector(m.normal, l, view_vector, max(1.0, sphere_size));
+    l = get_spherical_area_light_vector(m.normal, l, view_vector, sphere_size);
     
     // Get the point light attenuation
     // float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
-    float attenuation = attenuation_curve(dist * dist, radius); // * get_ies_factor(-l, ies_profile);
+    float attenuation = attenuation_curve(dist * dist, max_dist); // * get_ies_factor(-l, ies_profile);
 
     // Compute the lights influence
     return apply_light(m, view_vector, normalize(l), get_light_color(light_data),
-        attenuation, shadow_factor, transmittance, energy, clearcoat_energy, l_diff);
+        attenuation, shadow_factor, transmittance, energy, clearcoat_energy, normalize(l_diff));
 }
 
 
@@ -138,9 +138,9 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float slope_bias = 0.001 * 0.0;
-    const float normal_bias = 0.0001 * 0.0;
-    const float const_bias = 0.003 * 0.0;
+    const float slope_bias = 0.1;
+    const float normal_bias = 0.01;
+    const float const_bias = 0.0008;
 
 
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
@@ -195,10 +195,10 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
 
     // Get the per-class light counts
     // To be safe, we use a min() to avoid huge loops in case some texture is not cleared or so.
-    uint num_spot_noshadow  = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x);
-    uint num_spot_shadow    = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x);
-    uint num_point_noshadow = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_NOSHADOW).x);
-    uint num_point_shadow   = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_POINT_SHADOW).x);
+    uint num_spot_noshadow   = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x);
+    uint num_spot_shadow     = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x);
+    uint num_sphere_noshadow = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_NOSHADOW).x);
+    uint num_sphere_shadow   = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_SHADOW).x);
 
     // Compute the index into the culled lights list
     int data_offs = cell_index * LC_MAX_LIGHTS_PER_CELL;
@@ -217,11 +217,11 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         shading_result += process_spotlight(m, light_data, v, 1.0);
     }
 
-    // Pointlights without shadow
-    for (int i = 0; i < num_point_noshadow; ++i) {
+    // Spherelights without shadow
+    for (int i = 0; i < num_sphere_noshadow; ++i) {
         int light_offs = int(texelFetch(PerCellLights, curr_offs++).x);
         LightData light_data = read_light_data(AllLightsData, light_offs);
-        shading_result += process_pointlight(m, light_data, v, 1.0);
+        shading_result += process_spherelight(m, light_data, v, 1.0);
     }
 
     // Spotlights with shadow
@@ -237,8 +237,8 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         shading_result += process_spotlight(m, light_data, v, shadow_factor);
     }
 
-    // Pointlights with shadow
-    for (int i = 0; i < num_point_shadow; ++i) {
+    // Spherelights with shadow
+    for (int i = 0; i < num_sphere_shadow; ++i) {
         int light_offs = int(texelFetch(PerCellLights, curr_offs++).x);
         LightData light_data = read_light_data(AllLightsData, light_offs);
 
@@ -249,7 +249,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
 
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
-        shading_result += process_pointlight(m, light_data, v, shadow_factor);
+        shading_result += process_spherelight(m, light_data, v, shadow_factor);
     }
 
     // Fade out lights as they reach the culling distance

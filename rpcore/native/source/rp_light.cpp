@@ -45,7 +45,9 @@ RPLight::RPLight(LightType light_type) {
     _ies_profile = -1;
     _source_resolution = 512;
     _near_plane = 0.5;
-    _energy = 20.0;
+    _max_cull_distance = 20.0;
+    _intensity = 20;
+    _intensity_type = IT_lumens;
 }
 
 /**
@@ -58,9 +60,13 @@ RPLight::RPLight(LightType light_type) {
  * @param cmd The GPUCommand to write to
  */
 void RPLight::write_to_command(GPUCommand &cmd) {
+    // V0.x
     cmd.push_int(_light_type);
+    
+    // V0.y
     cmd.push_int(_ies_profile);
 
+    // V0.z
     if (_casts_shadows) {
         // If we casts shadows, write the index of the first source, we expect
         // them to be consecutive
@@ -72,12 +78,20 @@ void RPLight::write_to_command(GPUCommand &cmd) {
         cmd.push_int(-1);
     }
 
+    // V0.w
+    cmd.push_float(_max_cull_distance);
+    
+    // V1.xyz
     cmd.push_vec3(_position);
 
-    // Get the lights color by multiplying color with energy. Divide by
-    // 100, since 16bit floating point buffers only go up to 65000.0, which
-    // prevents very bright lights 
-    cmd.push_vec3(_color * _energy / 100.0);
+    // Always pass the intensity in lumens, makes calculations easier in the shaders
+    float intensity = get_intensity_lumens();
+
+    // V1.w, V2.xy
+    // Divide by 100, since 16bit floating point buffers only go up to 65000.0, which
+    // prevents very bright lights.
+    cmd.push_vec3(_color * intensity / 100.0);
+
 }
 
 /**

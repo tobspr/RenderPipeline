@@ -47,8 +47,13 @@ class RPLight : public ReferenceCount {
          */
         enum LightType {
             LT_empty = 0,
-            LT_point_light = 1,
+            LT_sphere_light = 1,
             LT_spot_light = 2,
+        };
+
+        enum IntensityType {
+            IT_lumens = 0,   // Intensity in lumens, does not depend on emitter size
+            IT_luminance = 1 // Intensity in cd/m^2, does depend on emitter size
         };
 
     public:
@@ -87,9 +92,14 @@ class RPLight : public ReferenceCount {
 
         void set_color_from_temperature(float temperature);
 
-        inline void set_energy(float energy);
-        inline float get_energy() const;
-        MAKE_PROPERTY(energy, get_energy, set_energy);
+        inline void set_intensity_lumens(float intensity_lumens);
+        inline float get_intensity_lumens() const;
+        MAKE_PROPERTY(intensity_lumens, get_intensity_lumens, set_intensity_lumens);
+
+        inline void set_intensity_luminance(float intensity_luminance);
+        inline float get_intensity_luminance() const;
+        MAKE_PROPERTY(intensity_luminance, get_intensity_luminance, set_intensity_luminance);
+
 
         inline LightType get_light_type() const;
         MAKE_PROPERTY(light_type, get_light_type);
@@ -113,8 +123,16 @@ class RPLight : public ReferenceCount {
         inline float get_near_plane() const;
         MAKE_PROPERTY(near_plane, get_near_plane, set_near_plane);
 
+        inline void set_max_cull_distance(float max_cull_distance);
+        inline float get_max_cull_distance() const;
+        MAKE_PROPERTY(max_cull_distance, get_max_cull_distance, set_max_cull_distance);
+
+
     protected:
 
+        // used to convert between luminance and luminous power
+        virtual float get_conversion_factor(IntensityType from, IntensityType to) const = 0;
+ 
         int _slot;
         int _ies_profile;
         size_t _source_resolution;
@@ -122,9 +140,13 @@ class RPLight : public ReferenceCount {
         bool _casts_shadows;
         LVecBase3f _position;
         LVecBase3f _color;
-        float _energy;
         LightType _light_type;
         float _near_plane;
+
+        float _intensity;
+        IntensityType _intensity_type;
+
+        float _max_cull_distance;
 
         vector<ShadowSource*> _shadow_sources;
 };

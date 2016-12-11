@@ -46,33 +46,32 @@ int get_shadow_source_index(LightData data) {
     return gpu_cq_unpack_int_from_float(data.Data0.z);
 }
 
+float get_max_cull_distance(LightData data) {
+    return data.Data0.w;
+}
+
 bool get_casts_shadows(LightData data) {
     return get_shadow_source_index(data) >= 0;
 }
 
 // Extracts the light world space position
 vec3 get_light_position(LightData data) {
-    return vec3(data.Data0.w, data.Data1.xy);
+    return data.Data1.xyz;
 }
 
 // Extracts the light color
 vec3 get_light_color(LightData data) {
-    return vec3(data.Data1.zw, data.Data2.x) * 100.0; // * 100 since we store it packed
+    return vec3(data.Data1.w, data.Data2.xy) * 100.0; // * 100 since we store it packed
 }
 
 /*
 
-Point Light Dataset
+Sphere Light Dataset
 
 */
 
-// Extracts the radius of a point light
-float get_pointlight_radius(LightData data) {
-    return data.Data2.y;
-}
-
-// Extracts the inner radius of a point light
-float get_pointlight_inner_radius(LightData data) {
+// Extracts the sphere size of a sphere light
+float get_spherelight_sphere_size(LightData data) {
     return data.Data2.z;
 }
 
@@ -81,11 +80,6 @@ float get_pointlight_inner_radius(LightData data) {
 Spot Light Dataset
 
 */
-
-// Extracts the radius of a spot light
-float get_spotlight_radius(LightData data) {
-    return data.Data2.y;
-}
 
 // Extracts the fov of a spot light
 float get_spotlight_fov(LightData data) {

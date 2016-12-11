@@ -32,7 +32,7 @@ from rpcore.pynative.rp_light import RPLight
 from rpcore.pynative.shadow_source import ShadowSource
 
 
-class RPPointLight(RPLight):
+class RPSphereLight(RPLight):
 
     """ Please refer to the native C++ implementation for docstrings and comments.
     This is just the python implementation, which does not contain documentation! """

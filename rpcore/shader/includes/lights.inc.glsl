@@ -31,7 +31,7 @@
 #pragma include "includes/ies_lighting.inc.glsl"
 
 // Computes the quadratic attenuation curve
-float attenuation_curve(float dist_square, float radius) {
+float attenuation_curve(float dist_square, float max_distance) {
     #if 0
         return step(dist_square, radius * radius);
     #endif
@@ -39,11 +39,11 @@ float attenuation_curve(float dist_square, float radius) {
     #if 1
         // float inv_square = ONE_BY_PI / max(0.01 * 0.01, dist_square);
         // return inv_square;
-        // return 1;
+        return 1;
 
         // Fade out at the border to avoid culling issues
-        const float falloff = 1;
-        float linear_dist = 1 - dist_square / (radius * radius);
+        const float falloff = 0.2;
+        float linear_dist = 1 - dist_square / (max_distance * max_distance);
         return sqrt(saturate(linear_dist / falloff));
 
     #endif
@@ -57,7 +57,7 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
     float cos_angle = dot(l, -light_dir);
 
     // Rescale angle to fit the full range of the IES profile. We only do this
-    // for spot lights, for point lights we use the actual angle.
+    // for spot lights, for sphere lights we use the actual angle.
     // This is NOT physically correct for spotlights without a FoV of 180deg.
     // However, IES profiles might look quite boring when not getting rescaled,
     // so the rescaling is performed. 
@@ -68,44 +68,42 @@ float get_spotlight_attenuation(vec3 l, vec3 light_dir, float fov, float radius,
 }
 
 
-// Closest point on spherical area light, also returns energy factor
-vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float radius) {
+// Closest point on spherical area light
+vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphere_size) {
     vec3 r = reflect(-v, n);
     vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 closest_point = l_unscaled + center_to_ray *
-        saturate(radius / max(1e-3, length(center_to_ray)));
+        saturate(sphere_size / max(1e-3, length(center_to_ray)));
     return closest_point;
 }
 
+
 vec3 get_spherical_area_light_horizon(vec3 l_unscaled, vec3 n, float radius) {
     return normalize(l_unscaled + n * (0.5 * radius));
+} 
+
+vec2 get_spherelight_energy(float alpha, float sphere_size, float d) {
+    float diff_energy = 0.075 / max(0.001, pow(d, 2.2) + 1);
+    // diff_energy *= 0;
+
+    // Fade out on high roughness
+    const float fade_factor = 0.6;
+    float alpha1 = max(0, fade_factor - alpha) / fade_factor;
+
+    float roughness_factor = pow(alpha, 1.5) * alpha1;
+    float spec_energy = 0.0035 * roughness_factor / max(1.0, pow(sphere_size, 1.5)); // approximation
+    return vec2(diff_energy, spec_energy);
 }
 
-float get_spherical_area_light_energy(float alpha, float inner_radius, float d) {
-    //  return max(0.000005, alpha * alpha) / max(0.01, radius * radius) * 4 * M_PI;
-    // return 0.001 / (inner_radius * inner_radius * M_PI * M_PI);
-    // return 4.0 * 1.5 * inner_radius * inner_radius * M_PI * M_PI / sqrt(dist_sq);
-    // return inner_radius * inner_radius * 100 / pow(dist_sq, 0.5);
-    // float d = sqrt(dist_sq)
-
-    // Convert from luminous power to luminance
-    float nrm = 4.0 * M_PI * M_PI * inner_radius * inner_radius;
-
-    // return 0.01 / square(d / inner_radius + 1) * nrm;
-    return 1.0 / (d * d * d + 1) * nrm; // XXX: Why d^3, and not d^2 (physically correct is ^2 )?
-
-    // return 1.0 / ();
-    
-}
 
 // Computes a lights influence
 // TODO: Make this method faster
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation, float shadow,
-    vec3 transmittance, float energy, float clearcoat_energy, vec3 l_diffuse) {
+    vec3 transmittance, vec2 energy, vec2 clearcoat_energy, vec3 l_diffuse) {
 
     #if 0
         // Debugging: Fast rendering path
-        return light_color * attenuation * energy;
+        return light_color * attenuation * energy.x;
     #endif
 
     float NxL = saturate(dot(m.normal, l_diffuse));
@@ -129,7 +127,7 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
 
     // Diffuse contribution
     vec3 shading_result = brdf_diffuse(NxV, NxL, LxH, VxH, m.roughness)
-                            * m.basecolor * (1 - m.metallic) * energy * attenuation;
+                            * m.basecolor * (1 - m.metallic) * energy.x * attenuation;
 
     // Specular contribution:
     // We add some roughness for clearcoat - this is due to the reason that
@@ -140,11 +138,12 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
     float visibility = brdf_visibility(NxL, NxV, NxH, VxH, m.roughness);
     vec3 fresnel = brdf_schlick_fresnel(f0, LxH);
 
+    // shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * energy.y;
+    shading_result += (distribution * visibility) * fresnel * energy.y;
 
-    // The division by 4 * NxV * NxL is done in the geometric (visibility) term
-    // already, so to evaluate the complete brdf we just do a multiply
-    shading_result += (distribution * visibility) * fresnel / (4.0 * NxV * NxL) * 0.0001;
 
+     
+    #if 0
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         float distribution_coat = brdf_distribution(NxH, CLEARCOAT_ROUGHNESS);
         float visibility_coat = brdf_visibility(NxL, NxV, NxH, VxH, CLEARCOAT_ROUGHNESS);
@@ -158,13 +157,13 @@ vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation
         vec3 coat_spec = (distribution_coat * visibility_coat * clearcoat_energy) * fresnel_coat;
         shading_result += coat_spec;
     }
+    #endif
 
-    return max(vec3(0),
-        (shading_result * light_color) * (shadow * NxL) * transmittance);
+    return max(vec3(0), (shading_result * light_color) * (shadow * NxL) * transmittance);
 }
 
 vec3 apply_light(Material m, vec3 v, vec3 l, vec3 light_color, float attenuation,
         float shadow, vec3 transmittance) {
     return apply_light(
-        m, v, l, light_color, attenuation, shadow, transmittance, 1.0, 1.0, l);
+        m, v, l, light_color, attenuation, shadow, transmittance, vec2(1.0), vec2(1.0), l);
 }

@@ -25,39 +25,38 @@
  */
 
 
-#include "rp_point_light.h"
+#include "rp_sphere_light.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 /**
- * @brief Constructs a new point light
- * @details This contructs a new point light with default settings. By default
- *   the light is set to be an infinitely small point light source. You can
- *   change this with RPPointLight::set_inner_radius.
+ * @brief Constructs a new sphere light
+ * @details This contructs a new sphere light with default settings.
  */
-RPPointLight::RPPointLight() : RPLight(RPLight::LT_point_light) {
-    _radius = 10.0;
-    _inner_radius = 0.01;
+RPSphereLight::RPSphereLight() :
+    RPLight(RPLight::LT_sphere_light),
+    _sphere_size(0.2) {
 }
 
 /**
  * @brief Writes the light to a GPUCommand
- * @details This writes the point light data to a GPUCommand.
+ * @details This writes the sphere light data to a GPUCommand.
  * @see RPLight::write_to_command
  *
  * @param cmd The target GPUCommand
  */
-void RPPointLight::write_to_command(GPUCommand &cmd) {
+void RPSphereLight::write_to_command(GPUCommand &cmd) {
     RPLight::write_to_command(cmd);
-    cmd.push_float(_radius);
-    cmd.push_float(_inner_radius);
+    cmd.push_float(_sphere_size);
 }
 
 /**
  * @brief Inits the shadow sources of the light
- * @details This inits all required shadow sources for the point light.
+ * @details This inits all required shadow sources for the sphere light.
  * @see RPLight::init_shadow_sources
  */
-void RPPointLight::init_shadow_sources() {
+void RPSphereLight::init_shadow_sources() {
     nassertv(_shadow_sources.size() == 0);
     // Create 6 shadow sources, one for each direction
     for(size_t i = 0; i < 6; ++i) {
@@ -70,7 +69,7 @@ void RPPointLight::init_shadow_sources() {
  * @details This updates all shadow sources of the light.
  * @see RPLight::update_shadow_sources
  */
-void RPPointLight::update_shadow_sources() {
+void RPSphereLight::update_shadow_sources() {
     LVecBase3f directions[6] = {
         LVecBase3f( 1,  0,  0),
         LVecBase3f(-1,  0,  0),
@@ -84,7 +83,25 @@ void RPPointLight::update_shadow_sources() {
     const float fov = 90.0f + 3.0f;
     for (size_t i = 0; i < _shadow_sources.size(); ++i) {
         _shadow_sources[i]->set_resolution(get_shadow_map_resolution());
-        _shadow_sources[i]->set_perspective_lens(fov, _near_plane, _radius,
+        _shadow_sources[i]->set_perspective_lens(fov, _near_plane, _max_cull_distance,
                                                 _position, directions[i]);
     }
+}
+
+
+/**
+ * @brief See RPLight::get_conversion_factor
+ */
+float RPSphereLight::get_conversion_factor(IntensityType from, IntensityType to) const {
+    if (from == to) 
+        return 1.0;
+
+    float divisor = 4.0 * _sphere_size * _sphere_size * M_PI * M_PI;
+    if (from == IT_luminance && to == IT_lumens)
+        return divisor;
+    else if(from == IT_lumens && to == IT_luminance)
+        return 1.0 / divisor;
+
+    nassertr_always(false, 0.0);
+    return 0.0;
 }

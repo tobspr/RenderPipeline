@@ -32,7 +32,7 @@ from panda3d.core import PNMImage, TransformState, MaterialAttrib, TextureAttrib
 
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
-from rpcore.native import PointLight, SpotLight
+from rpcore.native import SphereLight, SpotLight
 
 def to_safe_name(name):
     """ Converts a string to a valid filename """
@@ -64,9 +64,14 @@ class MitsubaExporter(RPObject):
         self.debug("Adding", nodepath)
         geom_id = 0
         for np in nodepath.find_all_matches("**/*"):
-            if "skybox" in np.get_name().lower():
+            repr_name = np.get_name().lower()
+            if "skybox" in repr_name:
                 self.debug("Skipping skybox")
                 continue
+            elif "lightdebuggeometry" in repr_name:
+                self.debug("Skipping light debug geometry")
+                continue
+
             self.debug("Adding", np.get_name())
             for geom_np in np.find_all_matches("**/+GeomNode"):
                 geom_node = geom_np.node()
@@ -201,10 +206,10 @@ class MitsubaExporter(RPObject):
         add("        <sampler type='ldsampler'>")
         add("            <integer name='sampleCount' value='64'/>")
         add("        </sampler>")
-        add("        <film type='hdrfilm'>")
+        add("        <film type='ldrfilm'>")
         add("            <boolean name='banner' value='false'/>")
-        # add("            <string name='fileFormat' value='png'/>")
-        # add("            <string name='pixelFormat' value='rgb'/>")
+        add("            <string name='fileFormat' value='png'/>")
+        add("            <string name='pixelFormat' value='rgb'/>")
         add("            <integer name='width' value='{}'/>".format(Globals.base.win.get_x_size()))
         add("            <integer name='height' value='{}'/>".format(Globals.base.win.get_y_size()))
         add("            <rfilter type='box'/>")
@@ -222,13 +227,13 @@ class MitsubaExporter(RPObject):
         self.debug("Exporting lights ..")
         for light in self.pipeline.light_mgr.all_lights:
             print(light)
-            if isinstance(light, PointLight):
+            if isinstance(light, SphereLight):
                 pos = light.pos
                 add("<shape type='sphere'>")
                 add("  <point name='center' x='{}' y='{}' z='{}' />".format(*pos))
-                add("  <float name='radius' value='{}' />".format(light.inner_radius))
+                add("  <float name='radius' value='{}' />".format(light.sphere_size))
                 add("  <emitter type='area'>")
-                add("    <rgb name='radiance' value='" + color2xml(light.color * light.energy) + "' />")
+                add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
                 add("  </emitter>")
                 add("</shape>")
 

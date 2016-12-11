@@ -24,43 +24,29 @@
  *
  */
 
-#ifndef RP_POINT_LIGHT_H
-#define RP_POINT_LIGHT_H
-
-#include "pandabase.h"
-#include "rp_light.h"
+/**
+ * @brief Sets the sphere size of the light
+ * @details This sets the sphere size of the light. This has influence on the
+ *   specular highlights of the light aswell as the shadows.
+ *
+ *   The sphere size controls the size of the lights sphere size in world
+ *   space units, and impacts the specular highlight. In case the intensity
+ *   was specified in luminance, this also affects the intensity of the light. 
+ *
+ * @param sphere-size Sphere size in world space
+ */
+inline void RPSphereLight::set_sphere_size(float sphere_size) {
+    nassertv(sphere_size >= 0.0099); // Invalid size
+    _sphere_size = sphere_size;
+    set_needs_update(true);
+}
 
 /**
- * @brief PointLight class
- * @details This represents a point light, a light which has a position and
- *   radius. Checkout the RenderPipeline documentation for more information
- *   about this type of light.
+ * @brief Returns the sphere size of the light
+ * @details This returns the sphere size of the light, previously set with
+ *   RPSphereLight::set_sphere_size.
+ * @return sphere size in world space units
  */
-class RPPointLight : public RPLight {
-
-    PUBLISHED:
-        RPPointLight();
-
-        inline void set_radius(float radius);
-        inline float get_radius() const;
-        MAKE_PROPERTY(radius, get_radius, set_radius);
-
-        inline void set_inner_radius(float inner_radius);
-        inline float get_inner_radius() const;
-        MAKE_PROPERTY(inner_radius, get_inner_radius, set_inner_radius);
-
-    public:
-        virtual void write_to_command(GPUCommand &cmd);
-        virtual void update_shadow_sources();
-        virtual void init_shadow_sources();
-
-    protected:
-
-        float _radius;
-        float _inner_radius;
-
-};
-
-#include "rp_point_light.I"
-
-#endif // RP_POINT_LIGHT_H
+inline float RPSphereLight::get_sphere_size() const {
+    return _sphere_size;
+}

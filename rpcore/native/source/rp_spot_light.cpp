@@ -37,7 +37,6 @@
  *   set at least a direction, fov, radius and position to make the light useful.
  */
 RPSpotLight::RPSpotLight() : RPLight(RPLight::LT_spot_light) {
-    _radius = 10.0;
     _fov = 45.0;
     _direction.set(0, 0, -1);
 }
@@ -51,7 +50,6 @@ RPSpotLight::RPSpotLight() : RPLight(RPLight::LT_spot_light) {
  */
 void RPSpotLight::write_to_command(GPUCommand &cmd) {
     RPLight::write_to_command(cmd);
-    cmd.push_float(_radius);
 
     // Encode FOV as cos(fov)
     cmd.push_float(cos(_fov / 360.0 * M_PI));
@@ -75,6 +73,13 @@ void RPSpotLight::init_shadow_sources() {
  */
 void RPSpotLight::update_shadow_sources() {
     _shadow_sources[0]->set_resolution(get_shadow_map_resolution());
-    _shadow_sources[0]->set_perspective_lens(_fov, _near_plane, _radius, _position, _direction);
+    _shadow_sources[0]->set_perspective_lens(_fov, _near_plane, _max_cull_distance, _position, _direction);
 }
 
+
+/**
+ * @brief See RPLight::get_conversion_factor
+ */
+float RPSpotLight::get_conversion_factor(IntensityType from, IntensityType to) const {
+    return 1.0; // XXX
+}

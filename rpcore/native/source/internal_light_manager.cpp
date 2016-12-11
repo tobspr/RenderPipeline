@@ -120,7 +120,7 @@ void InternalLightManager::setup_shadows(RPLight* light) {
     light->init_shadow_sources();
     light->update_shadow_sources();
 
-    // Find consecutive slots, this is important for PointLights so we can just
+    // Find consecutive slots, this is important for SphereLights so we can just
     // store the first index of the source, and get the other slots by doing
     // first_index + 1, +2 and so on.
     size_t base_slot;

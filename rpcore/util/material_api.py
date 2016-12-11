@@ -24,15 +24,39 @@ THE SOFTWARE.
 
 """
 
-# flake8: noqa
+from panda3d.core import Vec3, Material, Vec4
 
-from rpcore.pynative.gpu_command import GPUCommand
-from rpcore.pynative.gpu_command_list import GPUCommandList
-from rpcore.pynative.ies_dataset import IESDataset
-from rpcore.pynative.internal_light_manager import InternalLightManager
-from rpcore.pynative.rp_light import RPLight
-from rpcore.pynative.rp_spot_light import RPSpotLight
-from rpcore.pynative.rp_sphere_light import RPSphereLight
-from rpcore.pynative.shadow_manager import ShadowManager
-from rpcore.pynative.tag_state_manager import TagStateManager
-from rpcore.pynative.pssm_camera_rig import PSSMCameraRig
+from rpcore.rpobject import RPObject
+
+class MaterialAPI(RPObject):
+    """ Interface for creating and modifying materials """
+
+    SM_DEFAULT = 0
+    SM_EMISSIVE = 1
+    SM_CLEARCOAT = 2
+    SM_TRANSPARENT = 3
+    SM_SKIN = 4
+    SM_FOLIAGE = 5
+
+    @classmethod
+    def make_material(cls, basecolor=Vec3(0.8), specular_ior=0.8):
+        pass
+
+    @classmethod
+    def make_emissive(cls, basecolor=Vec3(0.8), emissive_factor=0.2, exact=False):
+        """ Creates a new emissive material """
+        m = Material()
+        if not exact:
+            m.set_base_color(Vec4(basecolor * emissive_factor, 1))
+        else:
+            m.set_base_color(Vec4(basecolor / 5000.0, 1))
+        m.set_emission(Vec4(cls.SM_EMISSIVE, 0, 0, 0))
+        m.set_roughness(1.0)
+        m.set_refractive_index(1.5)
+        m.set_metallic(0)
+        return m    
+
+    @classmethod
+    def get_shading_model(cls, m):
+        """ Extracts the shading model of a given material """
+        return m.get_emission().x

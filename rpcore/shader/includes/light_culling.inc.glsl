@@ -33,6 +33,9 @@
 // the camera, values > 1 produce a distribution which is further away from the camera.
 #define SLICE_EXP_FACTOR 3.0
 
+// Set this to true to disable culling
+#define DISABLE_CULLING 1
+
 // Plane offsets
 #define P_FRONT 0
 #define P_BACK 1
@@ -240,20 +243,26 @@ bool cone_inside_frustum(Cone cone, Frustum frustum)
 
 bool cull_light(LightData light, Frustum view_frustum) {
 
+    #if DISABLE_CULLING
+        return true;
+    #endif
+
     vec3 light_pos = (MainSceneData.view_mat_z_up * vec4(get_light_position(light), 1)).xyz;
+    float radius = get_max_cull_distance(light);
 
     switch (get_light_type(light)) {
-        case LT_POINT_LIGHT: {
+
+        case LT_SPHERE_LIGHT: {
             Sphere sphere;
-            sphere.radius = get_pointlight_radius(light) + get_pointlight_inner_radius(light);
+            sphere.radius = radius;
             sphere.pos = light_pos; 
             return sphere_inside_frustum(sphere, view_frustum);
         }
 
-        case LT_SPOT_LIGHT:
+        case LT_SPOT_LIGHT: {
             Cone cone;
             cone.pos = light_pos;
-            cone.height = get_spotlight_radius(light);
+            cone.height = radius;
             
             // Need direction in view-space instead of world-space
             vec3 direction_ws = get_spotlight_direction(light);
@@ -267,6 +276,7 @@ bool cull_light(LightData light, Frustum view_frustum) {
 
             cone.radius = sin_cone_fov * hypotenuse; 
             return cone_inside_frustum(cone, view_frustum);
+        }
     }
 
     return false;

@@ -50,6 +50,7 @@ else:
         NATIVE_CXX_LOADED = handle.read().strip() == "1"
 
 # The native module should only be imported once, and that by the internal pipeline code
+# The proper way is: from rpcore import ABC
 assert __package__ == "rpcore.native", "You have included the pipeline in the wrong way!"
 
 # Classes which should get imported
@@ -65,7 +66,7 @@ classes_to_import = [
 
 # Classes which should get imported and renamed
 classes_to_import_and_rename = {
-    "RPPointLight": "PointLight",
+    "RPSphereLight": "SphereLight",
     "RPSpotLight": "SpotLight"
 }
 
@@ -82,8 +83,8 @@ else:
 # Import all classes
 for v in classes_to_import + list(classes_to_import_and_rename.keys()):
     if hasattr(_native_module, v):
-        v_name = classes_to_import_and_rename[v] if v in classes_to_import_and_rename else v
-        globals()[v_name] = getattr(_native_module, v)
+        name = classes_to_import_and_rename.get(v, v)
+        globals()[name] = getattr(_native_module, v)
     else:
         print("ERROR: could not import class", v, "from", _native_module.__name__)
 

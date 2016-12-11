@@ -24,29 +24,39 @@
  *
  */
 
-#pragma once
+#ifndef RP_SPHERE_LIGHT_H
+#define RP_SPHERE_LIGHT_H
 
-#pragma include "includes/light_data.inc.glsl"
+#include "pandabase.h"
+#include "rp_light.h"
 
-#define LIGHT_CLS_INVALID -1
-#define LIGHT_CLS_SPOT_NOSHADOW 0
-#define LIGHT_CLS_SPHERE_NOSHADOW 1
-#define LIGHT_CLS_SPOT_SHADOW 2
-#define LIGHT_CLS_SPHERE_SHADOW 3
+/**
+ * @brief SphereLight class
+ * @details This represents a sphere light, a light which has a position and
+ *   size. Checkout the RenderPipeline documentation for more information
+ *   about this type of light.
+ */
+class RPSphereLight : public RPLight {
 
-#define LIGHT_CLS_COUNT 4
+    PUBLISHED:
+        RPSphereLight();
 
-#if LIGHT_CLS_COUNT != LC_LIGHT_CLASS_COUNT
-    #error GLSL and Python lighting system class count do not match up!
-#endif
+        inline void set_sphere_size(float sphere_size);
+        inline float get_sphere_size() const;
+        MAKE_PROPERTY(sphere_size, get_sphere_size, set_sphere_size);
 
-int classify_light(int light_type, bool casts_shadows) {
-    switch (light_type) {
-        case LT_SPOT_LIGHT:
-            return casts_shadows ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
-        case LT_SPHERE_LIGHT:
-            return casts_shadows ? LIGHT_CLS_SPHERE_SHADOW : LIGHT_CLS_SPHERE_NOSHADOW;
+    public:
+        virtual void write_to_command(GPUCommand &cmd);
+        virtual void update_shadow_sources();
+        virtual void init_shadow_sources();
 
-    };
-    return LIGHT_CLS_INVALID;
-}
+    protected:
+
+        virtual float get_conversion_factor(IntensityType from, IntensityType to) const;
+
+        float _sphere_size;
+};
+
+#include "rp_sphere_light.I"
+
+#endif // RP_SPHERE_LIGHT_H

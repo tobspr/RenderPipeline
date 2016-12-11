@@ -26,8 +26,9 @@ THE SOFTWARE.
 
 # flake8: noqa
 
-__all__ = ("RenderPipeline", "SpotLight", "PointLight")
+__all__ = ("RenderPipeline", "SpotLight", "SphereLight", "MaterialAPI")
 
 # This file includes all classes from the pipeline which are exposed
 from rpcore.render_pipeline import RenderPipeline
-from rpcore.native import SpotLight, PointLight
+from rpcore.util.material_api import MaterialAPI
+from rpcore.native import SpotLight, SphereLight

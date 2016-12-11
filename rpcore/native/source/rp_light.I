@@ -194,7 +194,7 @@ inline const LVecBase3f& RPLight::get_pos() const {
 /**
  * @brief Sets the lights color
  * @details This sets the lights color. The color should not include the brightness
- *   of the light, you should control that with the energy. The color specifies
+ *   of the light, you should control that with the intensity. The color specifies
  *   the lights "tint" and will get multiplied with its specular and diffuse
  *   contribution.
  *
@@ -224,36 +224,13 @@ inline void RPLight::set_color(float r, float g, float b) {
 /**
  * @brief Returns the lights color
  * @details This returns the light color, previously set with RPLight::set_color.
- *   This does not include the energy of the light. It might differ from what
+ *   This does not include the intensity_lumens of the light. It might differ from what
  *   was set with set_color, because the color is normalized by dividing it
  *   by its luminance.
  * @return Light-color
  */
 inline const LVecBase3f& RPLight::get_color() const {
     return _color;
-}
-
-/**
- * @brief Sets the energy of the light
- * @details This sets the energy of the light, which can be seen as the brightness
- *   of the light. It will get multiplied with the normalized color.
- *
- * @param energy energy of the light
- */
-inline void RPLight::set_energy(float energy) {
-    _energy = energy;
-    set_needs_update(true);
-}
-
-/**
- * @brief Returns the energy of the light
- * @details This returns the energy of the light, previously set with
- *   RPLight::set_energy.
- *
- * @return energy of the light
- */
-inline float RPLight::get_energy() const {
-    return _energy;
 }
 
 /**
@@ -404,3 +381,80 @@ inline float RPLight::get_near_plane() const {
     return _near_plane;
 }
 
+
+/**
+ * @brief Sets the intensity of the light in lumens
+ * @details This sets the intensity in lumens of the light, which can be seen as the brightness
+ *   of the light. It will get multiplied with the normalized color.
+ *
+ * @param intensity_lumens intensity of the light in lumens
+ */
+inline void RPLight::set_intensity_lumens(float intensity_lumens) {
+    _intensity = intensity_lumens;
+    _intensity_type = IT_lumens;
+    set_needs_update(true);
+}
+
+/**
+ * @brief Returns the intensity in lumens of the light
+ * @details This returns the intensity of the light in lumens, previously set with
+ *   RPLight::set_intensity_lumens.
+ *
+ * @return intensity_lumens of the light
+ */
+inline float RPLight::get_intensity_lumens() const {
+    return _intensity * get_conversion_factor(_intensity_type, IT_lumens);
+}
+
+
+/**
+ * @brief Sets the intensity of the light in luminance
+ * @details This sets the intensity in luminance of the light, which can be seen as the brightness
+ *   of the light. It will get multiplied with the normalized color.
+ *
+ * @param intensity_luminance intensity of the light in luminance
+ */
+inline void RPLight::set_intensity_luminance(float intensity_luminance) {
+    _intensity = intensity_luminance;
+    _intensity_type = IT_luminance;
+    set_needs_update(true);
+}
+
+/**
+ * @brief Returns the intensity_luminance of the light
+ * @details This returns the intensity of the light in luminance, previously set with
+ *   RPLight::set_intensity_luminance.
+ *
+ * @return intensity_luminance of the light
+ */
+inline float RPLight::get_intensity_luminance() const {
+    return _intensity * get_conversion_factor(_intensity_type, IT_luminance);
+}
+
+
+/**
+ * @brief Sets the maximum culling distance of the light
+ * @details This sets the maximum culling distance of the light. Since
+ *   lights are physically based, they have no finite range where their
+ *   influence is zero. However, for practical purposes a maximum culling
+ *   distance is required. After this distance, the lights influence is
+ *   considered to be zero.
+ *
+ * @param radius Maximum culling distance in world space
+ */
+inline void RPLight::set_max_cull_distance(float max_cull_distance) {
+    nassertv(_max_cull_distance > 0); // Invalid distance
+    _max_cull_distance = max_cull_distance;
+    set_needs_update(true);
+    invalidate_shadows();
+}
+
+/**
+ * @brief Returns the lights maximum culling distance
+ * @details This returns the culling distance previously set with
+ *   RPSphereLight::set_max_cull_distance
+ * @return Light radius in world space
+ */
+inline float RPLight::get_max_cull_distance() const {
+    return _max_cull_distance;
+}

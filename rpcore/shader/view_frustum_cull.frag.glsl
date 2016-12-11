@@ -67,7 +67,7 @@ void main() {
         bool visible = cull_light(light_data, view_frustum);
 
         // Uncomment to detect issues in culling
-        visible = true;
+        // visible = true;
 
         if (visible) {
             int index = imageAtomicAdd(FrustumLightsCount, 0, 1);

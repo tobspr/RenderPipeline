@@ -27,7 +27,8 @@
 #include "config_rsnative.h"
 
 #include "rp_light.h"
-#include "rp_point_light.h"
+#include "rp_sphere_light.h"
+#include "rp_spot_light.h"
 
 #include "dconfig.h"
 
@@ -47,6 +48,7 @@ init_librsnative() {
   initialized = true;
 
   // RPLight::init_type();
-  // RPPointLight::init_type();
+  // RPSphereLight::init_type();
+  // RPSpotLight::init_type();
 }
 

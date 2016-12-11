@@ -66,7 +66,7 @@ class RPLight(object):
     This is just the python implementation, which does not contain documentation! """
 
     LT_empty = 0
-    LT_point_light = 1
+    LT_sphere_light = 1
     LT_spot_light = 2
 
     def __init__(self, light_type):

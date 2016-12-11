@@ -21,7 +21,7 @@ class Application(ShowBase):
         load_prc_file_data("", "notify-level-glgsg error")
         # load_prc_file_data("", "win-size 1024 1024")
 
-        from rpcore import RenderPipeline, PointLight
+        from rpcore import RenderPipeline, SphereLight
 
         self.render_pipeline = RenderPipeline()
         self.render_pipeline.mount_mgr.config_dir = "config/"
@@ -39,15 +39,15 @@ class Application(ShowBase):
         self.render2d.hide()
         self.aspect2d.hide()
 
-        light = PointLight()
+        light = SphereLight()
         light.pos = 10, -10, 10
-        light.radius = 1e20
+        light.max_cull_dist = 1e20
         light.color = (1, 1, 1)
-        light.inner_radius = 4.0
+        light.sphere_size = 4.0
         light.energy = 3
         self.render_pipeline.add_light(light)
 
-        light = PointLight()
+        light = SphereLight()
         light.pos = -10, -10, 10
         light.radius = 1e20
         light.color = (1, 1, 1)
