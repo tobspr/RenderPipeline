@@ -27,21 +27,26 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer2.inc.glsl"
 
 uniform sampler2D ShadedScene;
-out vec4 result;
+uniform sampler2D Previous_PostReferenceStage;
+uniform bool cameraMoved;
 
-
+out vec3 result;
 
 void main() {
-
     vec2 texcoord = get_texcoord();
-    ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    vec3 nrm = abs(gbuffer_reconstruct_vs_normal_from_depth(texcoord));
-    float linz = gbuffer_get_linear_depth_32bit(texcoord);
+    #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
+        vec3 prev = saturate(textureLod(Previous_PostReferenceStage, texcoord, 0).xyz);
+        vec3 curr = saturate(textureLod(ShadedScene, texcoord, 0).xyz);
 
-    result.xyz = nrm;
-    result.w = linz / 200.0;
+        result = mix(prev, curr, 1.0 / 128.0);
+        if (cameraMoved)
+            result = curr;
+        // result = curr;
+        // result = prev * 0.99;
+    #else
+        result = textureLod(ShadedScene, texcoord, 0).xyz;
+    #endif
 }

@@ -27,6 +27,7 @@ THE SOFTWARE.
 from panda3d.core import TransparencyAttrib, Vec3, Texture, SamplerState
 from direct.gui.OnscreenImage import OnscreenImage
 
+from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 from rpcore.loader import RPLoader
 
@@ -75,7 +76,7 @@ class Sprite(RPObject):
 
         # Apply a near filter, but only if the parent has no scale, otherwise
         # it will look weird
-        if near_filter and any_filter and parent.get_sx() == 1.0:
+        if near_filter and any_filter and parent.get_sx(Globals.base.render) == 1.0:
             tex.set_minfilter(SamplerState.FT_nearest)
             tex.set_magfilter(SamplerState.FT_nearest)
 

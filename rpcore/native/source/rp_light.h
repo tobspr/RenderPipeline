@@ -149,6 +149,10 @@ class RPLight : public ReferenceCount {
 
         float _max_cull_distance;
 
+        float _depth_bias;
+        float _nrm_bias;
+        float _slope_bias;
+
         vector<ShadowSource*> _shadow_sources;
 };
 

@@ -31,3 +31,4 @@ render_modes:
   - { name: "Light Tiles", key: "LIGHT_TILES", special: true }
   - { name: "Bilateral Misses", key: "BILATERAL_MISSES", special: true }
   - { name: "Invalid Normals", key: "INVALID_NORMALS", special: true }
+  - { name: "Ground truth", key: "GROUND_TRUTH", special: true, reference_only: true }

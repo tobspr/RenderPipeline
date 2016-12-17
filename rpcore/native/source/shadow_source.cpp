@@ -39,3 +39,46 @@ ShadowSource::ShadowSource() {
     _region.fill(-1);
     _region_uv.fill(0);
 }
+
+/**
+ * @brief Setups a perspective lens for the source.
+ * @details This makes the shadow source behave like a perspective lens. The
+ *   parameters are similar to the ones of a PerspectiveLens.
+ *
+ * @param fov FoV of the lens
+ * @param near_plane The near plane of the lens, to avoid artifacts at low distance
+ * @param far_plane The far plane of the lens
+ * @param pos Position of the lens, in world space
+ * @param direction Direction (Orientation) of the lens
+ */
+void ShadowSource::set_perspective_lens(float fov, float near_plane,
+                                               float far_plane, LVecBase3f pos,
+                                               LVecBase3f direction) {
+    // Construct a temporary lens to generate the lens matrix
+    PerspectiveLens temp_lens(fov, fov);
+    temp_lens.set_film_offset(0, 0);
+    temp_lens.set_near_far(near_plane, far_plane);
+    temp_lens.set_view_vector(direction, LVector3::up());
+    set_lens(temp_lens, pos);
+}
+
+/**
+ * @brief Setups a generic lens for the source.
+ * @details Setups the shadow source to use the given lens, at the given position.
+ *
+ * @param lens Lens to copy matrix from
+ * @param pos Source/Lens position
+*/
+
+void ShadowSource::set_lens(const Lens& lens, LVecBase3f pos) {
+    
+    // Construct the transformation matrix
+    set_matrix_lens(LMatrix4f::translate_mat(-pos) * lens.get_projection_mat());
+
+    // Set new bounds, approximate with sphere
+    CPT(BoundingHexahedron) hexahedron = DCAST(BoundingHexahedron, lens.make_bounds());
+    LPoint3 center = (hexahedron->get_min() + hexahedron->get_max()) * 0.5f;
+    _bounds = BoundingSphere(pos + center, (hexahedron->get_max() - center).length());
+
+}
+    

@@ -28,15 +28,13 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-#pragma optionNV (unroll all)
-
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // Stores the current FPS value in the buffer
 
 uniform writeonly imageBuffer RESTRICT DestTex;
 uniform int index;
-uniform float currentData;
+uniform vec4 currentData;
 
 void main() {
     imageStore(DestTex, index, vec4(currentData));

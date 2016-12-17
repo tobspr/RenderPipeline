@@ -47,6 +47,7 @@ class timed_loading_operation(object):  # noqa # pylint: disable=invalid-name,to
         self.resource_id = resource_id
         if isinstance(self.resource_id, (list, tuple)):
             self.resource_id = ', '.join(self.resource_id)
+        self.resource_id = self.resource_id.replace("/$$rp/", "")
 
     def __enter__(self):
         # RPObject.global_debug("Loading", self.resource_id)
@@ -54,7 +55,7 @@ class timed_loading_operation(object):  # noqa # pylint: disable=invalid-name,to
 
     def __exit__(self, *args):
         duration = (time.clock() - self.start_time) * 1000.0
-        if duration > 80.0 and timed_loading_operation.WARNING_COUNT < 5:
+        if duration > 150.0 and timed_loading_operation.WARNING_COUNT < 5:
             RPObject.global_warn(
                 "RPLoader", "Loading '" + self.resource_id + "' took", round(duration, 2), "ms")
             timed_loading_operation.WARNING_COUNT += 1

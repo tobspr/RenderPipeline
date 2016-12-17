@@ -28,7 +28,6 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "smaa_wrapper.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
 
 uniform sampler2D BlendTex;
 uniform sampler2D ShadedScene;

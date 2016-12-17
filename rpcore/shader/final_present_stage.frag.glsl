@@ -27,7 +27,6 @@
 #version 430
 
 #pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
 out vec4 result;

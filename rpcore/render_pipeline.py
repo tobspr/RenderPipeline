@@ -71,6 +71,8 @@ from rpcore.stages.combine_velocity_stage import CombineVelocityStage
 from rpcore.stages.upscale_stage import UpscaleStage
 from rpcore.stages.compute_low_precision_normals_stage import ComputeLowPrecisionNormalsStage
 from rpcore.stages.srgb_correction_stage import SRGBCorrectionStage
+from rpcore.stages.reference_stage import ReferenceStage
+
 
 class RenderPipeline(RPObject):
 
@@ -111,7 +113,6 @@ class RenderPipeline(RPObject):
             self.debugger.error_msg_handler.clear_messages()
             self.debugger.set_reload_hint_visible(True)
             for i in range(2):
-                self._showbase.taskMgr.step()
                 self._showbase.graphics_engine.render_frame()    
         self.tag_mgr.cleanup_states()
         self.stage_mgr.reload_shaders()
@@ -135,11 +136,11 @@ class RenderPipeline(RPObject):
         call it manually before you init your custom showbase instance.
         See the 00-Loading the pipeline sample for more information. """
         if not self.mount_mgr.is_mounted:
-            self.debug("Mount manager was not mounted, mounting now ...")
+            self.debug("Mount manager was not mounted, mounting ...")
             self.mount_mgr.mount()
 
         if not self.settings:
-            self.debug("No settings loaded, loading from default location")
+            self.debug("No settings loaded, loading from default location ..")
             self.load_settings("/$$rpconfig/pipeline.yaml")
 
         if not isfile("/$$rp/data/install.flag"):
@@ -194,8 +195,8 @@ class RenderPipeline(RPObject):
         # first frame (where the shaders are actually compiled)
         init_duration = (time.time() - start_time)
         self._first_frame = time.clock()
-        self.debug("Finished initialization in {:3.3f} s, first frame: {}".format(
-            init_duration, Globals.clock.get_frame_count()))
+        self.debug("Finished startup in {:3.3f} s".format(
+            init_duration))
 
     def set_loading_screen_image(self, image_source):
         """ Tells the pipeline to use the default loading screen, which consists
@@ -285,27 +286,30 @@ class RenderPipeline(RPObject):
         This can be used to store them and process them later on, or delete
         them when a newer scene is loaded."""
         lights = []
+
+        # TODO: Split into several sub-methods or even its own class
         for light in scene.find_all_matches("**/+PointLight"):
             light_node = light.node()
             rp_light = SphereLight()
             rp_light.pos = light.get_pos(Globals.base.render)
-            rp_light.max_culling_radius = light_node.max_distance
-            rp_light.energy = 20.0 * light_node.color.w
+            rp_light.max_cull_distance = light_node.max_distance
+            rp_light.intensity_lumens = 200000.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.inner_radius = 2.0
+            rp_light.sphere_radius = 0.5
 
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
+            self.make_light_geometry(rp_light)
 
         for light in scene.find_all_matches("**/+Spotlight"):
             light_node = light.node()
             rp_light = SpotLight()
             rp_light.pos = light.get_pos(Globals.base.render)
-            rp_light.radius = light_node.max_distance
-            rp_light.energy = 20.0 * light_node.color.w
+            rp_light.max_cull_distance = light_node.max_distance
+            rp_light.intensity_lumens = 20.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
@@ -315,6 +319,7 @@ class RenderPipeline(RPObject):
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
+            self.make_light_geometry(rp_light)
 
         envprobes = []
         for np in scene.find_all_matches("**/ENVPROBE*"):
@@ -339,7 +344,7 @@ class RenderPipeline(RPObject):
                     if isinstance(prim, GeomTristrips):
                         needs_conversion = True
                         if not tristrips_warning_emitted:
-                            self.warn("At least one GeomNode (", geom_node.get_name(), "and possible more..) contains tristrips.")
+                            self.warn("At least one GeomNode ('" + str(geom_node.get_name()) + "' and possibly more..) contains tristrips.")
                             self.warn("Due to a NVIDIA Driver bug, we have to convert them to triangles now.")
                             self.warn("Consider exporting your models with the Bam Exporter to avoid this.")
                             tristrips_warning_emitted = True
@@ -361,13 +366,12 @@ class RenderPipeline(RPObject):
                         self.error("Transparent materials must be on their own geom!\n"
                                    "If you are exporting from blender, split them into\n"
                                    "seperate meshes, then re-export your scene. The\n"
-                                   "problematic mesh is: " + geom_np.get_name())
+                                   "problematic mesh is: '" + str(geom_np.get_name()) + "'")
                         continue
                     self.set_effect(geom_np, "effects/default.yaml",
                                     {"render_forward": True, "render_gbuffer": False, "render_shadow": False}, 100)
 
-        return {"lights": lights, "envprobes": envprobes,
-                "transparent_objects": transparent_objects}
+        return {"lights": lights, "envprobes": envprobes, "transparent_objects": transparent_objects}
 
     def _create_managers(self):
         """ Internal method to create all managers and instances. This also
@@ -389,7 +393,7 @@ class RenderPipeline(RPObject):
         of date. """
         self.debug("Using Python {}.{} with architecture {}".format(
             sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
-        self.debug("Using Panda3D {} built on {}".format(
+        self.debug("Using p3d{} built on {}".format(
             PandaSystem.get_version_string(), PandaSystem.get_build_date()))
         if PandaSystem.get_git_commit():
             self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
@@ -472,10 +476,12 @@ class RenderPipeline(RPObject):
         initialized instance with pre_showbase_init() called inbefore. """
         if not base:
             self.pre_showbase_init()
+            self.debug("Constructing ShowBase")
             self._showbase = ShowBase()
         else:
             if not hasattr(base, "render"):
                 self.pre_showbase_init()
+                self.debug("Constructing ShowBase")
                 ShowBase.__init__(base)
             else:
                 if not self._pre_showbase_initialized:
@@ -603,7 +609,7 @@ class RenderPipeline(RPObject):
         self.light_mgr.update()
 
         if Globals.clock.get_frame_count() == 10:
-            self.debug("Hiding loading screen after 10 pre-rendered frames.")
+            self.debug("Initialization done. Hiding loading screen.")
             self.loading_screen.remove()
 
         return task.cont
@@ -628,10 +634,9 @@ class RenderPipeline(RPObject):
         all unused states and objects. This also triggers the plugin post-render
         update hook. """
         self.plugin_mgr.trigger_hook("post_render_update")
-        if self._first_frame is not None:
+        if self._first_frame is not None and Globals.clock.get_frame_count() == 5:
             duration = time.clock() - self._first_frame
-            self.debug("Took", round(duration, 3), "s until first frame")
-            self._first_frame = None
+            self.debug("Compilation of shaders took", round(duration, 2), "seconds")
         return task.cont
 
     def _create_common_defines(self):
@@ -640,7 +645,7 @@ class RenderPipeline(RPObject):
         defines["CAMERA_NEAR"] = round(Globals.base.camLens.get_near(), 10)
         defines["CAMERA_FAR"] = round(Globals.base.camLens.get_far(), 10)
 
-        # Work arround buggy nvidia driver, which expects arrays to be const
+        # Work around buggy nvidia driver, which expects arrays to be const
         if "NVIDIA 361.43" in self._showbase.win.gsg.get_driver_version():
             defines["CONST_ARRAY"] = "const"
         else:
@@ -699,6 +704,9 @@ class RenderPipeline(RPObject):
         if not self.plugin_mgr.is_plugin_enabled("color_correction"):
             builtin_stages.append(SRGBCorrectionStage)
 
+        if self.settings["pipeline.reference_mode"]:
+            builtin_stages.append(ReferenceStage)
+
         for stage in builtin_stages:
             self.stage_mgr.add_stage(stage(self))
 
@@ -713,9 +721,8 @@ class RenderPipeline(RPObject):
         with open(pth, "w") as handle:
             for i, material in enumerate(Globals.render.find_all_materials()):
                 if not material.has_base_color() or not material.has_roughness() or not material.has_refractive_index():
-                    print("Skipping non-pbr material:", material.name)
+                    self.warn("Skipping non-pbr material:", material.name)
                     continue
-
                 handle.write(("{} " * 11).format(
                     self._get_serialized_material_name(material, i),
                     material.base_color.x,
@@ -733,7 +740,6 @@ class RenderPipeline(RPObject):
     def update_serialized_material(self, data):
         """ Internal method to update a material from a given serialized material """
         name = data[0]
-
         for i, material in enumerate(Globals.render.find_all_materials()):
             if self._get_serialized_material_name(material, i) == name:
                 material.set_base_color(Vec4(float(data[1]), float(data[2]), float(data[3]), 1.0))
@@ -746,7 +752,9 @@ class RenderPipeline(RPObject):
                     float(data[9]),
                     float(data[10]),
                 ))
-
+                break
+        else:
+            self.warn("Got material update for material '" + str(name) + "' but material was not found!")
         RenderState.clear_cache()
 
     def add_dynamic_region(self, region):

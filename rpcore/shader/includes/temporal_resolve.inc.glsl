@@ -29,7 +29,7 @@
 #define USE_GBUFFER_EXTENSIONS
 #pragma include "includes/color_spaces.inc.glsl"
 #pragma include "includes/transforms.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
+#pragma include "includes/gbuffer2.inc.glsl"
 
 // Maximum color distance
 #ifndef RS_MAX_CLIP_DIST
@@ -142,7 +142,7 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
 
         #if RS_USE_POSITION_TECHNIQUE
 
-            float curr_z = get_depth_at(curr_coord);
+            float curr_z = gbuffer_get_depth(curr_coord);
             float curr_linz = get_linear_z_from_z(curr_z);
 
             #if RS_SKIP_SKYBOX
@@ -179,7 +179,7 @@ RS_CTYPE resolve_temporal(sampler2D current_tex, sampler2D last_tex, vec2 curr_c
             const float gather_base = 0.5;
             const float gather_subpixel_motion = 0.01666;
 
-            float curr_depth = get_depth_at(curr_coord);
+            float curr_depth = gbuffer_get_depth(curr_coord);
             float vs_dist = get_linear_z_from_z(curr_depth);
 
             vec2 velocity = last_coord - curr_coord;

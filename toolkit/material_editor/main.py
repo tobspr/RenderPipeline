@@ -131,11 +131,18 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
                    self.basecolor_2.value() / 100.0,
                    self.basecolor_3.value() / 100.0)
         rgb = self.tuple_to_basecolor(a, b, c)
-        self.lbl_basecolor_val1.setText("{:0.2f}".format(a))
-        self.lbl_basecolor_val2.setText("{:0.2f}".format(b))
-        self.lbl_basecolor_val3.setText("{:0.2f}".format(c))
+        self.lbl_basecolor_val1.setText("{:0.3f}".format(a))
+        self.lbl_basecolor_val2.setText("{:0.3f}".format(b))
+        self.lbl_basecolor_val3.setText("{:0.3f}".format(c))
         self.lbl_color_preview.setStyleSheet("background: rgb({}, {}, {});".format(
             int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)))
+
+        # Update slider values
+        for slider, lbl, start, end, prop in self.sliders:
+            val = (slider.value() / 100.0) * (end - start) + start
+            lbl.setText("{:0.3f}".format(val))
+            setattr(self.material, prop, val)
+
 
         self.slider_specular.setEnabled(not self.material.metallic)
 
@@ -145,13 +152,7 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
     def read_from_ui(self):
         if self.in_update:
             return
-
-        # Rest of sliders
-        for slider, lbl, start, end, prop in self.sliders:
-            val = (slider.value() / 100.0) * (end - start) + start
-            lbl.setText("{:0.2f}".format(val))
-            setattr(self.material, prop, val)
-
+        
         # Basecolor
         rgb = self._get_ui_basecolor_rgb()
         self.material.basecolor_r = rgb[0]
@@ -163,6 +164,11 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
 
         # Shading model
         self.material.shading_model = self.cb_shading_model.currentIndex()
+
+        # Rest of sliders
+        for slider, lbl, start, end, prop in self.sliders:
+            val = (slider.value() / 100.0) * (end - start) + start
+            setattr(self.material, prop, val)
 
 
         self.update_ui()
@@ -187,7 +193,7 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         for slider, lbl, start, end, prop in self.sliders:
             val = getattr(self.material, prop)
             slider.setValue((val - start) / (end - start) * 100.0)
-
+            
         self.in_update = False
         self.update_ui()
 
@@ -200,7 +206,6 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
 
     def update_material_list(self):
         temp_path = os.path.join(tempfile.gettempdir(), "rp_materials.data")
-        print("Waiting for creation of", temp_path)
         if not ALLOW_OUTDATED_MATERIALS:
             try:
                 os.remove(temp_path)
@@ -268,10 +273,9 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
     def on_material_selected(self):
         index = self.cb_material.currentIndex()
         if index < 0 or index >= len(self.materials):
-            print("Invalid material with index", index, "only have", len(self.materials), "materials")
+            print("Invalid material with index", index, ", only have", len(self.materials), "materials")
             return
         self.material = self.materials[index]
-        print("Loaded material", self.material.name)
         self.write_to_ui()
 
     def send_update(self):
@@ -292,25 +296,35 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
 
     def _update_shading_model(self):
         name, val, optional_param = self.SHADING_MODELS[self.cb_shading_model.currentIndex()]
-        if optional_param is None:
-            self.slider_param1.setEnabled(False)
-            self.lbl_shading_model_param1.setText("Unused")
-        else:
-            self.slider_param1.setEnabled(True)
-            self.lbl_shading_model_param1.setText(optional_param)
 
+        def hide_option(name):
+            for prefix in ["tt_", "slider_", "lbl_"]:
+                getattr(self, prefix + name).hide()
+                getattr(self, prefix + name).setEnabled(False)
+
+    
+        def show_option(name):        
+            for prefix in ["tt_", "slider_", "lbl_"]:
+                getattr(self, prefix + name).show()
+                getattr(self, prefix + name).setEnabled(True)
+    
         self.cb_metallic.show()
-        self.slider_roughness.setEnabled(True)
-        self.slider_normal.setEnabled(True)
+        show_option("roughness")
+        show_option("specular")
+        show_option("normal")
+        show_option("param1")
+        
+        if optional_param is None:
+            hide_option("param1")
 
         if name == "Emissive":
             self.cb_metallic.hide()
-            self.slider_roughness.setEnabled(False)
-            self.slider_specular.setEnabled(False)
-            self.slider_normal.setEnabled(False)
+            hide_option("roughness")
+            hide_option("specular")
+            hide_option("normal")
         elif name == "Clearcoat":
             self.cb_metallic.hide()
-            self.slider_specular.setEnabled(False)
+            hide_option("specular")
         elif name == "Transparent":
             pass
         elif name == "Skin":

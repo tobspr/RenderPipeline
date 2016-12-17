@@ -107,7 +107,7 @@
 #define SUPPORT_PCF 1
 
 // Controls the roughness of the clearcoat layer
-#define CLEARCOAT_ROUGHNESS 0.001
+#define CLEARCOAT_ROUGHNESS 0.003
 #define CLEARCOAT_SPECULAR 0.16
 #define CLEARCOAT_IOR 1.51
 
@@ -130,7 +130,7 @@
 #define SUN_VECTOR_HORIZON 0.0
 
 // Whether to use a completely white environment, only used in reference mode
-#define USE_WHITE_ENVIRONMENT 1
+#define USE_WHITE_ENVIRONMENT 0
 
 // Increases / Decreases the mipmap of the gbuffer textures
 // #define GBUFFER_LOD_BIAS -2.0

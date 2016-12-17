@@ -48,6 +48,9 @@ RPLight::RPLight(LightType light_type) {
     _max_cull_distance = 20.0;
     _intensity = 20;
     _intensity_type = IT_lumens;
+    _depth_bias = 1.0;
+    _nrm_bias = 1.0;
+    _slope_bias = 1.0;
 }
 
 /**
@@ -87,7 +90,10 @@ void RPLight::write_to_command(GPUCommand &cmd) {
     // Always pass the intensity in lumens, makes calculations easier in the shaders
     float intensity = get_intensity_lumens();
 
-    // V1.w, V2.xy
+    std::cout << "intensity = " << intensity << std::endl;
+    std::cout << "pushing " << _color * intensity / 100.0 << std::endl;
+    
+    // V1.w, V2.XY
     // Divide by 100, since 16bit floating point buffers only go up to 65000.0, which
     // prevents very bright lights.
     cmd.push_vec3(_color * intensity / 100.0);

@@ -33,23 +33,47 @@ vec2 hammersley(uint i, uint N)
     return vec2(float(i) / float(N), float(bitfieldReverse(i)) * 2.3283064365386963e-10);
 }
 
+
+
+
 // From:
 // http://www.gamedev.net/topic/655431-ibl-problem-with-consistency-using-ggx-anisotropy/
-vec3 importance_sample_ggx(vec2 Xi, float alpha)
+
+// http://blog.tobias-franke.eu/2014/03/30/notes_on_importance_sampling.html
+vec3 importance_sample_ggx(vec2 xi, float alpha)
 {
-    // alpha is already squared roughness
-    float r_square = alpha * alpha;
-    float phi = TWO_PI * Xi.x;
-    float cos_theta_sq = (1 - Xi.y) / max(1e-3, 1 + (r_square * r_square - 1) * Xi.y);
+    float phi = TWO_PI * xi.x;
+    float cos_theta_sq = (1.0 - xi.y) / max(1e-10, (alpha * alpha - 1.0) * xi.y + 1.0);
+    cos_theta_sq = max(0, cos_theta_sq);
+
     float cos_theta = sqrt(cos_theta_sq);
-    float sin_theta = sqrt(max(0.0, 1.0 - cos_theta_sq));
+    float sin_theta = sqrt(1.0 - cos_theta_sq);
+    
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
 vec3 importance_sample_lambert(vec2 Xi)
 {
     float phi = TWO_PI * Xi.x;
-    float cos_theta = sqrt(Xi.y);
+    float cos_theta_sq = Xi.y;
+    float cos_theta = sqrt(cos_theta_sq);
     float sin_theta = sqrt(1 - Xi.y);
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
+}
+
+
+vec3 sample_hemisphere(vec2 Xi)
+{
+    float phi = TWO_PI * Xi.x;
+    float cos_theta_sq = Xi.y;
+    float cos_theta = sqrt(cos_theta_sq);
+    float sin_theta = sqrt(1 - Xi.y);
+    return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
+}
+
+vec3 tangent_to_world(vec3 t, vec3 n) 
+{
+    vec3 tangent, binormal;
+    find_arbitrary_tangent(n, tangent, binormal);
+    return normalize(t.z * n + t.y * tangent + t.x * binormal);
 }

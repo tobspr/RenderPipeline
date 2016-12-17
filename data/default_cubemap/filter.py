@@ -27,11 +27,21 @@ THE SOFTWARE.
 from __future__ import print_function, division
 
 import os
+import sys
+import random
 import shutil
-from os.path import dirname, realpath
+from os.path import dirname, realpath, join
+
 from panda3d.core import *
 from direct.stdpy.file import isdir, isfile, join
 from direct.showbase.ShowBase import ShowBase
+
+BASE_PATH = realpath(dirname(__file__))
+sys.path.insert(0, join(BASE_PATH, "..", ".."))
+
+
+from rplibs.progressbar import FileTransferSpeed, ETA, ProgressBar, Percentage
+from rplibs.progressbar import Bar
 
 class Application(ShowBase):
     def __init__(self):
@@ -42,63 +52,77 @@ class Application(ShowBase):
             gl-coordinate-system default
             notify-level-display error
             print-pipe-types #f
+            gl-finish #t
+            gl-debug #t
         """)
 
         ShowBase.__init__(self)
 
-        base_path = realpath(dirname(__file__))
-        os.chdir(base_path)
-        filter_dir = join(base_path, "tmp/")
-        if isdir(filter_dir):
-            shutil.rmtree(filter_dir)
-        os.makedirs(filter_dir)
-
-        source_path = join(base_path, "source")
+        os.chdir(BASE_PATH)
+        
+        source_path = join(BASE_PATH, "source")
         extension = ".jpg"
         if isfile(join(source_path, "1.png")):
             extension = ".png"
 
-        cubemap = self.loader.loadCubeMap(
-            Filename.from_os_specific(join(source_path, "#" + extension)))
+        # cubemap = self.loader.loadCubeMap(
+        #     Filename.from_os_specific(join(source_path, "#" + extension)))
+        cubemap = self.loader.load_texture("source1/envmap.hdr")
         mipmap, size = -1, 1024
 
-        cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
+        # cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
+        cshader = Shader.load_compute(Shader.SL_GLSL, "filter_spherical.compute.glsl")
 
-        while size > 1:
-            size = size // 2
+        dest_cubemap = Texture("Dest")
+        dest_cubemap.setup_cube_map(size, Texture.T_float, Texture.F_rgba16)
+        dest_cubemap.set_minfilter(Texture.FT_linear_mipmap_linear)
+        dest_cubemap.set_magfilter(Texture.FT_linear)
+        dest_cubemap.set_clear_color(Vec4(0))
+        dest_cubemap.clear_image()
+
+        random.seed(123)
+
+        for i in range(3):
+            self.taskMgr.step()
+
+        workload = []
+
+        while size >= 1:
             mipmap += 1
-            print("Filtering mipmap", mipmap)
-
-            dest_cubemap = Texture("Dest")
-            dest_cubemap.setup_cube_map(size, Texture.T_float, Texture.F_rgba16)
+            passes = 32 + max(0, mipmap - 1) * 48
+            passes = 10
             node = NodePath("")
 
             for i in range(6):
                 node.set_shader(cshader)
                 node.set_shader_input("SourceTex", cubemap)
-                node.set_shader_input("DestTex", dest_cubemap)
+                node.set_shader_input("DestTex", dest_cubemap, False, True, -1, mipmap, i)
                 node.set_shader_input("currentSize", size)
                 node.set_shader_input("currentMip", mipmap)
                 node.set_shader_input("currentFace", i)
-                attr = node.get_attrib(ShaderAttrib)
-                self.graphicsEngine.dispatch_compute(
-                    ( (size + 15) // 16, (size+15) // 16, 1), attr, self.win.gsg)
+                node.set_shader_input("weight", 1.0 / passes)
+                for n in range(passes):
+                    node.set_shader_input("seed", random.random())
+                    attr = node.get_attrib(ShaderAttrib)
+                    workload.append((((size + 15) // 16, (size+15) // 16, 1), attr))
+                    
+            size = size // 2
 
-            print(" Extracting data ..")
-
-            self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.gsg)
-
-            print(" Writing data ..")
-            dest_cubemap.write(join(filter_dir, "{}-#.png".format(mipmap)), 0, 0, True, False)
-
-
-        print("Reading in data back in ..")
-        tex = self.loader.loadCubeMap(Filename.from_os_specific(join(base_path, "tmp/#-#.png")), readMipmaps="True")
+        widgets = ['Filtering: ', Bar(), Percentage(), '   ', ETA()]
+        progressbar = ProgressBar(widgets=widgets, maxval=len(workload) - 1).start()
+        for i, (wg_size, attr) in enumerate(workload):
+            self.graphicsEngine.dispatch_compute(wg_size, attr, self.win.gsg)        
+            progressbar.update(i)
+        progressbar.finish()
 
         print("Writing txo ..")
-        tex.write("cubemap.txo.pz")
 
-        shutil.rmtree(join(base_path, "tmp"))
+        self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.gsg)
+        dest_cubemap.write("cubemap.txo.pz")
 
+        # For debugging
+        dest_cubemap.write("out/cubemap-#-#.png", 0, 0, True, True)
+
+        print("Done.")
 
 Application()

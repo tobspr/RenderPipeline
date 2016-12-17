@@ -32,6 +32,7 @@ THE SOFTWARE.
 from __future__ import print_function
 
 import sys
+import time
 
 # Load and init colorama, used to color the output
 from rplibs.colorama import init as init_colorama
@@ -48,47 +49,55 @@ class RPObject(object):
 
     _OUTPUT_LEVEL = 0
     _OUTPUT_LEVELS = ["debug", "warning", "error", "fatal"]
+    _STARTUP_TIME = time.time()
 
     @classmethod
     def set_output_level(cls, level):
         """ Sets the output level, messages with a level below will not be
         printed. E.g. if you set the output level to "error", only error and
         fatal messages will be shown.  """
-        assert level in RPObject._OUTPUT_LEVELS
-        RPObject._OUTPUT_LEVEL = RPObject._OUTPUT_LEVELS.index(level)
+        assert level in cls._OUTPUT_LEVELS
+        cls._OUTPUT_LEVEL = cls._OUTPUT_LEVELS.index(level)
 
-    @staticmethod
-    def global_debug(context, *args, **kwargs):
+    @classmethod
+    def global_debug(cls, context, *args, **kwargs):
         """ This method can be used from a static context to print a debug
         message. The first argument should be the name of the object / context,
         all other arguments should be the message. """
-        if RPObject._OUTPUT_LEVEL > 0:
+        if cls._OUTPUT_LEVEL > 0:
             return
-        print(kwargs.get("color", Fore.GREEN) + "[>] " +
-              context.ljust(25) + " " + Style.RESET_ALL + Fore.WHITE +
+        print(cls._time_prefix() + kwargs.get("color", Fore.GREEN) +
+              context.ljust(20) + " " + Style.RESET_ALL + Fore.WHITE +
               ' '.join([str(i) for i in args]), Fore.RESET + Style.RESET_ALL)
 
-    @staticmethod
-    def global_warn(context, *args):
+    @classmethod
+    def global_warn(cls, context, *args):
         """ This method can be used from a static context to print a warning.
         The first argument should be the name of the object / context, all
         other arguments should be the message. """
-        if RPObject._OUTPUT_LEVEL > 1:
+        if cls._OUTPUT_LEVEL > 1:
             return
-        print(Fore.YELLOW + Style.BRIGHT + "[!] " + context.ljust(25) +
+        print(cls._time_prefix() + Fore.YELLOW + Style.BRIGHT + context.ljust(20) +
               Fore.YELLOW + Style.BRIGHT + " " + ' '.join([str(i) for i in args]) +
               Fore.RESET + Style.RESET_ALL)
 
-    @staticmethod
-    def global_error(context, *args):
+    @classmethod
+    def global_error(cls, context, *args):
         """ This method can be used from a static context to print an error.
         The first argument should be the name of the object / context, all
         other arguments should be the message. """
-        if RPObject._OUTPUT_LEVEL > 2:
+        if cls._OUTPUT_LEVEL > 2:
             return
-        print(Fore.RED + Style.BRIGHT + "\n[!!!] " +
-              context.ljust(23) + " " + ' '.join([str(i) for i in args]) +
+        print(cls._time_prefix() + Fore.RED + Style.BRIGHT + "\n " +
+              context.ljust(18) + " " + ' '.join([str(i) for i in args]) +
               "\n" + Fore.RESET + Style.RESET_ALL)
+
+    @classmethod
+    def _time_prefix(cls):
+        """ Returns the log time prefix """
+        ms = int((time.time() - cls._STARTUP_TIME) * 1000.0)
+        return Fore.MAGENTA + "[{:5}] ".format(ms)
+
 
     def __init__(self, name=None):
         """ Initiates the RPObject with a given name. The name should be

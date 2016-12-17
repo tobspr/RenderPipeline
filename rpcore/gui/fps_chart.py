@@ -25,7 +25,9 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import ComputeNode, Vec4, Vec3, PTAInt, PTAFloat
+import time
+
+from panda3d.core import ComputeNode, Vec4, Vec3, PTAInt, PTALVecBase4f, PTAFloat
 
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
@@ -46,21 +48,22 @@ class FPSChart(RPObject):
         self._pipeline = pipeline
         self._parent = parent
         self._node = self._parent.attach_new_node("FPSChartNode")
+        self._last_unit_switch = 0
         self._create_components()
 
     def _create_components(self):
         """ Internal method to init the widgets components """
 
         # Create the buffer which stores the last FPS values
-        self._storage_buffer = Image.create_buffer("FPSValues", 250, "R16")
+        self._storage_buffer = Image.create_buffer("FPSValues", 250, "RGBA16")
         self._storage_buffer.set_clear_color(Vec4(0))
         self._storage_buffer.clear_image()
 
         self._store_index = PTAInt.empty_array(1)
         self._store_index[0] = 0
 
-        self._current_ftime = PTAFloat.empty_array(1)
-        self._current_ftime[0] = 16.0
+        self._current_data = PTALVecBase4f.empty_array(1)
+        self._current_data[0] = Vec4(16.0, 0, 0, 0)
 
         self._chart_ms_max = PTAFloat.empty_array(1)
         self._chart_ms_max[0] = 40
@@ -103,7 +106,7 @@ class FPSChart(RPObject):
         self._update_shader_np.set_shader(self._ushader)
         self._update_shader_np.set_shader_input("DestTex", self._storage_buffer)
         self._update_shader_np.set_shader_input("index", self._store_index)
-        self._update_shader_np.set_shader_input("currentData", self._current_ftime)
+        self._update_shader_np.set_shader_input("currentData", self._current_data)
 
         Globals.base.addTask(self._update, "UpdateFPSChart", sort=-50)
 
@@ -112,20 +115,35 @@ class FPSChart(RPObject):
     def _update(self, task):
         """ Updates the widget """
         self._store_index[0] = (self._store_index[0] + 1) % 250
-        self._current_ftime[0] = Globals.clock.get_dt() * 1000.0
 
-        avg_fps = Globals.clock.get_average_frame_rate()
-        if avg_fps > 122:
-            self._chart_ms_max[0] = 10.0
-        elif avg_fps > 62:
-            self._chart_ms_max[0] = 20.0
-        elif avg_fps > 32:
-            self._chart_ms_max[0] = 40.0
-        elif avg_fps > 15:
-            self._chart_ms_max[0] = 70.0
-        else:
-            self._chart_ms_max[0] = 200.0
+        data = Vec4(0)
+        data.x = Globals.clock.get_dt() * 1000.0
+        data.y = 1000.0 / Globals.clock.get_average_frame_rate()
+        data.z = Globals.clock.get_max_frame_duration() * 1000.0
 
-        self._display_txt.set_text(str(int(self._chart_ms_max[0])) + " ms")
+        self._current_data[0] = data
+
+        # Consider a unit switch every 5 seconds, to avoid flickering
+        if time.time() - self._last_unit_switch > 2.0:
+            avg_fps = Globals.clock.get_average_frame_rate()
+            avg_ms = 1000.0 / avg_fps
+
+            # Select the next unit so that the average ms is in the center
+            max_ms = avg_ms * 2
+            round_interval = 2
+            if max_ms < 10:
+                round_interval = 2
+            elif max_ms < 100:
+                round_interval = 10
+            elif max_ms < 1000:
+                round_interval = 100
+            else:
+                round_interval = 1000
+            
+            max_ms += round_interval - max_ms % round_interval
+            self._chart_ms_max[0] = max_ms
+            self._last_unit_switch = time.time()
+
+            self._display_txt.set_text(str(int(self._chart_ms_max[0])) + " ms")
 
         return task.cont

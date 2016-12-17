@@ -5,7 +5,8 @@
 
 enabled:
     # - ao
-    - smaa
+    # - smaa
+    # - temporal_aa
     # - bloom
     # - clouds
     # - color_correction
@@ -19,7 +20,6 @@ enabled:
     # - skin_shading
     # - sky_ao
     # - ssr
-    # - temporal_aa
     # - volumetrics
     # - vxgi
 
@@ -29,17 +29,17 @@ overrides:
         blur_quality: LOW
         occlusion_strength: 2.5
         border_fade: 0.05
-        clip_length: 4
+        clip_length: 16
         max_resolve_dist: 0.15
         enable_small_scale_ao: True
         sc_occlusion_strength: 0.5
         sc_occlusion_range: 7.5
         sc_occlusion_max_dist: 0.25
-        technique: UE4AO
-        ssao_sample_radius: 50.0
-        ssao_sequence: halton_3D_16
+        technique: SSAO
+        ssao_sample_radius: 67.06999
+        ssao_sequence: halton_3D_32
         ssao_bias: 0.0333
-        ssao_max_distance: 4.0
+        ssao_max_distance: 6.71053
         hbao_sample_radius: 100.0
         hbao_ray_count: 4
         hbao_ray_steps: 3
@@ -194,7 +194,7 @@ overrides:
         jitter_pattern: halton16
         history_length: 16
         jitter_amount: 1.0
-        post_sharpen_amount: 1.0
+        post_sharpen_amount: 0.48
 
     volumetrics:
         enable_volumetric_shadows: True

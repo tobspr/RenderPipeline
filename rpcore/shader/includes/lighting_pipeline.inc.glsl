@@ -27,8 +27,7 @@
 #pragma once
 
 #pragma include "includes/material.inc.glsl"
-#pragma include "includes/light_culling.inc.glsl"
-#pragma include "includes/lights.inc.glsl"
+#pragma include "includes/pbr_lighting.inc.glsl"
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"
@@ -49,7 +48,10 @@ uniform sampler2D ShadowAtlas;
 uniform sampler2DShadow ShadowAtlasPCF;
 #endif
 
-int get_pointlight_source_offs(vec3 direction) {
+// Sphere lights only store the index of their first shadow source,
+// but they have 6 in total. This method finds the index offset of the
+// shadow source, depending on the direction
+int get_spherelight_shadow_source_offset(vec3 direction) {
     vec3 abs_dir = abs(direction);
     float max_comp = max3(abs_dir.x, abs_dir.y, abs_dir.z);
     if (abs_dir.x >= max_comp - 1e-5) return direction.x >= 0.0 ? 0 : 1;
@@ -58,25 +60,27 @@ int get_pointlight_source_offs(vec3 direction) {
 }
 
 // Processes a spot light
+/*
 vec3 process_spotlight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
     const vec3 transmittance = vec3(1); // <-- TODO
 
     // Get the lights data
     int ies_profile = get_ies_profile(light_data);
     vec3 position = get_light_position(light_data);
-    float radius = get_max_cull_distance(light_data);
+    float max_cull_dist = get_max_cull_distance(light_data);
     float fov = get_spotlight_fov(light_data);
     vec3 direction = get_spotlight_direction(light_data);
     vec3 l = position - m.position;
     vec3 l_norm = normalize(l);
 
-    float attenuation = get_spotlight_attenuation(
-        l_norm, direction, fov, radius, dot(l, l), ies_profile);
+    float attenuation = get_spotlight_attenuation(l_norm, direction, fov, dot(l, l), ies_profile);
 
     // For spotlights, the specular term depends on the attenuation, for the reason
     // that the light emitter is not visible from all sides.
     // approximation
-    vec2 energy = vec2(0.02, 0.01 * attenuation);
+    vec2 energy = vec2(1.0, 0.7 * attenuation);
+    
+    energy *= light_clip_fade(dot(l, l), max_cull_dist);
 
     // Compute the lights influence
     return apply_light(
@@ -94,32 +98,27 @@ vec3 process_spherelight(Material m, LightData light_data, vec3 view_vector, flo
     vec3 position = get_light_position(light_data);
     int ies_profile = get_ies_profile(light_data);
     vec3 l = position - m.position;
-    // float l_len_square = length_squared(l);
+    vec3 l_orig = l;
 
-    // float dist_sq = l_len_square;
-    vec3 l_diff = l;
-
-    // Spherical area light
-    // if (inner_radius > 0.02) {
-    // l_diff = get_spherical_area_light_horizon(l, m.normal, inner_radius);
-    // energy = get_spherical_area_light_energy(m.roughness, inner_radius, dist_sq);
-    // dist_sq = max(0.01 * 0.01, square(sqrt(l_len_square) - inner_radius));
-    // clearcoat_energy = get_spherical_area_light_energy(CLEARCOAT_ROUGHNESS, inner_radius, dist_sq);
-    // }
+    vec3 l_diff = get_spherical_area_light_horizon(l, m.normal, sphere_radius);
 
 
     float dist = length(l); 
-    // dist_sq *= dist_sq;
 
     vec2 energy = get_spherelight_energy(m.roughness, sphere_radius, dist);
     vec2 clearcoat_energy = energy;
 
-    // l = get_spherical_area_light_vector(m.normal, l, view_vector, max(1.0, sphere_radius));
-    l = get_spherical_area_light_vector(m.normal, l, view_vector, sphere_radius);
+    if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
+        clearcoat_energy = get_spherelight_energy(CLEARCOAT_ROUGHNESS, sphere_radius, dist);
+    }
+
+    l = get_spherical_area_light_vector(m.normal, l, view_vector, sphere_radius); // XXX
     
-    // Get the point light attenuation
-    // float attenuation = attenuation_curve(dist_sq, radius) * get_ies_factor(-l, ies_profile);
-    float attenuation = attenuation_curve(dist * dist, max_dist); // * get_ies_factor(-l, ies_profile);
+    float attenuation = 1;
+
+    float clip = light_clip_fade(dot(l_orig, l_orig), max_dist);
+    energy *= clip;
+    clearcoat_energy *= clip;
 
     // Compute the lights influence
     return apply_light(m, view_vector, normalize(l), get_light_color(light_data),
@@ -144,69 +143,94 @@ float rectangle_solid_angle(vec3 world_pos, vec3 p0, vec3 p1, vec3 p2, vec3 p3)
     return g0 + g1 + g2 + g3 - 2 * M_PI;
 }
 
+vec3 clamp_plane_point(vec3 plane_pos, vec3 point_on_plane, vec3 up_vector, vec3 right_vector) {    
+    vec3 local_vec = point_on_plane - plane_pos; // point on plane
+    float u = dot(right_vector, local_vec) / square(length(right_vector));
+    float v = dot(up_vector, local_vec) / square(length(up_vector));
+
+    float clamped_u = clamp(u, -1.0, 1.0);
+    float clamped_v = clamp(v, -1.0, 1.0);
+
+    vec3 intersected_point = plane_pos + clamped_u * right_vector + clamped_v * up_vector;
+    return intersected_point;
+}
+
+vec3 closest_point_on_rect(vec3 ray_start, vec3 ray_dir, vec3 plane_pos, vec3 up_vector, vec3 right_vector) {
+    vec3 plane_normal = cross(up_vector, right_vector);
+    float rdn = dot(ray_dir, plane_normal);
+    float d = dot(plane_pos - ray_start, plane_normal) / rdn;
+
+    vec3 plane_point = ray_start + d * ray_dir;
+    return clamp_plane_point(plane_pos, plane_point, up_vector, right_vector);
+}
+
+
 vec3 process_rectanglelight(Material m, LightData light_data, vec3 view_vector, float shadow_factor) {
     
     vec3 up_vector = get_rectangle_upvector(light_data);
     vec3 right_vector = get_rectangle_rightvector(light_data);
     vec3 light_pos = get_light_position(light_data);
+    float max_dist = get_max_cull_distance(light_data);
 
-    vec3 l_orig = m.position - light_pos;
-    vec3 plane_normal = cross(up_vector, right_vector);
+    vec3 l_orig = light_pos - m.position;
+    vec3 plane_normal = normalize(cross(up_vector, right_vector));
 
-    if (dot(l_orig, plane_normal) > 0) {
+    if (dot(l_orig, -plane_normal) > 0) {
         vec3 p0 = light_pos + right_vector + up_vector;
         vec3 p1 = light_pos + right_vector - up_vector;
         vec3 p2 = light_pos - right_vector - up_vector;
         vec3 p3 = light_pos - right_vector + up_vector;
 
         float solid_angle = rectangle_solid_angle(m.position, p0, p1, p2, p3);
-        float illuminance = solid_angle * 0.2 * (
+        float illuminance = max(0, solid_angle * 0.2 * (
             saturate(dot(normalize(p0 - m.position), m.normal))  +
             saturate(dot(normalize(p1 - m.position), m.normal)) +
             saturate(dot(normalize(p2 - m.position), m.normal)) +
             saturate(dot(normalize(p3 - m.position), m.normal)) +
-            saturate(dot(normalize(light_pos - m.position), m.normal)));
+            saturate(dot(normalize(light_pos - m.position), m.normal))));
 
+        // Find specular representative point
         vec3 ray_dir = normalize(reflect(-view_vector, m.normal));
-
-        float d = dot(light_pos - m.position, plane_normal) / dot(ray_dir, plane_normal);
-        vec3 plane_point = m.position + d * ray_dir;
-
-        vec3 local_vec = plane_point - light_pos; // point on plane
-
-        float u = dot(right_vector, local_vec) / length(right_vector);
-        float v = dot(up_vector, local_vec) / length(up_vector);
-
-        u = clamp(u, -1.0, 1.0);
-        v = clamp(v, -1.0, 1.0);
-
-        vec3 representative_point = light_pos + u * right_vector + v * up_vector;
+        vec3 representative_point = closest_point_on_rect(m.position, ray_dir, light_pos, up_vector, right_vector);
         vec3 l = representative_point - m.position;
+        vec3 l_diff = l_orig;
 
-        float attenuation = illuminance;
+        // float attenuation = 1.0 / length_squared(l_diff);
+        float attenuation = 1.0;
         vec3 transmittance = vec3(1);
-        vec2 energy = vec2(0.01, m.roughness * m.roughness * 0.03);
+        // vec2 energy = vec2(0.005, m.roughness * m.roughness * 0.005);
+        vec2 energy = vec2(0.005, m.roughness * m.roughness * 0.03);
+
+        energy.y *= saturate(dot(-ray_dir, plane_normal)); // Not correct, but hides artifacts
+        energy.y *= illuminance;
+
+        // Factor out NxL and remultiply with approx. illuminance
+        if (dot(l_diff, m.normal) < 0)
+            l_diff *= -1;
+        energy.x /= dot(normalize(l_diff), m.normal);
+        energy.x *= 0.26;
+        energy.x *= illuminance;
+
+        
+        energy *= light_clip_fade(dot(l_orig, l_orig), max_dist);
+
         vec2 clearcoat_energy = energy;
-        vec3 l_diff = -l_orig;
+
 
         return apply_light(m, view_vector, normalize(l), get_light_color(light_data),
-            attenuation, shadow_factor, transmittance, energy, clearcoat_energy, normalize(l_diff));
-       
+            attenuation, shadow_factor, transmittance, energy, clearcoat_energy, normalize(l_diff));       
     }
 
     return vec3(0);
-
-
-
 }
 
-
+*/
 
 // Filters a shadow map
 float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: Examine if this is faster
-    if (dot(m.normal, -l) < 0) return 0.0;
+    // if (dot(m.normal, -l) < 0) return 0.0;
 
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
@@ -217,11 +241,10 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float bias_mult = 0.01;
-    const float slope_bias = 0.1 * bias_mult;
+    const float bias_mult = 0.5;
+    const float slope_bias = 0.05 * bias_mult;
     const float normal_bias = 0.01 * bias_mult;
-    const float const_bias = 0.0008 * bias_mult;
-
+    const float const_bias = 0.005 * bias_mult;
 
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 
@@ -327,7 +350,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         // Get shadow factor
         int source_index = get_shadow_source_index(light_data);
         vec3 v2l = normalize(m.position - get_light_position(light_data));
-        source_index += get_pointlight_source_offs(v2l);
+        source_index += get_spherelight_shadow_source_offset(v2l);
 
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);

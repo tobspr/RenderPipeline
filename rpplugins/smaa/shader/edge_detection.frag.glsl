@@ -29,9 +29,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 
 #pragma include "smaa_wrapper.inc.glsl"
-#pragma include "includes/gbuffer.inc.glsl"
 
-uniform GBufferData GBuffer;
 uniform sampler2D ShadedScene;
 uniform sampler2D PredicationTex;
 out vec4 result;

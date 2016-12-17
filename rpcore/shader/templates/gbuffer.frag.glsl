@@ -116,7 +116,7 @@ void main() {
 
     vec3 material_nrm = vOutput.normal;
 
-    #if OPT_NORMAL_MAPPING && !REFERENCE_MODE
+    #if OPT_NORMAL_MAPPING && !REFERENCE_MODE2
         #if DONT_FETCH_DEFAULT_TEXTURES
             // No normal mapping when not using default textures
         #else

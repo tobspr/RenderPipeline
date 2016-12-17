@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="img">
+    <file>color_picker_mask.png</file>
     <file>checked.png</file>
     <file>down-arrow.png</file>
   </qresource>

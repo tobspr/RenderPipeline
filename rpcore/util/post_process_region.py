@@ -68,7 +68,7 @@ class PostProcessRegion(RPObject):
         vdata = GeomVertexData("vertices", vformat, Geom.UH_static)
         vdata.set_num_rows(3)
         vwriter = GeomVertexWriter(vdata, "vertex")
-        multiplier = 5 # XXXX
+        multiplier = 1
         vwriter.add_data3f(-1 * multiplier, 0, -1 * multiplier)
         vwriter.add_data3f(3 * multiplier, 0, -1 * multiplier)
         vwriter.add_data3f(-1 * multiplier, 0, 3 * multiplier)

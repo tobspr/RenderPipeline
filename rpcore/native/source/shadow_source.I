@@ -75,36 +75,6 @@ inline void ShadowSource::set_slot(int slot) {
 }
 
 /**
- * @brief Setups a perspective lens for the source.
- * @details This makes the shadow source behave like a perspective lens. The
- *   parameters are similar to the ones of a PerspectiveLens.
- *
- * @param fov FoV of the lens
- * @param near_plane The near plane of the lens, to avoid artifacts at low distance
- * @param far_plane The far plane of the lens
- * @param pos Position of the lens, in world space
- * @param direction Direction (Orientation) of the lens
- */
-inline void ShadowSource::set_perspective_lens(float fov, float near_plane,
-                                               float far_plane, LVecBase3f pos,
-                                               LVecBase3f direction) {
-    // Construct the transformation matrix
-    LMatrix4f transform_mat = LMatrix4f::translate_mat(-pos);
-
-    // Construct a temporary lens to generate the lens matrix
-    PerspectiveLens temp_lens = PerspectiveLens(fov, fov);
-    temp_lens.set_film_offset(0, 0);
-    temp_lens.set_near_far(near_plane, far_plane);
-    temp_lens.set_view_vector(direction, LVector3::up());
-    set_matrix_lens(transform_mat * temp_lens.get_projection_mat());
-
-    // Set new bounds, approximate with sphere
-    CPT(BoundingHexahedron) hexahedron = DCAST(BoundingHexahedron, temp_lens.make_bounds());
-    LPoint3 center = (hexahedron->get_min() + hexahedron->get_max()) * 0.5f;
-    _bounds = BoundingSphere(pos + center, (hexahedron->get_max() - center).length());
-}
-
-/**
  * @brief Sets a custom matrix for the source.
  * @details This tells the source to use a custom matrix for rendering, just like
  *   the matrix lens. The matrix should include all transformations, rotations and

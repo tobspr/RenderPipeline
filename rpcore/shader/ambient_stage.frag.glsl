@@ -32,7 +32,6 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer2.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
-#pragma include "includes/lights.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
@@ -81,6 +80,12 @@ vec3 compute_bloom_luminance(vec3 bloom_color, float bloom_ec, float current_ev)
     return bloom_color * pow(2, bloom_ev - 3);
 }
 
+vec3 get_default_envmap(vec3 v, float mip) {
+    // return textureLod(DefaultEnvmap, cubemap_yup_to_zup(v), mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+    return textureLod(DefaultEnvmap, v.xzy, mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+}
+
+
 void main() {
     vec2 texcoord = get_texcoord();
     Material m = gbuffer_get_material();
@@ -103,9 +108,8 @@ void main() {
             result = textureLod(ShadedScene, texcoord, 0).xyz + scattering_color;
 
             #if !HAVE_PLUGIN(scattering)
-                result = textureLod(
-                    DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0).xyz *
-                    DEFAULT_ENVMAP_BRIGHTNESS;
+                result = get_default_envmap(view_vector, 0);
+
             #endif
         #else
 
@@ -113,7 +117,7 @@ void main() {
             #if USE_WHITE_ENVIRONMENT
                 result = vec3(DEFAULT_ENVMAP_BRIGHTNESS);
             #else
-                result = textureLod(DefaultEnvmap, view_vector.yxz * vec3(-1, 1, 1), 0).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+                result = get_default_envmap(view_vector, 0);
             #endif
         #endif
 
@@ -153,13 +157,11 @@ void main() {
     float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
 
     // Sample default environment map
-    vec3 ibl_specular = textureLod(DefaultEnvmap,
-        cubemap_yup_to_zup(reflected_dir), env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
+    vec3 ibl_specular = get_default_envmap(reflected_dir, env_mipmap) * sky_ao_factor;
 
     // Get cheap irradiance by sampling low levels of the environment map
     float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
-    vec3 ibl_diffuse = textureLod(DefaultEnvmap, cubemap_yup_to_zup(m.normal),
-        ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS * sky_ao_factor;
+    vec3 ibl_diffuse = get_default_envmap(m.normal, ibl_diffuse_mip) * sky_ao_factor;
 
     // Scattering specific code
     #if HAVE_PLUGIN(scattering)
@@ -229,10 +231,7 @@ void main() {
                 ScatteringIBLSpecular, reflected_dir,
                 get_specular_mipmap(m)).xyz * sky_ao_factor;
         #else
-            vec3 ibl_specular_base = textureLod(
-                DefaultEnvmap, cubemap_yup_to_zup(reflected_dir),
-                get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV)).xyz *
-                    DEFAULT_ENVMAP_BRIGHTNESS;
+            vec3 ibl_specular_base = get_default_envmap(reflected_dir, get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV));
         #endif
 
         #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
@@ -311,7 +310,5 @@ void main() {
         return;
     #endif
 
-
     result = scene_color + ambient + scattering_color;
-
 }

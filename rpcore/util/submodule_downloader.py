@@ -41,47 +41,31 @@ def download_file(url, chunk_size=100 * 1024):
     file_content = None
     progressbar = None
 
-    if sys.version_info.major <= 2:
+    # Import progressbar library
+    from rplibs.progressbar import FileTransferSpeed, ETA, ProgressBar, Percentage
+    from rplibs.progressbar import Bar
+    widgets = ['\tDownloading: ', FileTransferSpeed(), ' ', Bar(), Percentage(), '   ', ETA()]
+    file_content = []
+    bytes_read = 0
 
-        # Import progressbar library
-        from rplibs.progressbar import FileTransferSpeed, ETA, ProgressBar, Percentage
-        from rplibs.progressbar import Bar
-        widgets = ['\tDownloading: ', FileTransferSpeed(), ' ', Bar(), Percentage(), '   ', ETA()]
-        file_content = []
-        bytes_read = 0
+    # Progressively download the file
+    try:
+        usock = urllib.request.urlopen(url)
+        file_size = int(usock.headers.get("Content-Length", 1e10))
+        print("File size is", round(file_size / (1024**2), 2), "MB")
+        progressbar = ProgressBar(widgets=widgets, maxval=file_size).start()
+        while True:
+            data = usock.read(chunk_size)
+            file_content.append(data)
+            bytes_read += len(data)
+            progressbar.update(bytes_read)
+            if not data:
+                break
+        usock.close()
+    except Exception:
+        print("ERROR: Could not fetch", url, "!", file=sys.stderr)
+        raise
 
-        # Progressively download the file
-        try:
-            usock = urllib.request.urlopen(url)
-            file_size = int(usock.headers.get("Content-Length", 1e10))
-            print("File size is", round(file_size / (1024**2), 2), "MB")
-            progressbar = ProgressBar(widgets=widgets, maxval=file_size).start()
-            while True:
-                data = usock.read(chunk_size)
-                file_content.append(data)
-                bytes_read += len(data)
-                progressbar.update(bytes_read)
-                if not data:
-                    break
-            usock.close()
-        except Exception:
-            print("ERROR: Could not fetch", url, "!", file=sys.stderr)
-            raise
-    else:
-        # Don't use progressbar in python 3
-        print("Downloading .. (progressbar disabled due to python 3 build)")
-        try:
-            usock = urllib.request.urlopen(url)
-            file_content = []
-            while True:
-                data = usock.read(chunk_size)
-                file_content.append(data)
-                if not data:
-                    break
-            usock.close()
-        except Exception:
-            print("ERROR: Could not fetch", url, "!", file=sys.stderr)
-            raise
 
     if progressbar:
         progressbar.finish()

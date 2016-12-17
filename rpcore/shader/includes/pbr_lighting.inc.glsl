@@ -24,24 +24,25 @@
  *
  */
 
-#version 430
+#pragma once
 
-#pragma include "render_pipeline_base.inc.glsl"
-#pragma include "includes/gbuffer2.inc.glsl"
-
-uniform sampler2D ShadedScene;
-out vec4 result;
-
+#pragma include "includes/material.inc.glsl"
+#pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/ies_lighting.inc.glsl"
+#pragma include "includes/pbr_reference_lighting.inc.glsl"
 
 
-void main() {
+vec3 process_spotlight(Material m, LightData light, vec3 v, float shadow) {
+    return vec3(0);
+}
 
-    vec2 texcoord = get_texcoord();
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
+    #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
+        return process_spherelight_reference(m, light, v, shadow);
+    #endif
+    return vec3(0);
+}
 
-    vec3 nrm = abs(gbuffer_reconstruct_vs_normal_from_depth(texcoord));
-    float linz = gbuffer_get_linear_depth_32bit(texcoord);
-
-    result.xyz = nrm;
-    result.w = linz / 200.0;
+vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
+    return vec3(0);
 }

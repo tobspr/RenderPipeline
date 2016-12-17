@@ -33,6 +33,7 @@ from panda3d.core import PNMImage, TransformState, MaterialAttrib, TextureAttrib
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.native import SphereLight, SpotLight, RectangleLight
+from rpcore.util.material_api import MaterialAPI
 
 def to_safe_name(name):
     """ Converts a string to a valid filename """
@@ -158,7 +159,7 @@ class MitsubaExporter(RPObject):
         return "<lookat target='{}' origin='{}' up='{}'/>".format(
             vec2xml(fwd + transform.get_pos()), vec2xml(transform.get_pos()), "0, 0, 1")
         
-    def _generate_xml_for_tex(self, tex, start_path):
+    def _generate_xml_for_tex(self, name, tex, start_path, color_scale):
         """ Generates the xml string for a given texture """
         output = []
         
@@ -175,12 +176,22 @@ class MitsubaExporter(RPObject):
 
         fullpath = tex.get_fullpath().to_os_specific()
         relpath = os.path.relpath(fullpath, start=start_path).replace("\\", "/")
+
+        if not relpath.endswith(".png") and not relpath.endswith(".jpg") and not relpath.endswith(".jpeg"):
+            self.warn("Skipping unsupported texture", relpath)
+            return ["<rgb name='" + name + "' value='1, 1, 1' />"]
+
         add = output.append
-        add("<texture name='diffuseReflectance' type='bitmap'>")
-        add("    <string name='filename' value='{}' />".format(relpath))
-        add("    <string name='filterType' value='{}' />".format(texfilter))
-        add("    <string name='wrapModeU' value='{}' />".format(get_wrap(tex.get_wrap_u())))
-        add("    <string name='wrapModeV' value='{}' />".format(get_wrap(tex.get_wrap_v())))
+
+
+        add("<texture name='" +  name + "' type='scale'>")
+        add("  <texture name='" + name + "' type='bitmap'>")
+        add("      <string name='filename' value='{}' />".format(relpath))
+        add("      <string name='filterType' value='{}' />".format(texfilter))
+        add("      <string name='wrapModeU' value='{}' />".format(get_wrap(tex.get_wrap_u())))
+        add("      <string name='wrapModeV' value='{}' />".format(get_wrap(tex.get_wrap_v())))
+        add("  </texture>")
+        add("  <rgb name='scale' value='{}' />".format(color2xml(color_scale)))
         add("</texture>")
         return output
 
@@ -277,36 +288,56 @@ class MitsubaExporter(RPObject):
             diff_tex = texture_attrib.get_on_texture(texture_attrib.get_on_stage(0))
             rough_tex = texture_attrib.get_on_texture(texture_attrib.get_on_stage(3))
 
+
+            shading_model = MaterialAPI.get_shading_model(material)
             metallic = material.get_metallic() > 0.5
 
             add("<shape type='obj'>")
             add("  <string name='filename' value='{}' />".format(obj_filename))
 
-            if metallic:
-                add("  <bsdf type='roughconductor'>")
-                add("    <string name='material' value='Ag' />")
+            if shading_model == MaterialAPI.SM_CLEARCOAT: 
+                add("<bsdf type='roughcoating'>")
+                add("    <string name='distribution' value='ggx' />")
+                add("    <float name='alpha' value='0.0036' />")
+                add("    <float name='thickness' value='1.0' />")
+                add("    <float name='intIOR' value='1.51' />")
+                add("    ")
+
+            # Use a diffuse only bsdf for validation
+            use_diffuse_bsdf = False
+
+            if not use_diffuse_bsdf:
+                if metallic:
+                    add("  <bsdf type='roughconductor'>")
+                    add("    <string name='material' value='Ag' />")
+                    add("    <boolean name='sampleVisible' value='false' />")
+                else:
+                    add("  <bsdf type='roughplastic'>")
+                    add("    <float name='intIOR' value='{}'/>".format(material.get_refractive_index()))
+
+                add("    <string name='distribution' value='ggx'/>")
+
+                reflectance = "specular" if metallic else "diffuse"
+                
+                output += self._generate_xml_for_tex(reflectance + "Reflectance", diff_tex, path, material.get_base_color())
+                
+                # add("            <texture name='alpha' type='scale'>")
+                # output += self._generate_xml_for_tex(rough_tex, path)
+                # add("                <rgb name='scale' value='{}' />".format(material.get_roughness() ** 2))
+                # add("            </texture>")
+
+                add("    <float name='alpha' value='{}'/>".format(material.get_roughness() ** 2)) # uses disney roughness
+                add("  </bsdf>")
+
             else:
-                add("  <bsdf type='roughplastic'>")
-                add("    <float name='intIOR' value='{}'/>".format(material.get_refractive_index()))
+                add("  <bsdf type='diffuse'>")
+                output += self._generate_xml_for_tex("reflectance", diff_tex, path, material.get_base_color())
+                add("  </bsdf>")
 
-            add("    <string name='distribution' value='ggx'/>")
+            if shading_model == MaterialAPI.SM_CLEARCOAT:
+                add("</bsdf>")
 
-            reflectance = "specular" if metallic else "diffuse"
-            
-            add("    <texture name='{}Reflectance' type='scale'>".format(reflectance))
-            output += self._generate_xml_for_tex(diff_tex, path)
-            add("      <rgb name='scale' value='{}' />".format(vec2xml(material.get_base_color())))
-            add("    </texture>")
-
-            # add("            <texture name='alpha' type='scale'>")
-            # output += self._generate_xml_for_tex(rough_tex, path)
-            # add("                <rgb name='scale' value='{}' />".format(material.get_roughness() ** 2))
-            # add("            </texture>")
-
-            add("    <float name='alpha' value='{}'/>".format(material.get_roughness() ** 2)) # uses disney roughness
-            add("  </bsdf>")
             add("</shape>")
-
         add("</scene>")
         return output
 

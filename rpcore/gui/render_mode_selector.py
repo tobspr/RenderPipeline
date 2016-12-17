@@ -67,7 +67,7 @@ class RenderModeSelector(DraggableWindow):
         debugger_content.set_z(-20)
         debugger_content.set_x(20)
 
-        render_modes = [("Default", "", False, "", False)]
+        render_modes = [("Default", "", False, "", False, False)]
 
         # Read modes from configuration
         for mode in config["render_modes"]:
@@ -75,13 +75,14 @@ class RenderModeSelector(DraggableWindow):
             data.append(mode.get("cxx_only", False))
             data.append(mode.get("requires", ""))
             data.append(mode.get("special", False))
+            data.append(mode.get("reference_only", False))
             render_modes.append(data)
 
         collection = CheckboxCollection()
 
         max_column_height = 9
 
-        for idx, (mode, mode_id, requires_cxx, requires_plugin, special) in enumerate(render_modes):
+        for idx, (mode, mode_id, requires_cxx, requires_plugin, special, reference_only) in enumerate(render_modes):
             offs_y = (idx % max_column_height) * 24 + 35
             offs_x = (idx // max_column_height) * 220
             enabled = True
@@ -91,6 +92,9 @@ class RenderModeSelector(DraggableWindow):
             if requires_plugin:
                 if not self._pipeline.plugin_mgr.is_plugin_enabled(requires_plugin):
                     enabled = False
+
+            if reference_only and not self._pipeline.settings["pipeline.reference_mode"]:
+                enabled = False
 
             box = LabeledCheckbox(
                 parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),

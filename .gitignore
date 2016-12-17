@@ -23,6 +23,7 @@ temp/
 models/
 data/film_grain/*.png
 data/default_cubemap/filtered/
+data/default_cubemap/out/
 _DEV
 toolkit/pathtracing_reference/mitsuba/
 toolkit/pathtracing_reference/scene*.png

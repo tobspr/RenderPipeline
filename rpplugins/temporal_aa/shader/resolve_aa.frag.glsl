@@ -82,14 +82,14 @@ void main() {
     // Find velocity of closest pixel to get better AA for moving objects
     const int sample_range = 2;
 
-    float depth = get_depth_at(coord);
+    float depth = gbuffer_get_depth(coord);
     ivec2 sample_offset = ivec2(0, 0);
     float closest_depth = depth;
 
     for (int x = 0; x < 2; ++x) {
         for (int y = 0; y < 2; ++y) {
             ivec2 offs = ivec2(x * 2 - 1, y * 2 - 1) * sample_range;
-            float cmp_depth = get_depth_at(coord + offs);
+            float cmp_depth = gbuffer_get_depth(coord + offs);
             if (cmp_depth < closest_depth) {
                 closest_depth = cmp_depth;
                 sample_offset = offs;

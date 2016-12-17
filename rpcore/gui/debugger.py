@@ -69,6 +69,7 @@ class Debugger(RPObject):
         self.analyzer = SceneGraphAnalyzer()
 
         self.fullscreen_node = Globals.base.pixel2d.attach_new_node("rp_debugger")
+        self.window_node = self.fullscreen_node.attach_new_node("Windows")
         self.create_components()
         self.init_keybindings()
 
@@ -93,7 +94,7 @@ class Debugger(RPObject):
         self.create_hints()
 
         self.pipeline_logo = Sprite(
-            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=0, y=30,
             parent=self.fullscreen_node)
 
         if self.advanced_info:
@@ -101,13 +102,13 @@ class Debugger(RPObject):
             self.exposure_widget = ExposureWidget(self.pipeline, self.exposure_node)
 
         self.fps_node = self.fullscreen_node.attach_new_node("FPSChart")
-        self.fps_node.set_pos(Vec3(21, 1, -108 - 40))
+        self.fps_node.set_pos(Vec3(21, 1, -100))
         self.fps_widget = FPSChart(self.pipeline, self.fps_node)
 
         self.pixel_widget = PixelInspector(self.pipeline)
-        self.buffer_viewer = BufferViewer(self.pipeline, self.fullscreen_node)
-        self.pipe_viewer = PipeViewer(self.pipeline, self.fullscreen_node)
-        self.rm_selector = RenderModeSelector(self.pipeline, self.fullscreen_node)
+        self.buffer_viewer = BufferViewer(self.pipeline, self.window_node)
+        self.pipe_viewer = PipeViewer(self.pipeline, self.window_node)
+        self.rm_selector = RenderModeSelector(self.pipeline, self.window_node)
         self.error_msg_handler = ErrorMessageDisplay()
 
         self.handle_window_resize()
@@ -177,11 +178,13 @@ class Debugger(RPObject):
         screen. """
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
-        self.gui_scale = max(0.65, min(1.0, Globals.native_resolution.x / 1920.0))
-        self.fullscreen_node.set_scale(self.gui_scale)
+        # XXX: Disabled. Looks weird
+        
+        self.gui_scale = max(0.3, min(1.0, Globals.native_resolution.x / 1920.0))
+        self.window_node.set_scale(self.gui_scale)
 
-        effective_w = float((Globals.native_resolution.x)) / self.gui_scale
-        effective_h = float((Globals.native_resolution.y)) / self.gui_scale
+        effective_w = float((Globals.native_resolution.x))
+        effective_h = float((Globals.native_resolution.y))
 
         if self.advanced_info:
             self.exposure_node.set_pos(effective_w - 200, 1, -effective_h + 120)
@@ -215,7 +218,7 @@ class Debugger(RPObject):
         Globals.base.accept("m", self.start_material_editor)
         Globals.base.accept("p", self.start_plugin_editor)
         Globals.base.accept("t", self.start_daytime_editor)
-        Globals.base.accept("m", self.export_scene)
+        Globals.base.accept("k", self.export_scene)
 
     def _show_and_launch(self, method):
         if Globals.base.render2d.is_hidden():

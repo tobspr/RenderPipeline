@@ -132,7 +132,7 @@ class StageManager(RPObject):
                 if pipe_name not in self.previous_pipes:
                     pipe_tex = Image.create_2d("Prev-" + pipe_name, 0, 0, pipe_type)
                     pipe_tex.clear_image()
-                    self.debug("Storing history for pipe", pipe_name, "with format", pipe_type, "and dimensions")
+                    self.debug("Prev", pipe_name, "[" + pipe_type + "], size=", pipe_resolution)
                     self.previous_pipes[pipe_name] = (pipe_tex, pipe_resolution)
                 stage.set_shader_input("Previous_" + pipe_name, self.previous_pipes[pipe_name][0])
                 continue
