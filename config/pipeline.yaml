@@ -59,13 +59,13 @@ lighting:
     # distance, no lights are rendered anymore. If you choose a lower
     # distance, this *can* positively impact performance, but you should not
     # set it too low, to avoid getting artifacts.
-    culling_max_distance: 1000.0
+    culling_max_distance: 500.0
 
     # Controls the maximum amount of lights for each cell. If this value
     # is set too low, you might get artifacts when having many lights.
     # In general, try to set this value as low as possible without getting
     # artifacts
-    max_lights_per_cell: 256
+    max_lights_per_cell: 64
 
 shadows:
 

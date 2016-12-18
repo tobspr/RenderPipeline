@@ -41,11 +41,10 @@ void main() {
         vec3 prev = saturate(textureLod(Previous_PostReferenceStage, texcoord, 0).xyz);
         vec3 curr = saturate(textureLod(ShadedScene, texcoord, 0).xyz);
 
-        result = mix(prev, curr, 1.0 / 32.0);
+        result = mix(prev, curr, 1.0 / 8.0);
         if (cameraMoved)
             result = curr;
-        // result = curr;
-        // result = prev * 0.99;
+
     #else
         result = textureLod(ShadedScene, texcoord, 0).xyz;
     #endif

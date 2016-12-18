@@ -30,7 +30,7 @@
 
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
-#pragma include "includes/lights.inc.glsl"
+// #pragma include "includes/lights.inc.glsl"
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 

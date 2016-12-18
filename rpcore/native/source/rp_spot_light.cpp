@@ -51,7 +51,7 @@ RPSpotLight::RPSpotLight() : RPLight(RPLight::LT_spot_light) {
 void RPSpotLight::write_to_command(GPUCommand &cmd) {
     RPLight::write_to_command(cmd);
 
-    // Encode FOV as cos(fov)
+    // Encode FOV as cos(0.5 * fov)
     cmd.push_float(cos(_fov / 360.0 * M_PI));
     cmd.push_vec3(_direction);
 }
@@ -81,5 +81,17 @@ void RPSpotLight::update_shadow_sources() {
  * @brief See RPLight::get_conversion_factor
  */
 float RPSpotLight::get_conversion_factor(IntensityType from, IntensityType to) const {
-    return 1.0; // XXX
+    if (from == to) 
+        return 1.0;
+
+    float cos_fov_half = cos(_fov / 360.0 * M_PI);
+    float divisor = 2.0 * M_PI * (1 - cos_fov_half);
+    
+    if (from == IT_luminance && to == IT_lumens)
+        return divisor;
+    else if(from == IT_lumens && to == IT_luminance)
+        return 1.0 / divisor;
+
+    nassertr_always(false, 0.0);
+    return 0.0;
 }

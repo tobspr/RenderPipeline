@@ -87,14 +87,6 @@ float brdf_disney_diffuse(float NxV, float NxL, float LxH, float roughness) {
     return light_scatter * view_scatter * energy_factor / M_PI;
 }
 
-// Diffuse brdf tuned to match mitsuba
-float brdf_diffuse_tobspr(float NxV, float NxL, float LxH, float roughness) {
-    // return ONE_BY_PI * mix(1.0, NxV, 0.5 + 0.5 * sqrt(roughness));
-    // return ONE_BY_PI * mix(1.0, NxV, 0.5 + 0.5 * sqrt(roughness));
-    return ONE_BY_PI * pow(NxV, 0.5 - 0.4 * roughness);
-    // return ONE_BY_PI;
-}
-
 /* Distribution functions */
 float brdf_distribution_blinn_phong(float NxH, float roughness) {
     float r_sq = roughness * roughness;
@@ -175,20 +167,6 @@ float brdf_visibility_smith_ggx(float NxL, float NxV, float roughness) {
     return 0.5 / (lambda_GGXV + lambda_GGXL) * NxL;
 }
 
-// Tuned to match reference (mitsuba)
-float brdf_visibility_tobspr(float NxL, float NxV, float VxH, float roughness) {
-    float vis = VxH;
-    float roughness_factor = 1 - 0.6 * pow(roughness, 0.25);
-
-    vis *= roughness_factor * roughness_factor * roughness_factor * roughness_factor * roughness_factor;
-    vis *= 1 - pow(1 - NxL, 1.0 + 7 * roughness_factor);
-    vis *= 1 - pow(1 - NxV, 1.0 + 7 * roughness_factor);
-
-    return vis;
-
-}
-
-
 /* Fresnel functions */
 
 float ior_to_specular(float ior) {
@@ -265,47 +243,6 @@ vec3 brdf_fresnel_conductor_approx(float cos_theta, vec3 n, vec3 k) {
     vec3 term0 = square(n - 1.0) + 4 * n * pow(1 - cos_theta, 5.0) + k_sq;
     vec3 term1 = square(n + 1.0) + k_sq;
     return term0 / term1;
-}
-
-// Diffuse BRDF
-float brdf_diffuse(float NxV, float NxL, float LxH, float VxH, float roughness) {
-
-    // Choose one:
-    // return brdf_lambert();
-    return brdf_diffuse_tobspr(NxV, NxL, LxH, roughness);
-    // return brdf_disney_diffuse(NxV, NxL, LxH, roughness);
-}
-
-
-// Distribution
-float brdf_distribution(float NxH, float roughness)
-{
-    NxH = max(1e-5, NxH);
-    // roughness = max(0.00, roughness); // Fixes precision errors
-
-    // Choose one:
-    // return brdf_distribution_blinn_phong(NxH, roughness);
-    // return brdf_distribution_beckmann(NxH, roughness);
-    // return brdf_distribution_exponential(NxH, roughness);
-    // return brdf_distribution_gaussian(NxH, roughness);
-    // return brdf_distribution_trowbridge_reitz(NxH, roughness);
-    return brdf_distribution_ggx(NxH, roughness);
-}
-
-// Geometric Visibility
-float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughness) {
-
-    // Choose one:
-    // float vis = brdf_visibility_tobspr(NxL, NxV, VxH, roughness);
-    // float vis = brdf_visibility_neumann(NxV, NxL);
-    // float vis = brdf_visibility_implicit(NxV, NxL);
-    float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
-    // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
-    // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
-    // float vis = brdf_visibility_smith(NxL, NxV, roughness) * NxV * NxL;
-
-
-    return vis;
 }
 
 // Fresnel

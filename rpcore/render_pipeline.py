@@ -112,8 +112,9 @@ class RenderPipeline(RPObject):
             self.debug("Reloading shaders ..")
             self.debugger.error_msg_handler.clear_messages()
             self.debugger.set_reload_hint_visible(True)
-            for i in range(2):
-                self._showbase.graphics_engine.render_frame()
+            # for i in range(2):
+            self._showbase.graphics_engine.render_frame()
+
         self.debug("Cleanup states")                
         self.tag_mgr.cleanup_states()
         self.debug("Stage mgr")                
@@ -303,12 +304,12 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.sphere_radius = 0.5
+            rp_light.sphere_radius = 1.0
 
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
-            self.make_light_geometry(rp_light)
+            # self.make_light_geometry(rp_light)
 
         for light in scene.find_all_matches("**/+Spotlight"):
             light_node = light.node()

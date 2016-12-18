@@ -33,7 +33,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/gbuffer.inc.glsl"
 #pragma include "includes/lighting_pipeline.inc.glsl"
-#pragma include "includes/lights.inc.glsl"
+// #pragma include "includes/lights.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/noise.inc.glsl"

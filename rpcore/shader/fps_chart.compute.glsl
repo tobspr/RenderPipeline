@@ -59,23 +59,23 @@ void main() {
     ivec4 ms_pixel = clamp(ivec4(ms_value / maxMs * widget_size.y), ivec4(1), ivec4(widget_size.y - 2));
     ivec4 prev_ms_pixel = clamp(ivec4(prev_ms_value / maxMs * widget_size.y), ivec4(1), ivec4(widget_size.y - 3));
 
-
-
+    // Actual frame time
     if (coord.y >= min(ms_pixel.x, prev_ms_pixel.x) &&
         coord.y <= max(ms_pixel.x, prev_ms_pixel.x)) {
         color = vec4(0, 1, 0, 1);
     }
 
-    if (coord.y >= min(ms_pixel.y, prev_ms_pixel.y) &&
+    // Average frame time
+    if (coord.y >= min(ms_pixel.y, prev_ms_pixel.y) - 1 &&
         coord.y <= max(ms_pixel.y, prev_ms_pixel.y)) {
         color = vec4(0, 0, 1, 1);
     }
 
-    if (coord.y >= min(ms_pixel.z, prev_ms_pixel.z) &&
+    // Maximum frame time (to detect spikes)
+    if (coord.y >= min(ms_pixel.z, prev_ms_pixel.z) - 1 &&
         coord.y <= max(ms_pixel.z, prev_ms_pixel.z)) {
         color = vec4(1, 0, 0, 1);
     }
-
 
     // Axis
     if (coord.x == 0 || coord.y == 0) {

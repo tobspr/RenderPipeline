@@ -251,6 +251,8 @@ bool cull_light(LightData light, Frustum view_frustum) {
     float radius = get_max_cull_distance(light);
 
     // Special case for spot lights, since we can cull them more efficient
+    // FIXME: Broken (see 03-lights)
+    /*
     if (get_light_type(light) == LT_SPOT_LIGHT) {
         Cone cone;
         cone.pos = light_pos;
@@ -266,10 +268,11 @@ bool cull_light(LightData light, Frustum view_frustum) {
 
         float hypotenuse = cone.height / cos_cone_fov; 
 
-        cone.radius = sin_cone_fov * hypotenuse; 
+        cone.radius = sin_cone_fov * hypotenuse;
         return cone_inside_frustum(cone, view_frustum);
     }
-
+    */
+    
     // Fallback for everything
     Sphere sphere;
     sphere.radius = radius;
