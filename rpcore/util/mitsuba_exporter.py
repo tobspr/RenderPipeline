@@ -270,7 +270,35 @@ class MitsubaExporter(RPObject):
                 add("</shape>")
 
             elif isinstance(light, TubeLight):
-                self.warn("TODO: Tube lights in the exporter")
+                # We have to cheat here a bit, and simulate the light by using two spheres
+                # and a cylinder as emitter
+                start_pos = light.pos + light.tube_direction * (light.tube_length * 0.5 - light.tube_radius)
+                end_pos = light.pos - light.tube_direction * (light.tube_length * 0.5 - light.tube_radius)
+                add("<shape type='sphere'>")
+                add("  <point name='center' x='{}' y='{}' z='{}' />".format(*start_pos))
+                add("  <float name='radius' value='{}' />".format(light.tube_radius))
+                add("  <emitter type='area'>")
+                add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
+                add("  </emitter>")
+                add("</shape>")
+
+                add("<shape type='sphere'>")
+                add("  <point name='center' x='{}' y='{}' z='{}' />".format(*end_pos))
+                add("  <float name='radius' value='{}' />".format(light.tube_radius))
+                add("  <emitter type='area'>")
+                add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
+                add("  </emitter>")
+                add("</shape>")
+
+                add("<shape type='cylinder'>")
+                add("  <point name='p0' x='{}' y='{}' z='{}' />".format(*start_pos))
+                add("  <point name='p1' x='{}' y='{}' z='{}' />".format(*end_pos))
+                add("  <float name='radius' value='{}' />".format(light.tube_radius))
+                add("  <emitter type='area'>")
+                add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
+                add("  </emitter>")
+                add("</shape>")
+
 
         self.debug("Exporting materials ..")
         for obj_filename, (state, transform) in self.export_states.items():

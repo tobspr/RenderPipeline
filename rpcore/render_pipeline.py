@@ -809,13 +809,16 @@ class RenderPipeline(RPObject):
             left = model.find("**/TubeEndLeft")
             left.set_y(light.tube_length / 2 - light.tube_radius)
             left.set_scale(light.tube_radius)
+            left.set_name("LightDebugGeometry")
 
             right = model.find("**/TubeEndRight")
             right.set_y(-light.tube_length / 2 + light.tube_radius)
             right.set_scale(light.tube_radius)
+            right.set_name("LightDebugGeometry")
 
-            right = model.find("**/TubeMid")
-            right.set_scale(light.tube_radius, light.tube_radius, light.tube_length / 2 - light.tube_radius)
+            mid = model.find("**/TubeMid")
+            mid.set_scale(light.tube_radius, light.tube_radius, light.tube_length / 2 - light.tube_radius)
+            mid.set_name("LightDebugGeometry")
 
             model.set_material(material, 1000)
             model.look_at(light.tube_direction)

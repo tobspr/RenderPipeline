@@ -123,7 +123,7 @@
 #endif
 
 // Minimum roughness, avoids infinitely bright highlights and precision errors
-#define MINIMUM_ROUGHNESS 0.03
+#define MINIMUM_ROUGHNESS 0.04
 
 // Controls at which point the sun is below the horizon and does not have any
 // influence anymore

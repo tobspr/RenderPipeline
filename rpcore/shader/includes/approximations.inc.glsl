@@ -48,6 +48,17 @@ float approx_spot_light_specular_energy(float roughness, float cos_fov) {
 }
 
 
+float approx_tube_light_specular_energy(float roughness, float tube_length, float tube_radius, float d_sq) {
+    float r = roughness * roughness;
+    float inv_r = (1 - roughness) * (1 - roughness);
+    r *= inv_r * inv_r * inv_r;
+    return 35.0 * r / (d_sq);
+}
+
+float approx_tube_light_diff_energy(float tube_radius, float tube_length) {
+    return 1.0 / 50.0;
+}
+
 // Computes the angle-based attenuation for a spot light
 float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, int ies_profile) {
 
@@ -60,6 +71,8 @@ float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, int ies_pro
     // so the rescaling is performed. 
     float linear_angle = (cos_angle - fov) / (1 - fov);
     float angle_att = saturate(linear_angle);
+
+    // XXX: Move ies factor out of this file - does not belong here
     float ies_factor = get_ies_factor(ies_profile, linear_angle, 0);
 
     // XXX: Mitsuba computes attenuation differently. But this fits

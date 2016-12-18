@@ -43,6 +43,63 @@ vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphe
 }
 
 
+// Closest point on tube area light
+vec3 get_tube_area_light_vector(vec3 n, vec3 light_pos, vec3 pos, vec3 v, float tube_radius,
+                                float tube_length, vec3 tube_direction) {
+    vec3 R = reflect(-v, n);
+    // vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
+    vec3 P0 = light_pos + tube_direction * (0.5 * -tube_length + tube_radius);
+    vec3 P1 = light_pos + tube_direction * (0.5 * tube_length - tube_radius);
+    vec3 L0 = P0 - pos;
+    vec3 L1 = P1 - pos;
+    
+    float distL0 = length(L0);
+    float distL1 = length(L1);
+
+    vec3 Ld = L1 - L0;
+    float RdotL0 = dot(R, L0);
+    float RdotLd = dot(R, Ld);
+    float L0dotLd = dot(L0, Ld);
+    float distLd = length(Ld);
+    float t = (RdotL0 * RdotLd - L0dotLd) / (distLd * distLd - RdotLd * RdotLd);
+
+    vec3 closestPoint = L0 + Ld * saturate(t);
+    vec3 centerToRay = dot(closestPoint, R) * R - closestPoint;
+
+    // This is where I made the change
+    // This is the original line of code from Epic's notes: 
+    closestPoint = closestPoint + centerToRay * clamp(tube_radius / length(centerToRay), 0.0f, 1.0f);
+    // The following line is my version:
+    // closestPoint = closestPoint + centerToRay * halfHeight;
+
+    return closestPoint;
+}
+
+vec3 get_tube_area_light_diff_vector(vec3 pos, vec3 light_pos, float tube_radius, float tube_length, vec3 tube_direction) {
+
+    // Construct plane with normal of the tube direction, and make it go through the current position
+    vec3 plane_nrm = tube_direction;
+    vec3 plane_origin = pos;
+
+    vec3 ray_pos = light_pos;
+    vec3 ray_dir = normalize(tube_direction);
+
+    float d = dot((plane_origin - ray_pos), plane_nrm) / dot(ray_dir, plane_nrm);    
+
+    d = clamp(d, min(0, -tube_length*0.5 + tube_radius), max(0, tube_length*0.5 - tube_radius));
+
+    vec3 l = (light_pos + d * tube_direction) - pos;
+
+    // Take radius into account by shortening the light vector
+    #if 0
+    float l_len = length(l);
+    l /= l_len;
+    l *= l_len - tube_radius;
+    #endif
+
+    return l;
+}
+
 
 // Makes sure the light influence reaches 0 on culling distance
 float light_clip_falloff(LightData light, vec3 pos) {
@@ -116,7 +173,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
     float tube_length = get_tube_length(light);
     vec3 tube_direction = get_tube_direction(light);
 
-    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH) && 0
+    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
         float NxV = saturate(dot(m.normal, v));
         vec3 l_unscaled = light_pos - m.position;
 
@@ -125,7 +182,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         {
 
             // Specular
-            vec3 l_unscaled_spec = get_spherical_area_light_vector(m.normal, l_unscaled, v, sphere_radius);
+            vec3 l_unscaled_spec = get_tube_area_light_vector(m.normal, light_pos, m.position, v, tube_radius, tube_length, tube_direction);
 
             vec3 l = normalize(l_unscaled_spec);
             vec3 h = normalize(l + v);
@@ -139,18 +196,21 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
             float G = brdf_visibility_neumann(NxV, NxL);
 
             accum += brdf_cook_torrance(D, G, F, NxV, NxL) *
-                approx_sphere_light_specular_energy(m.roughness, sphere_radius, dot(l_unscaled_spec, l_unscaled_spec));        
+                approx_tube_light_specular_energy(m.roughness, tube_length, tube_radius, dot(l_unscaled_spec, l_unscaled_spec));      
         }
 
         {
+
             // Diffuse
-            vec3 l = normalize(l_unscaled);
-            float att = 1.0 / max(0.01, dot(l_unscaled, l_unscaled));
+            vec3 l_unscaled_diff = get_tube_area_light_diff_vector(m.position, light_pos, tube_radius, tube_length, tube_direction);
+            vec3 l = normalize(l_unscaled_diff);
+            float att = 1.0 / (dot(l_unscaled_diff, l_unscaled_diff) + 1);
             float NxL = saturate(dot(m.normal, l));
 
             // Luminous power -> luminance
-            // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba well. hm. 
-            float scale_factor = sphere_radius * sphere_radius;
+            // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba well. hm.     
+            float scale_factor = M_PI * (2.0 * M_PI * tube_radius * tube_length + 4.0 * M_PI * tube_radius * tube_radius);
+            scale_factor *= approx_tube_light_diff_energy(tube_radius, tube_length);
             accum += att * NxL * get_material_diffuse(m) * scale_factor;
         }
 
@@ -176,6 +236,8 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
 
         const float sqrt_05 = 0.7071067;
 
+        // Approximate tube with 10 vertices:
+        // 4 for the rectangle, and 6 for the circles at the sides
         points[0] = light_pos - right_vector - up_vector;
         points[1] = light_pos + right_vector - up_vector;
 
@@ -200,7 +262,6 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         vec2 schlick = textureLod(LTCAmpTex, coords, 0).xy;
         specular *= f0 * schlick.x + (1.0 - f0) * schlick.y;
         diffuse *= get_material_diffuse(m);
-
 
         return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);
 
@@ -245,7 +306,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         {
             // Diffuse
             vec3 l = normalize(l_unscaled);
-            float att = 1.0 / max(0.01, dot(l_unscaled, l_unscaled));
+            float att = 1.0 / (dot(l_unscaled, l_unscaled) + 1);
             float NxL = saturate(dot(m.normal, l));
 
             // Luminous power -> luminance
@@ -276,7 +337,12 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
 
         for (int i = 0; i < num_points; ++i) {
             float phi = i / float(num_points) * TWO_PI;
-            points[i] = light_pos + sin(phi) * up_vector + cos(phi) * right_vector;
+            // Star
+            // float radius = i % 2 == 0 ? 1.0 : 0.5; 
+
+            // Circle
+            float radius = 1.0;
+            points[i] = light_pos + sin(phi) * up_vector * radius + cos(phi) * right_vector * radius;
         }
 
         vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
