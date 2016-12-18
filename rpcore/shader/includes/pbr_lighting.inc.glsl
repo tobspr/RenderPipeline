@@ -108,11 +108,111 @@ vec3 process_spotlight(Material m, LightData light, vec3 v, float shadow) {
 }
 
 
+vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
+
+    vec3 light_pos = get_light_position(light);
+    
+    float tube_radius = get_tube_radius(light);
+    float tube_length = get_tube_length(light);
+    vec3 tube_direction = get_tube_direction(light);
+
+    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH) && 0
+        float NxV = saturate(dot(m.normal, v));
+        vec3 l_unscaled = light_pos - m.position;
+
+        vec3 accum = vec3(0);
+        vec3 f0 = get_material_f0(m);
+        {
+
+            // Specular
+            vec3 l_unscaled_spec = get_spherical_area_light_vector(m.normal, l_unscaled, v, sphere_radius);
+
+            vec3 l = normalize(l_unscaled_spec);
+            vec3 h = normalize(l + v);
+
+            float NxH = saturate(dot(m.normal, h));
+            float NxL = saturate(dot(m.normal, l));
+            float LxH = saturate(dot(l, h));
+
+            float D = brdf_distribution_ggx(NxH, m.roughness);
+            vec3 F = brdf_schlick_fresnel(f0, LxH);
+            float G = brdf_visibility_neumann(NxV, NxL);
+
+            accum += brdf_cook_torrance(D, G, F, NxV, NxL) *
+                approx_sphere_light_specular_energy(m.roughness, sphere_radius, dot(l_unscaled_spec, l_unscaled_spec));        
+        }
+
+        {
+            // Diffuse
+            vec3 l = normalize(l_unscaled);
+            float att = 1.0 / max(0.01, dot(l_unscaled, l_unscaled));
+            float NxL = saturate(dot(m.normal, l));
+
+            // Luminous power -> luminance
+            // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba well. hm. 
+            float scale_factor = sphere_radius * sphere_radius;
+            accum += att * NxL * get_material_diffuse(m) * scale_factor;
+        }
+
+        accum *= shadow;
+        accum *= get_light_color(light);
+        accum *= light_clip_falloff(light, m.position);
+        return accum;
+        
+    #else
+
+        // LTC for tube lights - good results, but slow        
+        vec3 l = normalize(light_pos - m.position);
+        vec3 h = normalize(l + v);
+
+        vec3 right_vector = tube_direction;
+        vec3 up_vector = cross(right_vector, l);
+
+        up_vector *= tube_radius;
+        right_vector *= (tube_length * 0.5) - tube_radius;
+
+        const int num_points = 10;
+        vec3 points[LTC_MAX_VERTICES];
+
+        const float sqrt_05 = 0.7071067;
+
+        points[0] = light_pos - right_vector - up_vector;
+        points[1] = light_pos + right_vector - up_vector;
+
+        points[2] = light_pos + right_vector + tube_radius * tube_direction * sqrt_05 - up_vector * sqrt_05;
+        points[3] = light_pos + right_vector + tube_radius * tube_direction;
+        points[4] = light_pos + right_vector + tube_radius * tube_direction * sqrt_05 + up_vector * sqrt_05;
+
+        points[5] = light_pos + right_vector + up_vector;
+        points[6] = light_pos - right_vector + up_vector;
+
+        points[7] = light_pos - right_vector - tube_radius * tube_direction * sqrt_05 + up_vector * sqrt_05;
+        points[8] = light_pos - right_vector - tube_radius * tube_direction;
+        points[9] = light_pos - right_vector - tube_radius * tube_direction * sqrt_05 - up_vector * sqrt_05;
+
+        vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
+        mat3 minv = LTC_Matrix(LTCMatTex, coords);
+        vec3 specular = LTC_Evaluate(m.normal, v, m.position, minv, points, num_points);    
+        vec3 diffuse = LTC_Evaluate(m.normal, v, m.position, mat3(1), points, num_points);    
+
+        vec3 f0 = get_material_f0(m);
+
+        vec2 schlick = textureLod(LTCAmpTex, coords, 0).xy;
+        specular *= f0 * schlick.x + (1.0 - f0) * schlick.y;
+        diffuse *= get_material_diffuse(m);
+
+
+        return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);
+
+    #endif
+
+}
+
 vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
     // #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
     //     return process_spherelight_reference(m, light, v, shadow);
     // #endif
-    
+
     vec3 light_pos = get_light_position(light);
     float sphere_radius = get_spherelight_sphere_radius(light);
 
@@ -171,8 +271,8 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         up_vector *= sphere_radius;
         right_vector *= sphere_radius;
 
-        const int num_points = LTC_MAX_VERTICES;
-        vec3 points[num_points];
+        const int num_points = 16;
+        vec3 points[LTC_MAX_VERTICES];
 
         for (int i = 0; i < num_points; ++i) {
             float phi = i / float(num_points) * TWO_PI;

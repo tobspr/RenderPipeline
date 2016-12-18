@@ -69,6 +69,7 @@ classes_to_import_and_rename = {
     "RPSphereLight": "SphereLight",
     "RPSpotLight": "SpotLight",
     "RPRectangleLight": "RectangleLight",
+    "RPTubeLight": "TubeLight"
 }
 
 native_module = None

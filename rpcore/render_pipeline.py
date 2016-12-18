@@ -45,7 +45,8 @@ from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.rpobject import RPObject
 from rpcore.common_resources import CommonResources
-from rpcore.native import TagStateManager, SphereLight, SpotLight, RectangleLight
+from rpcore.native import TagStateManager, SphereLight, SpotLight
+from rpcore.native import TubeLight, RectangleLight
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
@@ -115,7 +116,7 @@ class RenderPipeline(RPObject):
             # for i in range(2):
             self._showbase.graphics_engine.render_frame()
 
-        self.debug("Cleanup states")                
+        self.debug("Cleanup states")
         self.tag_mgr.cleanup_states()
         self.debug("Stage mgr")                
         self.stage_mgr.reload_shaders()
@@ -777,9 +778,9 @@ class RenderPipeline(RPObject):
 
     def make_light_geometry(self, light):
         """ Creates the appropriate geometry to represent the given light """
+        material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
 
         if isinstance(light, SphereLight):
-            material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
             model = RPLoader.load_model("/$$rp/data/builtin_models/lights/sphere.bam")
             model.set_material(material, 1000)
             model.reparent_to(render)
@@ -789,12 +790,35 @@ class RenderPipeline(RPObject):
             return model
 
         elif isinstance(light, RectangleLight):
-            material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
             model = RPLoader.load_model("/$$rp/data/builtin_models/lights/rectangle.bam")
             model.set_material(material, 1000)
             model.look_at(light.up_vector.cross(light.right_vector))
             model.set_sz(light.up_vector.length())
             model.set_sx(light.right_vector.length())
+            model.reparent_to(render)
+            model.set_pos(light.pos)
+            model.set_name("LightDebugGeometry")
+            return model
+
+        elif isinstance(light, SpotLight):
+            self.warn("TODO: make_light_geometry for spot lights")
+            
+        elif isinstance(light, TubeLight):
+            model = RPLoader.load_model("/$$rp/data/builtin_models/lights/tube.bam")
+            
+            left = model.find("**/TubeEndLeft")
+            left.set_y(light.tube_length / 2 - light.tube_radius)
+            left.set_scale(light.tube_radius)
+
+            right = model.find("**/TubeEndRight")
+            right.set_y(-light.tube_length / 2 + light.tube_radius)
+            right.set_scale(light.tube_radius)
+
+            right = model.find("**/TubeMid")
+            right.set_scale(light.tube_radius, light.tube_radius, light.tube_length / 2 - light.tube_radius)
+
+            model.set_material(material, 1000)
+            model.look_at(light.tube_direction)
             model.reparent_to(render)
             model.set_pos(light.pos)
             model.set_name("LightDebugGeometry")

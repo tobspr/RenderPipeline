@@ -24,41 +24,50 @@
  *
  */
 
-#pragma once
+/**
+ * @brief Sets the tube radius
+ */
+inline void RPTubeLight::set_tube_radius(float tube_radius) {
+    nassertv(tube_radius >= 0.0099); // Invalid size
+    _tube_radius = tube_radius;
+    set_needs_update(true);
+}
 
-#pragma include "includes/light_data.inc.glsl"
+/**
+ * @brief Returns the tube radius
+ */
+inline float RPTubeLight::get_tube_radius() const {
+    return _tube_radius;
+}
 
-#define LIGHT_CLS_INVALID -1
+/**
+ * @brief Sets the tube length
+ */
+inline void RPTubeLight::set_tube_length(float tube_length) {
+    nassertv(tube_length >= 0.0099); // Invalid size
+    _tube_length = tube_length;
+    set_needs_update(true);
+}
 
-#define LIGHT_CLS_SPOT_NOSHADOW 0
-#define LIGHT_CLS_SPOT_SHADOW 1
+/**
+ * @brief Returns the tube length
+ */
+inline float RPTubeLight::get_tube_length() const {
+    return _tube_length;
+}
 
-#define LIGHT_CLS_SPHERE_NOSHADOW 2
-#define LIGHT_CLS_SPHERE_SHADOW 3
+/**
+ * @brief Sets the tube direction
+ */
+inline void RPTubeLight::set_tube_direction(const LVecBase3f& tube_direction) {
+    nassertv(tube_direction.length() >= 0.0099); // Invalid size
+    _tube_direction = tube_direction;
+    set_needs_update(true);
+}
 
-#define LIGHT_CLS_RECTANGLE_NOSHADOW 4
-#define LIGHT_CLS_RECTANGLE_SHADOW 5
-
-#define LIGHT_CLS_TUBE_NOSHADOW 6
-#define LIGHT_CLS_TUBE_SHADOW 7
-
-#define LIGHT_CLS_COUNT 8
-
-#if LIGHT_CLS_COUNT != LC_LIGHT_CLASS_COUNT
-    #error GLSL and Python lighting system class count do not match up!
-#endif
-
-int classify_light(int light_type, bool casts_shadows) {
-    switch (light_type) {
-        case LT_SPOT_LIGHT:
-            return casts_shadows ? LIGHT_CLS_SPOT_SHADOW : LIGHT_CLS_SPOT_NOSHADOW;
-        case LT_SPHERE_LIGHT:
-            return casts_shadows ? LIGHT_CLS_SPHERE_SHADOW : LIGHT_CLS_SPHERE_NOSHADOW;
-        case LT_RECTANGLE_LIGHT:
-            return casts_shadows ? LIGHT_CLS_RECTANGLE_SHADOW : LIGHT_CLS_RECTANGLE_NOSHADOW;
-        case LT_TUBE_LIGHT:
-            return casts_shadows ? LIGHT_CLS_TUBE_SHADOW : LIGHT_CLS_TUBE_NOSHADOW;
-    
-    };
-    return LIGHT_CLS_INVALID;
+/**
+ * @brief Returns the tube direction
+ */
+inline const LVecBase3f& RPTubeLight::get_tube_direction() const {
+    return _tube_direction;
 }

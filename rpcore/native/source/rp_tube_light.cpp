@@ -25,19 +25,20 @@
  */
 
 
-#include "rp_rectangle_light.h"
+#include "rp_tube_light.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
 /**
- * @brief Constructs a new rectangle light
- * @details This contructs a new rectangle light with default settings.
+ * @brief Constructs a new tube light
+ * @details This contructs a new tube light with default settings.
  */
-RPRectangleLight::RPRectangleLight() :
-    RPLight(RPLight::LT_rectangle_light), 
-    _up_vector(0, 0, 1),
-    _right_vector(1, 0, 0) {
+RPTubeLight::RPTubeLight() :
+    RPLight(RPLight::LT_tube_light), 
+    _tube_radius(0.5),
+    _tube_length(4),
+    _tube_direction(1, 0, 0) {
 }
 
 /**
@@ -47,10 +48,11 @@ RPRectangleLight::RPRectangleLight() :
  *
  * @param cmd The target GPUCommand
  */
-void RPRectangleLight::write_to_command(GPUCommand &cmd) {
+void RPTubeLight::write_to_command(GPUCommand &cmd) {
     RPLight::write_to_command(cmd);
-    cmd.push_vec3(_up_vector);
-    cmd.push_vec3(_right_vector);
+    cmd.push_float(_tube_radius);
+    cmd.push_float(_tube_length);
+    cmd.push_vec3(_tube_direction);
 }
 
 /**
@@ -58,9 +60,10 @@ void RPRectangleLight::write_to_command(GPUCommand &cmd) {
  * @details This inits all required shadow sources for the sphere light.
  * @see RPLight::init_shadow_sources
  */
-void RPRectangleLight::init_shadow_sources() {
+void RPTubeLight::init_shadow_sources() {
     nassertv(_shadow_sources.size() == 0);
-    _shadow_sources.push_back(new ShadowSource());
+    std::cout << "Tube lights do not support shadows yet!" << std::endl;
+    nassertv(false); // Shadows not supported yet
 }
 
 /**
@@ -68,21 +71,21 @@ void RPRectangleLight::init_shadow_sources() {
  * @details This updates all shadow sources of the light.
  * @see RPLight::update_shadow_sources
  */
-void RPRectangleLight::update_shadow_sources() {
-    _shadow_sources[0]->set_resolution(get_shadow_map_resolution());
-    LVecBase3f direction = _up_vector.cross(_right_vector);
-    _shadow_sources[0]->set_perspective_lens(170, 0.05, _max_cull_distance, _position - direction * 0.5, direction);
+void RPTubeLight::update_shadow_sources() {
+    
+    std::cout << "Tube lights do not support shadows yet!" << std::endl;
+    nassertv(false);
 }
 
 
 /**
  * @brief See RPLight::get_conversion_factor
  */
-float RPRectangleLight::get_conversion_factor(IntensityType from, IntensityType to) const {
+float RPTubeLight::get_conversion_factor(IntensityType from, IntensityType to) const {
     if (from == to) 
         return 1.0;
 
-    float divisor = 4 * _right_vector.length() * _up_vector.length() * M_PI;
+    float divisor = M_PI * (2.0 * M_PI * _tube_radius * _tube_length + 4.0 * M_PI * _tube_radius * _tube_radius);
     if (from == IT_luminance && to == IT_lumens)
         return divisor;
     else if(from == IT_lumens && to == IT_luminance)
@@ -91,3 +94,4 @@ float RPRectangleLight::get_conversion_factor(IntensityType from, IntensityType 
     nassertr_always(false, 0.0);
     return 0.0;
 }
+

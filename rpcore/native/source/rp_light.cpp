@@ -45,7 +45,7 @@ RPLight::RPLight(LightType light_type) {
     _ies_profile = -1;
     _source_resolution = 512;
     _near_plane = 0.5;
-    _max_cull_distance = 20.0;
+    _max_cull_distance = 50.0;
     _intensity = 20;
     _intensity_type = IT_lumens;
     _depth_bias = 1.0;

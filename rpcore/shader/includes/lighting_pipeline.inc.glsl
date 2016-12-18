@@ -137,6 +137,8 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
     uint num_sphere_shadow      = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_SHADOW).x);
     uint num_rectangle_noshadow = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_RECTANGLE_NOSHADOW).x);
     uint num_rectangle_shadow   = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_RECTANGLE_SHADOW).x);
+    uint num_tube_noshadow      = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_TUBE_NOSHADOW).x);
+    uint num_tube_shadow        = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_TUBE_SHADOW).x);
 
     // Compute the index into the culled lights list
     int data_offs = cell_index * LC_MAX_LIGHTS_PER_CELL;
@@ -209,6 +211,26 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_rectanglelight(m, light_data, v, shadow_factor);
+    }
+
+    // Tubelights without shadow
+    for (int i = 0; i < num_tube_noshadow; ++i) {
+        int light_offs = int(texelFetch(PerCellLights, curr_offs++).x);
+        LightData light_data = read_light_data(AllLightsData, light_offs);
+        shading_result += process_tubelight(m, light_data, v, 1.0);
+    }
+
+    // Tubelights with shadow
+    for (int i = 0; i < num_tube_shadow; ++i) {
+        int light_offs = int(texelFetch(PerCellLights, curr_offs++).x);
+        LightData light_data = read_light_data(AllLightsData, light_offs);
+
+        // Get shadow factor
+        vec3 v2l = normalize(m.position - get_light_position(light_data));
+        int source_index = get_shadow_source_index(light_data);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        float shadow_factor = filter_shadowmap(m, source_data, v2l);
+        shading_result += process_tubelight(m, light_data, v, shadow_factor);
     }
 
 

@@ -49,7 +49,8 @@ class RPLight : public ReferenceCount {
             LT_empty = 0,
             LT_sphere_light = 1,
             LT_spot_light = 2,
-            LT_rectangle_light = 3
+            LT_rectangle_light = 3,
+            LT_tube_light = 4
         };
 
         enum IntensityType {

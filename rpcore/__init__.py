@@ -31,4 +31,4 @@ __all__ = ("RenderPipeline", "SpotLight", "SphereLight", "MaterialAPI")
 # This file includes all classes from the pipeline which are exposed
 from rpcore.render_pipeline import RenderPipeline
 from rpcore.util.material_api import MaterialAPI
-from rpcore.native import SpotLight, SphereLight, RectangleLight
+from rpcore.native import SpotLight, SphereLight, RectangleLight, TubeLight

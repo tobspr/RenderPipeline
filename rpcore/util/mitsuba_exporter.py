@@ -28,11 +28,13 @@ import os
 
 from direct.stdpy.file import isfile, isdir, join
 from panda3d.core import GeomVertexReader, Mat4, Vec3, Vec4
-from panda3d.core import PNMImage, TransformState, MaterialAttrib, TextureAttrib, SamplerState
+from panda3d.core import PNMImage, TransformState, MaterialAttrib
+from panda3d.core import TextureAttrib, SamplerState
 
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.native import SphereLight, SpotLight, RectangleLight
+from rpcore.native import TubeLight
 from rpcore.util.material_api import MaterialAPI
 
 def to_safe_name(name):
@@ -267,6 +269,9 @@ class MitsubaExporter(RPObject):
                 add("  </emitter>")
                 add("</shape>")
 
+            elif isinstance(light, TubeLight):
+                self.warn("TODO: Tube lights in the exporter")
+
         self.debug("Exporting materials ..")
         for obj_filename, (state, transform) in self.export_states.items():
 
@@ -367,7 +372,7 @@ class MitsubaExporter(RPObject):
             handle.write("del mitsuba.*.log\n")
             handle.write("pause\n")
 
-        # Write a grey environment map
+        # Write the environment map
         envmap = PNMImage(32, 16, 3, 2**16 - 1)
         envmap.fill(1.0 / 2**16)
         envmap.write(join(path, "_envmap.png"))

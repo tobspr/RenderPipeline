@@ -49,7 +49,7 @@ class CullLightsStage(RenderStage):
         self.view_cullers_sqrt = 64
 
         # Amount of light classes. Has to match the ones in LightClassification.inc.glsl
-        self.num_light_classes = 6
+        self.num_light_classes = 8
 
         if self.max_lights_per_cell > 2**16:
             self.fatal("lighting.max_lights_per_cell must be <=", 2**16, "!")

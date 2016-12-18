@@ -106,6 +106,25 @@ vec3 get_rectangle_rightvector(LightData data) {
     return data.Data3.yzw;
 }
 
+/*
+
+Tube light dataset 
+
+*/
+
+float get_tube_radius(LightData data) {
+    return data.Data2.z;
+}
+
+float get_tube_length(LightData data) {
+    return data.Data2.w;
+}
+
+vec3 get_tube_direction(LightData data) {
+    return data.Data3.xyz;
+}
+
+
 
 /*
 
