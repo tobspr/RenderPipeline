@@ -263,7 +263,7 @@ class MitsubaExporter(RPObject):
                     vec2xml(light.pos), vec2xml(light.pos + light.up_vector.cross(light.right_vector))))
                 add("  </transform>")
                 add("  <emitter type='area'>")
-                add("    <rgb name='intensity' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
+                add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
                 add("  </emitter>")
                 add("</shape>")
 

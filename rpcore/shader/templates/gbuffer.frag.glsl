@@ -150,9 +150,9 @@ void main() {
         m.roughness = mInput.roughness * sampled_roughness;
         m.shading_model_param0 = mInput.arbitrary0;
 
-        #if REFERENCE_MODE
-            m.specular_ior = mInput.specular_ior;
-        #endif
+        // #if REFERENCE_MODE
+        //     m.specular_ior = mInput.specular_ior;
+        // #endif
 
     #endif
 

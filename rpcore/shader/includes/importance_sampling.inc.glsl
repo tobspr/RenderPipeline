@@ -52,6 +52,28 @@ vec3 importance_sample_ggx(vec2 xi, float alpha)
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
+
+
+vec4 importance_sample_ggx_pdf(vec2 E, float alpha)
+{
+	float m = alpha;
+	float m2 = m * m;
+	float phi = 2 * M_PI * E.x;
+	float cos_theta = sqrt((1 - E.y) / (1 + (m2 - 1) * E.y));
+	float sin_theta = sqrt(1 - cos_theta * cos_theta);
+
+	vec3 h;
+	h.x = sin_theta * cos(phi);
+	h.y = sin_theta * sin(phi);
+	h.z = cos_theta;
+	
+	float d = (cos_theta * m2 - cos_theta) * cos_theta + 1;
+	float D = m2 / (M_PI * d * d);
+	float pdf = D * cos_theta;
+
+	return vec4(h, pdf);
+}
+
 vec3 importance_sample_lambert(vec2 Xi)
 {
     float phi = TWO_PI * Xi.x;

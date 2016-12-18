@@ -297,9 +297,9 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 
     // Choose one:
     // float vis = brdf_visibility_tobspr(NxL, NxV, VxH, roughness);
-    float vis = brdf_visibility_neumann(NxV, NxL);
+    // float vis = brdf_visibility_neumann(NxV, NxL);
     // float vis = brdf_visibility_implicit(NxV, NxL);
-    // float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
+    float vis = brdf_visibility_smith_ggx(NxV, NxL, roughness);
     // float vis = brdf_visibility_schlick(NxV, NxL, roughness);
     // float vis = brdf_visibility_cook_torrance(NxL, NxV, NxH, VxH);
     // float vis = brdf_visibility_smith(NxL, NxV, roughness) * NxV * NxL;
@@ -312,11 +312,9 @@ float brdf_visibility(float NxL, float NxV, float NxH, float VxH, float roughnes
 float brdf_fresnel(float LxH, float roughness) {
     // Default index of refraction
     // TODO: Maybe make this configurable?
-    const float ior = 2.5;
-
+    const float ior = 1.5;
 
     return brdf_fresnel_schlick(LxH, roughness, ior);
-    // return brdf_fresnel_cook_torrance(LxH, roughness, ior);
 }
 
 
@@ -324,6 +322,10 @@ float brdf_fresnel(float LxH, float roughness) {
 vec3 get_material_f0(Material m) {
     // Material specular is already in the 0 .. 0.08 range
     return mix(vec3(m.specular), m.basecolor, m.metallic);
+}
+
+vec3 get_material_diffuse(Material m) {
+    return m.basecolor * (1 - m.metallic);
 }
 
 
@@ -384,4 +386,9 @@ vec3 get_metallic_fresnel_approx(Material m, float NxV) {
         pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
     return vec3(m.basecolor);
     // return metallic_fresnel;
+}
+
+
+vec3 brdf_cook_torrance(float d, float vis, vec3 fresnel, float NxV, float NxL) {
+    return fresnel * (d * vis / max(1e-5, 4 * NxV * NxL) * NxL);
 }

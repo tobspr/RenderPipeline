@@ -34,6 +34,10 @@
 // Prevent unnecessary shader compiler work
 #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
 
+
+// Many of this methods are inspired from the mitsuba renderer
+
+
 float fr_cos_theta(vec3 v) { return v.z; }
 float fr_cos_theta_2(vec3 v) { return v.z * v.z; }
 float fr_sin_theta_2(vec3 v) { return 1.0 - v.z * v.z; }
@@ -77,10 +81,6 @@ float ggx_ndf(Material m, vec3 h) {
     if (result * fr_cos_theta(h) < 1e-20)
         return 0.0;
     return result;
-}
-
-float ggx_pdf(Material m, vec3 h) {
-    return ggx_ndf(m, h) * fr_cos_theta(h);
 }
 
 vec3 ggx_importance_sample(Material m, vec2 xi, out float pdf) {
@@ -151,6 +151,7 @@ vec3 lambert_importance_sample(Material m, vec2 xi, out float pdf) {
 vec3 fresnel(Material m, float LxH) {
     vec3 f0 = mix(vec3(m.specular), m.basecolor, m.metallic);
     vec3 f90 = vec3(1);
+    return f0;
     return mix(f0, vec3(f90), pow(2, (-5.55473 * LxH - 6.98316) * LxH));
 }
 
@@ -209,7 +210,7 @@ vec3 convert_system(vec3 v, mat3 system, vec3 origin) {
 
 vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float shadow) {
 
-    const uint num_samples = 64;
+    const uint num_samples = 128;
     vec3 accum = vec3(0);
 
     // Construct transformation from world to tangent space
@@ -242,8 +243,13 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
         xi.x = mod(xi.x + 6.283926 * jitter, 1.0); 
         xi.y = mod(xi.y + 5.852342 * jitter, 1.0); 
 
-        float pdf;
-        vec3 h = ggx_importance_sample(m, xi.xy, pdf);
+        // float pdf;
+        // vec3 h = ggx_importance_sample(m, xi.xy, pdf);
+        vec4 data = importance_sample_ggx_pdf(xi, m.roughness);
+        vec3 h = data.xyz;
+        float pdf = data.w;
+
+        // vec3 h = importance_sample_ggx(xi.xy, m.roughness);
         vec3 l = 2.0 * dot(v, h) * h - v;
         ray.l = l;
 
@@ -251,19 +257,13 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
             float ndf = ggx_ndf(m, h);
             vec3 fresnel = fresnel(m, saturate(dot(l, h)));
             float visibility = brdf_G(m, l, v, h);
-
-            accum += ndf * fresnel * visibility / max(1e-3, 4.0 * fr_cos_theta(h) * pdf);
-
-            // accum += fresnel * ndf * visibility * saturate(dot(l, h)) / (pdf * fr_cos_theta(l));
+            accum += ndf * fresnel * visibility / max(1e-3, 4.0 * fr_cos_theta(h) * pdf * fr_cos_theta(l) );
         }
     }
-
+    
     accum /= num_samples;
     accum *= light_emitting_color;
-    // accum *= 0;
 
-    // Diffuse
-    #if 1
     float eta = m.specular_ior / AIR_IOR;
     float inv_eta_2 = 1.0 / (eta * eta);
     inv_eta_2 = 1;
@@ -284,7 +284,7 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
 
         if (ray_sphere_intersection(ray, sphere)) {
             // XXX: missing divide by pdf?!
-            diff_accum += diff_color * ONE_BY_PI * fr_cos_theta(l);
+            diff_accum += diff_color * fr_cos_theta(l) / pdf;
         }
     }
 
@@ -292,18 +292,7 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
     diff_accum *= light_emitting_color;
     accum += diff_accum;
 
-    #else
-        vec3 l = normalize(m.position - get_light_position(light));
-        // accum = ONE_BY_PI * saturate(dot(m.normal, l));
-        // accum = vec3(ONE_BY_PI);
-        accum = m.basecolor * ONE_BY_PI * saturate(dot(m.normal, -l));
-        // accum *= get_light_color(light);
-        // accum *= light_emitting_color;
-    #endif
-
     accum *= shadow;
-
-
     return vec3(accum);
 }
 

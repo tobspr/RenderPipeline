@@ -34,7 +34,7 @@
 #define SLICE_EXP_FACTOR 3.0
 
 // Set this to true to disable culling
-#define DISABLE_CULLING 1
+#define DISABLE_CULLING 0
 
 // Plane offsets
 #define P_FRONT 0

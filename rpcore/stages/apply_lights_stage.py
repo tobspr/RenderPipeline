@@ -32,7 +32,7 @@ class ApplyLightsStage(RenderStage):
     """ This stage applies the lights to the scene using the gbuffer """
 
     required_inputs = ["AllLightsData", "IESDatasetTex", "ShadowSourceData",
-                       "DebugFontAtlas"]
+                       "DebugFontAtlas", "LTCAmpTex", "LTCMatTex"]
     required_pipes = ["GBuffer", "CellIndices", "PerCellLights", "ShadowAtlas",
                       "ShadowAtlasPCF", "CombinedVelocity", "PerCellLightsCounts"]
 

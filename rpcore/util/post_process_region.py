@@ -44,7 +44,7 @@ class PostProcessRegion(RPObject):
         self._buffer = internal_buffer
         self._region = self._buffer.make_display_region(*args)
         self._node = NodePath("RTRoot")
-
+        self._shader = None
         self._make_fullscreen_tri()
         self._make_fullscreen_cam()
         self._init_function_pointers()
@@ -56,11 +56,18 @@ class PostProcessRegion(RPObject):
         self.set_active = self._region.set_active
         self.set_clear_depth_active = self._region.set_clear_depth_active
         self.set_clear_depth = self._region.set_clear_depth
-        self.set_shader = self._tri.set_shader
         self.set_camera = self._region.set_camera
         self.set_clear_color_active = self._region.set_clear_color_active
         self.set_clear_color = self._region.set_clear_color
         self.set_attrib = self._tri.set_attrib
+
+    @property
+    def shader(self):
+        return self._shader
+
+    def set_shader(self, shader_obj):
+        self._shader = shader_obj
+        self._tri.set_shader(shader_obj)
 
     def _make_fullscreen_tri(self):
         """ Creates the oversized triangle used for rendering """

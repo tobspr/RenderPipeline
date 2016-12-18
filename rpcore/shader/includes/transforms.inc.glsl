@@ -108,6 +108,7 @@ vec3 vs_normal_to_ws(vec3 view_normal) {
     return normalize((vec4(view_normal, 0) * trans_mainRender_to_view_of_mainCam).xyz);
 }
 
+
 // Converts a world space position to screen space position (NDC)
 vec3 world_to_screen(vec3 world_pos) {
     vec4 proj = trans_mainRender_to_clip_of_mainCam * vec4(world_pos, 1);
@@ -121,4 +122,14 @@ vec3 world_normal_to_view(vec3 world_normal) {
     vec4 proj = trans_mainRender_to_view_of_mainCam * vec4(world_normal, 0);
     proj.xyz *= vec3(1, -1, 1);
     return normalize(proj.xzy);
+}
+
+// Converts from world space to view space
+vec3 ws_to_vs(vec3 world_pos) {
+    // FIXME
+    vec4 proj = trans_mainRender_to_view_of_mainCam * vec4(world_pos, 1);
+    // proj.xyz *= vec3(1, -1, 1);
+    // return normalize(proj.xzy);
+    proj /= proj.w;
+    return normalize(proj.xyz);
 }

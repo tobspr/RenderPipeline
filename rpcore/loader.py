@@ -98,8 +98,10 @@ class RPLoader(RPObject):
         """ Loads a shader from disk """
         with timed_loading_operation(args):
             if len(args) == 1:
-                return Shader.load_compute(Shader.SL_GLSL, args[0])
-            return Shader.load(Shader.SL_GLSL, *args)
+                result = Shader.load_compute(Shader.SL_GLSL, args[0])
+            else:
+                result = Shader.load(Shader.SL_GLSL, *args)
+            return result
 
     @classmethod
     def load_model(cls, filename):

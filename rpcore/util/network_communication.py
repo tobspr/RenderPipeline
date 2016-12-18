@@ -25,6 +25,8 @@ THE SOFTWARE.
 """
 
 import socket
+import time
+
 from threading import Thread
 
 from rpcore.rpobject import RPObject
@@ -38,15 +40,13 @@ class NetworkCommunication(RPObject):
     CONFIG_PORT = 63324
     DAYTIME_PORT = 63325
     MATERIAL_PORT = 63326
+    NEXT_UPDATE = None
+    UPDATE_THREAD = None
 
     @classmethod
     def send_async(cls, port, message):
         """ Starts a new thread which sends a given message to a port """
-        thread = Thread(target=cls.__send_message_async, args=(port, message),
-                        name="NC-SendAsync")
-        thread.setDaemon(True)
-        thread.start()
-        return thread
+        cls.__send_message_async(port, message)
 
     @classmethod
     def listen_threaded(cls, port, callback):
@@ -57,14 +57,44 @@ class NetworkCommunication(RPObject):
         thread.start()
         return thread
 
-    @staticmethod
-    def __send_message_async(port, message=""):
+    @classmethod
+    def __send_message_async(cls, port, message=""):
         """ Sends a given message to a given port and immediately returns. """
+        cls.__init_update_thread()
+        cls.NEXT_UPDATE = (time.time(), port, message)
+        cls.__internal_send_message(port, message)
+
+    @classmethod
+    def __internal_send_message(cls, port, message):
+        """ Internal method to send a new message """
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             sock.sendto(message.encode("utf-8"), ("127.0.0.1", port))
+        except Exception as msg:
+            RPObject.global_warn("Network", "Exception during send:", msg)
         finally:
             sock.close()
+
+    @classmethod
+    def __init_update_thread(cls):
+        """ Initializes the update thread if not present """
+        if not cls.UPDATE_THREAD:
+            cls.UPDATE_THREAD = Thread(target=cls.__update_thread, args=(), name="NC-Updater")
+            cls.UPDATE_THREAD.setDaemon(True)
+            cls.UPDATE_THREAD.start()
+
+    @classmethod
+    def __update_thread(cls):
+        """ Thread which re-sends the last message after a certain amount
+        of ms, to make sure it arrives in the correct order """
+        while True:
+            if cls.NEXT_UPDATE:
+                if time.time() - cls.NEXT_UPDATE[0] > 0.35:
+                    print("Resending", cls.NEXT_UPDATE)
+                    update, cls.NEXT_UPDATE = cls.NEXT_UPDATE, None
+                    cls.__internal_send_message(update[1], update[2])
+
+            time.sleep(0.05)
 
     @staticmethod
     def __listen_forever(port, callback):

@@ -87,17 +87,13 @@ void RPLight::write_to_command(GPUCommand &cmd) {
     // V1.xyz
     cmd.push_vec3(_position);
 
-    // Always pass the intensity in lumens, makes calculations easier in the shaders
-    float intensity = get_intensity_lumens();
+    // Always pass the intensity in luminance, makes calculations easier in the shaders
+    float intensity = get_intensity_luminance();
 
-    std::cout << "intensity = " << intensity << std::endl;
-    std::cout << "pushing " << _color * intensity / 100.0 << std::endl;
-    
     // V1.w, V2.XY
     // Divide by 100, since 16bit floating point buffers only go up to 65000.0, which
     // prevents very bright lights.
     cmd.push_vec3(_color * intensity / 100.0);
-
 }
 
 /**

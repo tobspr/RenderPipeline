@@ -181,6 +181,10 @@ class RenderTarget(RPObject):
         if not shader_obj:
             self.error("shader must not be None!")
             return
+        if self._source_region.shader and shader_obj.this == self._source_region.shader.this:
+            # self.debug("Skipping cached shader")
+            return
+        # self.debug("Applying", shader_obj.get_filename(shader_obj.ST_fragment))
         self._source_region.set_shader(shader_obj)
 
     @property

@@ -23,30 +23,20 @@
  * THE SOFTWARE.
  *
  */
+ 
+ #pragma once
 
-#version 430
+ /*
+Approximations
 
-#pragma include "render_pipeline_base.inc.glsl"
+The idea of this file is that all approximations are contained
+here, and the rest of the shader code is physically (almost) correct
 
-uniform sampler2D ShadedScene;
-uniform sampler2D Previous_PostReferenceStage;
-uniform bool cameraMoved;
+ */
 
-out vec3 result;
 
-void main() {
-    vec2 texcoord = get_texcoord();
-
-    #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
-        vec3 prev = saturate(textureLod(Previous_PostReferenceStage, texcoord, 0).xyz);
-        vec3 curr = saturate(textureLod(ShadedScene, texcoord, 0).xyz);
-
-        result = mix(prev, curr, 1.0 / 32.0);
-        if (cameraMoved)
-            result = curr;
-        // result = curr;
-        // result = prev * 0.99;
-    #else
-        result = textureLod(ShadedScene, texcoord, 0).xyz;
-    #endif
-}
+ float approx_sphere_light_specular_energy(float roughness, float sphere_radius, float d_sq) {
+     float r = roughness * roughness;
+     r *= (1 - roughness) * (1 - roughness);
+     return r / d_sq * 32;
+ }

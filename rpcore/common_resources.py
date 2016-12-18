@@ -116,7 +116,8 @@ class CommonResources(RPObject):
         """ Loads commonly used textures and makes them available via the
         stage manager """
         self._load_environment_cubemap()
-        self._load_prefilter_brdf()
+        self._load_prefiltered_brdf()
+        self._load_ltc_data()
         self._load_skydome()
         self._load_debug_font_atlas()
 
@@ -133,7 +134,7 @@ class CommonResources(RPObject):
         envmap.set_wrap_w(SamplerState.WM_repeat)
         self._pipeline.stage_mgr.inputs["DefaultEnvmap"] = envmap
 
-    def _load_prefilter_brdf(self):
+    def _load_prefiltered_brdf(self):
         """ Loads the prefiltered brdf """
         luts = {
             "PrefilteredBRDF": "slices/env_brdf_#.png",
@@ -154,6 +155,23 @@ class CommonResources(RPObject):
             brdf_tex.set_wrap_w(SamplerState.WM_clamp)
             brdf_tex.set_anisotropic_degree(0)
             self._pipeline.stage_mgr.inputs[name] = brdf_tex
+
+    def _load_ltc_data(self):
+        """ Loads the precomputed luts for LTC, used for rectangular
+        area light shading """
+        tex_amp = RPLoader.load_texture("/$$rp/data/ltc/ltc_amp.dds")
+        tex_amp.set_minfilter(SamplerState.FT_linear)
+        tex_amp.set_magfilter(SamplerState.FT_linear)
+        tex_amp.set_wrap_u(SamplerState.WM_clamp)
+        tex_amp.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["LTCAmpTex"] = tex_amp
+
+        tex_mat = RPLoader.load_texture("/$$rp/data/ltc/ltc_mat.dds")
+        tex_mat.set_minfilter(SamplerState.FT_linear)
+        tex_mat.set_magfilter(SamplerState.FT_linear)
+        tex_mat.set_wrap_u(SamplerState.WM_clamp)
+        tex_mat.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["LTCMatTex"] = tex_mat
 
     def _load_debug_font_atlas(self):
         """ Loads the font atlas for the debug font """
@@ -177,8 +195,6 @@ class CommonResources(RPObject):
         skydome_overlay.set_wrap_u(SamplerState.WM_clamp)
         skydome_overlay.set_wrap_v(SamplerState.WM_clamp)
         self._pipeline.stage_mgr.inputs["DefaultSkydomeOverlay"] = skydome_overlay
-
-        
 
     def load_default_skybox(self):
         skybox = RPLoader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")

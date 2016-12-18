@@ -113,14 +113,20 @@ class RenderPipeline(RPObject):
             self.debugger.error_msg_handler.clear_messages()
             self.debugger.set_reload_hint_visible(True)
             for i in range(2):
-                self._showbase.graphics_engine.render_frame()    
+                self._showbase.graphics_engine.render_frame()
+        self.debug("Cleanup states")                
         self.tag_mgr.cleanup_states()
+        self.debug("Stage mgr")                
         self.stage_mgr.reload_shaders()
+        self.debug("Light mgr")                
         self.light_mgr.reload_shaders()
+        self.debug("Plugin hook")                
         self.plugin_mgr.trigger_hook("shader_reload")
         if self.settings["pipeline.display_debugger"]:
             self.debugger.set_reload_hint_visible(False)
+        self.debug("Custom shaders")                
         self._apply_custom_shaders()
+        self.debug("Done.")                
 
     def _apply_custom_shaders(self):
         """ Re-applies all custom shaders the user applied, to avoid them getting
@@ -293,7 +299,7 @@ class RenderPipeline(RPObject):
             rp_light = SphereLight()
             rp_light.pos = light.get_pos(Globals.base.render)
             rp_light.max_cull_distance = light_node.max_distance
-            rp_light.intensity_lumens = 200000.0 * light_node.color.w
+            rp_light.intensity_lumens = 20.0 * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
@@ -721,16 +727,14 @@ class RenderPipeline(RPObject):
         with open(pth, "w") as handle:
             for i, material in enumerate(Globals.render.find_all_materials()):
                 if not material.has_base_color() or not material.has_roughness() or not material.has_refractive_index():
-                    self.warn("Skipping non-pbr material:", material.name)
+                    self.warn("Skipping non-pbr material '" + material.name + "'")
+                    self.warn("Properties:", material.has_base_color(), material.has_roughness(), material.has_refractive_index())
                     continue
                 handle.write(("{} " * 11).format(
                     self._get_serialized_material_name(material, i),
-                    material.base_color.x,
-                    material.base_color.y,
-                    material.base_color.z,
-                    material.roughness,
-                    material.refractive_index,
-                    material.metallic,
+                    material.base_color.x, material.base_color.y,
+                    material.base_color.z, material.roughness,
+                    material.refractive_index, material.metallic,
                     material.emission.x, # shading model
                     material.emission.y, # normal strength
                     material.emission.z, # arbitrary 0
@@ -747,10 +751,8 @@ class RenderPipeline(RPObject):
                 material.set_refractive_index(float(data[5]))
                 material.set_metallic(float(data[6]))
                 material.set_emission(Vec4(
-                    float(data[7]),
-                    float(data[8]),
-                    float(data[9]),
-                    float(data[10]),
+                    float(data[7]), float(data[8]),
+                    float(data[9]), float(data[10]),
                 ))
                 break
         else:
@@ -788,9 +790,6 @@ class RenderPipeline(RPObject):
         elif isinstance(light, RectangleLight):
             material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
             model = RPLoader.load_model("/$$rp/data/builtin_models/lights/rectangle.bam")
-            print("up=", light.up_vector)
-            print(light.right_vector)
-            print(light.up_vector.cross(light.right_vector))
             model.set_material(material, 1000)
             model.look_at(light.up_vector.cross(light.right_vector))
             model.set_sz(light.up_vector.length())
