@@ -16,6 +16,7 @@
 mitsuba.*.log
 *.exr
 *.txo.pz
+*.txo
 
 
 # --- Ignored folders and patterns ---

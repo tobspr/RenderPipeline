@@ -122,8 +122,8 @@ class LightManager(RPObject):
     def init_command_queue(self):
         """ Inits the command queue """
         self.cmd_queue = GPUCommandQueue(self.pipeline)
-        self.cmd_queue.register_input("LightData", self.img_light_data)
-        self.cmd_queue.register_input("SourceData", self.img_source_data)
+        self.cmd_queue.register_input("AllLightsData", self.img_light_data)
+        self.cmd_queue.register_input("ShadowSourceData", self.img_source_data)
         self.internal_mgr.set_command_list(self.cmd_queue.command_list)
 
     def init_shadow_manager(self):
@@ -151,7 +151,7 @@ class LightManager(RPObject):
         # Storage for the Lights
         per_light_vec4s = 4
         self.img_light_data = Image.create_buffer(
-            "LightData", self.MAX_LIGHTS * per_light_vec4s, "RGBA16")
+            "AllLightsData", self.MAX_LIGHTS * per_light_vec4s, "RGBA16")
         self.img_light_data.clear_image()
 
         self.pta_max_light_index = PTAInt.empty_array(1)

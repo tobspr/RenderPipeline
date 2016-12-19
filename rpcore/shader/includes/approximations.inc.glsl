@@ -40,7 +40,7 @@ float approx_sphere_light_specular_energy(float roughness, float sphere_radius, 
     float r = roughness * roughness;
     float inv_r = (1 - roughness) * (1 - roughness);
     r *= inv_r * inv_r * inv_r;
-    return 75.0 * r / (d_sq);
+    return 75.0 * r / (d_sq) * pow(sphere_radius, 1.5);
 }
 
 float approx_spot_light_specular_energy(float roughness, float cos_fov) {
@@ -58,6 +58,12 @@ float approx_tube_light_specular_energy(float roughness, float tube_length, floa
 float approx_tube_light_diff_energy(float tube_radius, float tube_length) {
     return 1.0 / 50.0;
 }
+
+
+vec3 approx_merge_clearcoat_specular(vec3 specular, vec3 specular_coat) {
+    return mix(specular * 0.3, specular_coat, 0.07);
+}
+
 
 // Computes the angle-based attenuation for a spot light
 float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, int ies_profile) {

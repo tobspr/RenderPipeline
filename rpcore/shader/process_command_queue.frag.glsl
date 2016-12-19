@@ -30,10 +30,12 @@
 // and so on ..
 
 #pragma include "render_pipeline_base.inc.glsl"
+#pragma include "includes/source_data.struct.glsl"
+#pragma include "includes/light_data.struct.glsl"
 
 uniform samplerBuffer CommandQueue;
-uniform writeonly imageBuffer RESTRICT LightData;
-uniform writeonly imageBuffer RESTRICT SourceData;
+uniform writeonly imageBuffer RESTRICT AllLightsData;
+uniform writeonly imageBuffer RESTRICT ShadowSourceData;
 uniform int commandCount;
 
 // Reads a single float from the data stack
@@ -80,11 +82,11 @@ void main() {
 
                 // Read the destination slot of the light
                 int slot = read_int(stack_ptr);
-                int offs = slot * 4;
+                int offs = slot * LIGHT_STRIDE;
 
                 // Copy the data over
-                for (int i = 0; i < 4; ++i) {
-                    imageStore(LightData, offs + i, read_vec4(stack_ptr));
+                for (int i = 0; i < LIGHT_STRIDE; ++i) {
+                    imageStore(AllLightsData, offs + i, read_vec4(stack_ptr));
                 }
                 break;
             }
@@ -94,11 +96,11 @@ void main() {
 
                 // Read the lights slot position
                 int slot = read_int(stack_ptr);
-                int offs = slot * 4;
+                int offs = slot * LIGHT_STRIDE;
 
                 // Set the data to all zeroes, this indicates a null light
-                for (int i = 0; i < 4; ++i) {
-                    imageStore(LightData, offs + i, vec4(0));
+                for (int i = 0; i < LIGHT_STRIDE; ++i) {
+                    imageStore(AllLightsData, offs + i, vec4(0));
                 }
                 break;
             }
@@ -107,11 +109,11 @@ void main() {
             case CMD_store_source: {
 
                 int slot = read_int(stack_ptr);
-                int offs = slot * 5;
+                int offs = slot * SHADOW_SOURCE_STRIDE;
 
                 // Copy the data to the light data buffer
-                for (int i = 0; i < 5; ++i) {
-                    imageStore(SourceData, offs + i, read_vec4(stack_ptr));
+                for (int i = 0; i < SHADOW_SOURCE_STRIDE; ++i) {
+                    imageStore(ShadowSourceData, offs + i, read_vec4(stack_ptr));
                 }
 
                 break;
@@ -123,11 +125,11 @@ void main() {
                 int num_slots = read_int(stack_ptr);
 
                 for (int slot = base_slot; slot < base_slot + num_slots; ++slot) {
-                    int offs = slot * 5;
+                    int offs = slot * SHADOW_SOURCE_STRIDE;
 
                     // Set the data to all zeroes, this indicates an unused source
-                    for (int i = 0; i < 5; ++i) {
-                        imageStore(SourceData, offs + i, vec4(0));
+                    for (int i = 0; i < SHADOW_SOURCE_STRIDE; ++i) {
+                        imageStore(ShadowSourceData, offs + i, vec4(0));
                     }
                 }
                 break;

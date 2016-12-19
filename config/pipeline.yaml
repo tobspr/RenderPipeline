@@ -32,7 +32,7 @@ pipeline:
 
     # Whether to render in a special reference mode, which displays the
     # environment map as a background, and disable special effects like color
-    # grading and so on. This is used by the pathtracing reference.
+    # grading and so on. This is used by comparing to the pathtracing reference.
     reference_mode: true
 
 # This are the settings affecting the lighting part of the pipeline,
@@ -53,7 +53,7 @@ lighting:
     # size depending on your scene.
     # If you set this to 1, the pipeline will use tiled deferred shading instead
     # of clustered deferred shading.
-    culling_grid_slices: 16
+    culling_grid_slices: 32
 
     # This controls the maximum culling distance in world space. After this
     # distance, no lights are rendered anymore. If you choose a lower
@@ -79,7 +79,7 @@ shadows:
     # getting updated fast enough. However, this also affects the performance
     # quite a bit, since for every shadow map a part of the scene has
     # to get re-rendered.
-    max_updates: 8
+    max_updates: 4
 
     # Sets the maximum distance until which shadows are updated. If a shadow
     # source is further away, it will no longer recieve updates

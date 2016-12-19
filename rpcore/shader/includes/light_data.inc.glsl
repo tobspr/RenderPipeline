@@ -14,21 +14,21 @@ https://github.com/tobspr/RenderPipeline/wiki/LightStorage
 // Reads the light data from a given buffer and offset
 LightData read_light_data(samplerBuffer LightDataBuffer, int offset) {
     LightData data;
-    data.Data0 = texelFetch(LightDataBuffer, offset * 4 + 0);
-    data.Data1 = texelFetch(LightDataBuffer, offset * 4 + 1);
-    data.Data2 = texelFetch(LightDataBuffer, offset * 4 + 2);
-    data.Data3 = texelFetch(LightDataBuffer, offset * 4 + 3);
+    data.Data0 = texelFetch(LightDataBuffer, offset * LIGHT_STRIDE + 0);
+    data.Data1 = texelFetch(LightDataBuffer, offset * LIGHT_STRIDE + 1);
+    data.Data2 = texelFetch(LightDataBuffer, offset * LIGHT_STRIDE + 2);
+    data.Data3 = texelFetch(LightDataBuffer, offset * LIGHT_STRIDE + 3);
     return data;
 }
 
 // Only reads the light type, in case nothing else is required
 int read_light_type(samplerBuffer LightDataBuffer, int offset) {
-    float data0x = texelFetch(LightDataBuffer, offset * 4 + 0).x;
+    float data0x = texelFetch(LightDataBuffer, offset * LIGHT_STRIDE + 0).x;
     return gpu_cq_unpack_int_from_float(data0x);
 }
 
 bool read_casts_shadows(samplerBuffer LightDataBuffer, int offset) {
-    float data0z = texelFetch(LightDataBuffer, offset * 4 + 0).z;
+    float data0z = texelFetch(LightDataBuffer, offset * LIGHT_STRIDE + 0).z;
     return gpu_cq_unpack_int_from_float(data0z) >= 0;
 }
 
@@ -123,7 +123,6 @@ float get_tube_length(LightData data) {
 vec3 get_tube_direction(LightData data) {
     return data.Data3.xyz;
 }
-
 
 
 /*

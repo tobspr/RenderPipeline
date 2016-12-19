@@ -106,6 +106,11 @@
 // TODO:
 #define SUPPORT_PCF 1
 
+// Clearcoat enabled
+#if 1
+#define BRANCH_CLEARCOAT(m) if(m.shading_model == SHADING_MODEL_CLEARCOAT)
+#endif
+
 // Controls the roughness of the clearcoat layer
 #define CLEARCOAT_ROUGHNESS 0.003
 #define CLEARCOAT_SPECULAR 0.16
@@ -113,7 +118,7 @@
 
 // Controls the brightness of the fallback cubemap
 #if REFERENCE_MODE
-    #define DEFAULT_ENVMAP_BRIGHTNESS 0
+    #define DEFAULT_ENVMAP_BRIGHTNESS 0.2
 #else
     #if HAVE_PLUGIN(color_correction)
         #define DEFAULT_ENVMAP_BRIGHTNESS 1.0

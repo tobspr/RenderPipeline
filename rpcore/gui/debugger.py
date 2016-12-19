@@ -75,7 +75,7 @@ class Debugger(RPObject):
 
         if self.advanced_info:
             Globals.base.doMethodLater(
-                0.5, lambda task: self.collect_scene_data(), "RPDebugger_collectSceneData_initial")
+                0.5, lambda task: self.collect_scene_data(), "RPDebugger_collectSceneDataInitial")
         
         Globals.base.doMethodLater(0.1, self.update_stats, "RPDebugger_updateStats")
 
@@ -94,7 +94,7 @@ class Debugger(RPObject):
         self.create_hints()
 
         self.pipeline_logo = Sprite(
-            image="/$$rp/data/gui/pipeline_logo_text.png", x=0, y=30,
+            image="/$$rp/data/gui/pipeline_logo_text.png", x=30, y=30,
             parent=self.fullscreen_node)
 
         if self.advanced_info:
@@ -134,7 +134,7 @@ class Debugger(RPObject):
         num_lines = 6 if self.advanced_info else 1
         for i in range(num_lines):
             self.debug_lines.append(TextNode(
-                pos=Vec2(0, -i * 0.046), parent=self.overlay_node, align="right", color=Vec3(0.7, 1, 1)))
+                pos=Vec2(0, -i * 0.046), parent=self.overlay_node, align="right", color=Vec3(0.95)))
         self.debug_lines[0].color = Vec4(1, 1, 0, 1)
 
     def create_hints(self):

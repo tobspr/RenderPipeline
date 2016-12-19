@@ -65,9 +65,7 @@ class Application(ShowBase):
         if isfile(join(source_path, "1.png")):
             extension = ".png"
 
-        # cubemap = self.loader.loadCubeMap(
-        #     Filename.from_os_specific(join(source_path, "#" + extension)))
-        cubemap = self.loader.load_texture("source1/envmap.hdr")
+        cubemap = self.loader.load_texture("source/envmap.hdr")
         mipmap, size = -1, 1024
 
         # cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
@@ -118,10 +116,7 @@ class Application(ShowBase):
         print("Writing txo ..")
 
         self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.gsg)
-        dest_cubemap.write("cubemap.txo.pz")
-
-        # For debugging
-        dest_cubemap.write("out/cubemap-#-#.png", 0, 0, True, True)
+        dest_cubemap.write("cubemap.txo")
 
         print("Done.")
 

@@ -74,7 +74,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float bias_mult = 0.3;
+    const float bias_mult = 1.0;
     const float slope_bias = 0.05 * bias_mult;
     const float normal_bias = 0.01 * bias_mult;
     const float const_bias = 0.005 * bias_mult;
@@ -85,7 +85,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
     const int num_samples = 8;
-    const float filter_size = 3.0 / SHADOW_ATLAS_SIZE;
+    const float filter_size = 2.0 / SHADOW_ATLAS_SIZE;
 
     float accum = 0.0;
 
@@ -165,7 +165,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         // Get shadow factor
         vec3 v2l = normalize(m.position - get_light_position(light_data));
         int source_index = get_shadow_source_index(light_data);
-        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_spotlight(m, light_data, v, shadow_factor);
     }
@@ -187,7 +187,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         vec3 v2l = normalize(m.position - get_light_position(light_data));
         source_index += get_spherelight_shadow_source_offset(v2l);
 
-        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_spherelight(m, light_data, v, shadow_factor);
     }
@@ -208,7 +208,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         // Get shadow factor
         vec3 v2l = normalize(m.position - get_light_position(light_data));
         int source_index = get_shadow_source_index(light_data);
-        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_rectanglelight(m, light_data, v, shadow_factor);
     }
@@ -228,7 +228,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         // Get shadow factor
         vec3 v2l = normalize(m.position - get_light_position(light_data));
         int source_index = get_shadow_source_index(light_data);
-        SourceData source_data = read_source_data(ShadowSourceData, source_index * 5);
+        SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_tubelight(m, light_data, v, shadow_factor);
     }

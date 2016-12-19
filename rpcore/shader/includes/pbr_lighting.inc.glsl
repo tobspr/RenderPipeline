@@ -269,6 +269,26 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
 
 }
 
+vec3 spherelight_specular_shading(vec3 normal, float roughness, vec3 f0, vec3 l_unscaled, vec3 v, float sphere_radius) {
+    
+    float NxV = saturate(dot(normal, v));
+    vec3 l_unscaled_spec = get_spherical_area_light_vector(normal, l_unscaled, v, sphere_radius);
+
+    vec3 l = normalize(l_unscaled_spec);
+    vec3 h = normalize(l + v);
+
+    float NxH = saturate(dot(normal, h));
+    float NxL = saturate(dot(normal, l));
+    float LxH = saturate(dot(l, h));
+
+    float D = brdf_distribution_ggx(NxH, roughness);
+    vec3 F = brdf_schlick_fresnel(f0, LxH);
+    float G = brdf_visibility_neumann(NxV, NxL);
+
+    return brdf_cook_torrance(D, G, F, NxV, NxL) *
+        approx_sphere_light_specular_energy(roughness, sphere_radius, dot(l_unscaled_spec, l_unscaled_spec));
+}
+
 vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
     // #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
     //     return process_spherelight_reference(m, light, v, shadow);
@@ -278,29 +298,21 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
     float sphere_radius = get_spherelight_sphere_radius(light);
 
     #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
-        float NxV = saturate(dot(m.normal, v));
         vec3 l_unscaled = light_pos - m.position;
 
-        vec3 accum = vec3(0);
+        vec3 specular = vec3(0);
+        vec3 diffuse = vec3(0);
         vec3 f0 = get_material_f0(m);
         {
 
             // Specular
-            vec3 l_unscaled_spec = get_spherical_area_light_vector(m.normal, l_unscaled, v, sphere_radius);
+            specular = spherelight_specular_shading(m.normal, m.roughness, f0, l_unscaled, v, sphere_radius);
 
-            vec3 l = normalize(l_unscaled_spec);
-            vec3 h = normalize(l + v);
-
-            float NxH = saturate(dot(m.normal, h));
-            float NxL = saturate(dot(m.normal, l));
-            float LxH = saturate(dot(l, h));
-
-            float D = brdf_distribution_ggx(NxH, m.roughness);
-            vec3 F = brdf_schlick_fresnel(f0, LxH);
-            float G = brdf_visibility_neumann(NxV, NxL);
-
-            accum += brdf_cook_torrance(D, G, F, NxV, NxL) *
-                approx_sphere_light_specular_energy(m.roughness, sphere_radius, dot(l_unscaled_spec, l_unscaled_spec));        
+            BRANCH_CLEARCOAT(m) {
+                vec3 specular_coat = spherelight_specular_shading(m.normal, CLEARCOAT_ROUGHNESS, vec3(CLEARCOAT_SPECULAR), l_unscaled, v, sphere_radius);
+                specular = approx_merge_clearcoat_specular(specular, specular_coat);
+            }
+        
         }
 
         {
@@ -312,12 +324,11 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
             // Luminous power -> luminance
             // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba well. hm. 
             float scale_factor = sphere_radius * sphere_radius;
-            accum += att * NxL * get_material_diffuse(m) * scale_factor;
+            diffuse = att * NxL * get_material_diffuse(m) * scale_factor;
         }
 
-        accum *= shadow;
+        vec3 accum = (diffuse + specular) * (shadow * light_clip_falloff(light, m.position));
         accum *= get_light_color(light);
-        accum *= light_clip_falloff(light, m.position);
         return accum;
         
     #else
@@ -385,6 +396,21 @@ vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
     vec2 schlick = textureLod(LTCAmpTex, coords, 0).xy;
     specular *= f0 * schlick.x + (1.0 - f0) * schlick.y;
     diffuse *= get_material_diffuse(m);
+
+    BRANCH_CLEARCOAT(m) {
+        
+        vec2 coords_coat = LTC_Coords(dot(m.normal, v), CLEARCOAT_ROUGHNESS);
+        mat3 minv_coat = LTC_Matrix(LTCMatTex, coords_coat);
+        vec3 specular_coat = LTC_EvaluateRect(m.normal, v, m.position, minv_coat, points);    
+        
+        vec3 f0_coat = vec3(CLEARCOAT_SPECULAR);
+        vec2 schlick_coat = textureLod(LTCAmpTex, coords_coat, 0).xy;
+        specular_coat *= f0_coat * schlick_coat.x + (1.0 - f0_coat) * schlick_coat.y;
+        
+        specular = approx_merge_clearcoat_specular(specular, specular_coat);
+        // specular = mix(specular, specular_coat * 20, schlick.y);
+        // specular = vec3(schlick.y);
+    };
 
     return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);
 }

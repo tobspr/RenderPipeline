@@ -297,6 +297,11 @@ class RenderPipeline(RPObject):
 
         # TODO: Split into several sub-methods or even its own class
         for light in scene.find_all_matches("**/+PointLight"):
+            self.error("Found PointLight '" + light.get_name() + "' in your scene. Please "
+                       "re-export your geometry using the newest BAM Exporter version to convert "
+                       "them to SphereLights")
+
+        for light in scene.find_all_matches("**/+SphereLight"):
             light_node = light.node()
             rp_light = SphereLight()
             rp_light.pos = light.get_pos(Globals.base.render)
@@ -305,7 +310,7 @@ class RenderPipeline(RPObject):
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.sphere_radius = 1.0
+            rp_light.sphere_radius = light_node.radius
 
             self.add_light(rp_light)
             light.remove_node()
@@ -327,7 +332,7 @@ class RenderPipeline(RPObject):
             self.add_light(rp_light)
             light.remove_node()
             lights.append(rp_light)
-            self.make_light_geometry(rp_light)
+            # self.make_light_geometry(rp_light)
 
         envprobes = []
         for np in scene.find_all_matches("**/ENVPROBE*"):

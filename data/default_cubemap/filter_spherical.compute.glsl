@@ -84,7 +84,7 @@ uniform int currentMip;
 uniform int currentFace;
 uniform float weight;
 uniform float seed;
-layout(rgba32f) uniform imageCube DestTex;
+layout(rgba16f) uniform imageCube DestTex;
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);

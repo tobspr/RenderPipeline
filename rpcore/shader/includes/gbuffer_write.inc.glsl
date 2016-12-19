@@ -81,7 +81,9 @@ void render_material(MaterialShaderOutput m) {
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         // Scale up roughness since the layer refracts the rays (this is an approximation)
-        m.roughness *= 1.4;
+        // m.roughness *= 1.4;
+        metallic = 1;
+        specular = 1.51;
     }
 
     float roughness = clamp(m.roughness, MINIMUM_ROUGHNESS, 1.0);

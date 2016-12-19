@@ -293,7 +293,8 @@ class Effect(RPObject):
         # Add a closing newline to the file
         addline("")
 
-        # Warn the user about all unused hooks
+        # Warn the user about all unused hooks, since most likely this is due to
+        # spelling mistakes
         for key in injections:
             self.warn("Hook '" + key + "' not found in template '" + template_src + "'!")
 
@@ -301,18 +302,7 @@ class Effect(RPObject):
         shader_content = "\n".join(parsed_lines)
         temp_path = "/$$rptemp/$$effect-" + cache_key + ".glsl"
 
-        # Check if we really have to re-write the shader_lines
-        current_content = None
-        try:
-            with open(temp_path, "r") as handle:
-                current_content = handle.read()
-        except:
-            pass
-        
-        # Effect did not change. Can skip writing to improve loading performance
-        if current_content == shader_content:
-            return temp_path
-
+        self.debug("Writing", temp_path)
         with open(temp_path, "w") as handle:
             handle.write(shader_content)
 

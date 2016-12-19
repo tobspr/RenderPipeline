@@ -138,6 +138,7 @@ Material unpack_material(GBufferData data, vec2 fcoord) {
     m.specular = ior_to_specular(data1.w);
     m.shading_model = int(data2.z);
     m.shading_model_param0 = data2.w;
+    
 
     // Velocity, not stored in the Material struct but stored in the G-Buffer
     // vec2 velocity = data2.xy;

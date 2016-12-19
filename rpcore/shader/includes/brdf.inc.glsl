@@ -262,7 +262,7 @@ vec3 get_material_f0(Material m) {
 }
 
 vec3 get_material_diffuse(Material m) {
-    return m.basecolor * (1 - m.metallic);
+    return m.basecolor * saturate(1.0 - m.metallic);
 }
 
 

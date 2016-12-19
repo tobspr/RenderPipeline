@@ -181,7 +181,7 @@ class BufferViewer(DraggableWindow):
             # Can not use isinstance or we get circular import references
             elif entry.__class__.__name__ == "RenderTarget":
                 empty = True
-                target_order = ["depth", "color", "aux0", "aux1", "aux2", "aux3", "aux4"]
+                target_order = ["depth", "color", "aux_0", "aux_1", "aux_2", "aux_3", "aux_4"]
                 for target in target_order:
                     if target in entry.targets:
                         self._stages.append(entry.targets[target])
