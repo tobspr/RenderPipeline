@@ -40,7 +40,7 @@ float approx_sphere_light_specular_energy(float roughness, float sphere_radius, 
     float r = roughness * roughness;
     float inv_r = (1 - roughness) * (1 - roughness);
     r *= inv_r * inv_r * inv_r;
-    return 75.0 * r / (d_sq) * pow(sphere_radius, 1.5);
+    return r * min(1.0, sphere_radius * sphere_radius);
 }
 
 float approx_spot_light_specular_energy(float roughness, float cos_fov) {

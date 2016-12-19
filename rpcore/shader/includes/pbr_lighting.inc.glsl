@@ -252,7 +252,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         points[8] = light_pos - right_vector - tube_radius * tube_direction;
         points[9] = light_pos - right_vector - tube_radius * tube_direction * sqrt_05 - up_vector * sqrt_05;
 
-        vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
+        vec2 coords = LTC_Coords(dot(m.normal, v), m.roughness);
         mat3 minv = LTC_Matrix(LTCMatTex, coords);
         vec3 specular = LTC_Evaluate(m.normal, v, m.position, minv, points, num_points);    
         vec3 diffuse = LTC_Evaluate(m.normal, v, m.position, mat3(1), points, num_points);    
@@ -356,7 +356,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
             points[i] = light_pos + sin(phi) * up_vector * radius + cos(phi) * right_vector * radius;
         }
 
-        vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
+        vec2 coords = LTC_Coords(dot(m.normal, v), m.roughness);
         mat3 minv = LTC_Matrix(LTCMatTex, coords);
         vec3 specular = LTC_Evaluate(m.normal, v, m.position, minv, points, num_points);    
         vec3 diffuse = LTC_Evaluate(m.normal, v, m.position, mat3(1), points, num_points);    
@@ -386,7 +386,7 @@ vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
     points[2] = light_pos + right_vector + up_vector;
     points[3] = light_pos - right_vector + up_vector;
 
-    vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
+    vec2 coords = LTC_Coords(dot(m.normal, v), m.roughness);
     mat3 minv = LTC_Matrix(LTCMatTex, coords);
     vec3 specular = LTC_EvaluateRect(m.normal, v, m.position, minv, points);    
     vec3 diffuse = LTC_EvaluateRect(m.normal, v, m.position, mat3(1), points);    
