@@ -93,14 +93,14 @@ class LightGeometry(RPObject):
             model.set_sx(light.right_vector.length())
             model.reparent_to(parent)
             model.set_pos(light.pos)
-            model.set_name(cls.DEBUG_GEOMETRY_NAME)    
+            model.set_name(cls.DEBUG_GEOMETRY_NAME)
             return parent
 
     @classmethod
     def _make_tube_light(cls, light):
         """ Internal method to make a tube light """
         model = RPLoader.load_model(join(cls.MODEL_PATH, "tube.bam"))
-        
+
         # Create sphere on both ends
         left = model.find("**/TubeEndLeft")
         left.set_y(light.tube_length / 2 - light.tube_radius)
@@ -126,7 +126,7 @@ class LightGeometry(RPObject):
         return model
 
     @classmethod
-    def _make_spot_light(cls, light):
+    def _make_spot_light(cls, light):  # pylint: disable=unused-argument
         """ Internal method to create the geometry for a spot light """
         cls.warn("TODO: Implement spot lights in light ")
         return Globals.base.render.attach_new_node(cls.DEBUG_GEOMETRY_NAME)

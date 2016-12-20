@@ -34,7 +34,7 @@ out vec2 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
-    vec3 normal = gbuffer_get_normal(texcoord);    
+    vec3 normal = gbuffer_get_normal(texcoord);
 
     // Smooth out normal usign depth based normal, to avoid having
     // too high frequences

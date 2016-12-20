@@ -40,7 +40,7 @@ out vec2 ao_result;
 
 void main() {
     ao_result.x = compute_ao(ivec2(gl_FragCoord.xy) * 2);
-    
+
     #if HAVE_PLUGIN(sky_ao)
         Material m = unpack_material(GBuffer, get_half_texcoord());
         ao_result.y = compute_sky_ao(m.position, m.normal, SKYAO_HIGH_QUALITY, ivec2(gl_FragCoord.xy) * 2);

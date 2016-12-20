@@ -70,7 +70,7 @@ class NetworkCommunication(RPObject):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             sock.sendto(message.encode("utf-8"), ("127.0.0.1", port))
-        except Exception as msg:
+        except Exception as msg:  # pylint: disable=general-exception
             RPObject.global_warn("Network", "Exception during send:", msg)
         finally:
             sock.close()
@@ -170,7 +170,7 @@ class NetworkCommunication(RPObject):
             self._pipeline.export_materials(path)
 
         elif cmd.startswith("update_material"):
-            
+
             data = cmd[len("update_material "):].strip()
             parts = data.split()
             self._pipeline.update_serialized_material(parts)

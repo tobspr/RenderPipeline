@@ -259,7 +259,7 @@ float compute_screen_fade_factor(vec2 coords, float fade_range) {
     fade *= saturate(min(coords.x, 1 - coords.x) / fade_range);
     fade *= saturate(min(coords.y, 1 - coords.y) / fade_range * ASPECT_RATIO);
     return fade;
-}   
+}
 
 // Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)

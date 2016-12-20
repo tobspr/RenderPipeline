@@ -35,7 +35,7 @@
  * @details This contructs a new rectangle light with default settings.
  */
 RPRectangleLight::RPRectangleLight() :
-    RPLight(RPLight::LT_rectangle_light), 
+    RPLight(RPLight::LT_rectangle_light),
     _up_vector(0, 0, 1),
     _right_vector(1, 0, 0) {
 }
@@ -80,7 +80,7 @@ void RPRectangleLight::update_shadow_sources() {
  * @brief See RPLight::get_conversion_factor
  */
 float RPRectangleLight::get_conversion_factor(IntensityType from, IntensityType to) const {
-    if (from == to) 
+    if (from == to)
         return 1.0;
 
     float divisor = 4 * _right_vector.length() * _up_vector.length() * M_PI;

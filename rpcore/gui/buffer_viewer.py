@@ -207,7 +207,16 @@ class BufferViewer(DraggableWindow):
         """ Internal method when a texture is blurred """
         self._tex_preview.present(tex_handle)
 
-    def _render_stages(self):
+    def _get_stage_color(self, stage_tex):
+        """ Returns the background color for a given stage """
+        if isinstance(stage_tex, Image):
+            return 0.127, 0.29, 0.44, 1.0
+        elif isinstance(stage_tex, EmptyStage):
+            return 0.26, 0.44, 0.125, 1.0
+        else:
+            return 0.32, 0.32, 0.32, 1.0
+
+    def _render_stages(self):  #pylint: disable=too-many-statements
         """ Renders the stages to the window """
 
         self._remove_components()
@@ -234,18 +243,13 @@ class BufferViewer(DraggableWindow):
             node.set_sz(-1)
             node.set_pos(10 + xoffs * (entry_width - 14), 1, yoffs * (entry_height - 14 + 10))
 
-            r, g, b = 0.2, 0.2, 0.2
-            if isinstance(stage_tex, Image):
-                r, g, b = 0.2, 0.4, 0.6
-            elif isinstance(stage_tex, EmptyStage):
-                r, g, b = 0.6, 0.4, 0.2
-
+            color = self._get_stage_color(stage_tex)
             stage_name = stage_name.replace("render_pipeline_internal:", "")
             parts = stage_name.split(":")
             stage_name = parts[-1]
             DirectFrame(
                 parent=node, frameSize=(7, entry_width - 17, -7, -entry_height + 17),
-                frameColor=(r, g, b, 1.0), pos=(0, 0, 0))
+                frameColor=color, pos=(0, 0, 0))
 
             frame_hover = DirectFrame(
                 parent=node, frameSize=(0, entry_width - 10, 0, -entry_height + 10),
@@ -292,5 +296,4 @@ class BufferViewer(DraggableWindow):
                 Text(text="{} x {}".format(w, h), x=15, y=84, parent=node, size=12, color=Vec3(0.8))
 
         num_rows = (index + entries_per_row) // entries_per_row
-
         self._set_scroll_height(50 + (entry_height - 14 + 10) * num_rows)

@@ -28,7 +28,7 @@
 
 layout(early_fragment_tests) in;
 
-// This shader takes the list of all camera frustum lights, and evaluates whether they 
+// This shader takes the list of all camera frustum lights, and evaluates whether they
 // are in the given slice
 
 #pragma include "render_pipeline_base.inc.glsl"
@@ -58,7 +58,7 @@ void main() {
     Frustum view_frustum = make_view_frustum(0, 0, SCREEN_SIZE_INT, start_dist, end_dist);
 
     // Check for all lights if they are in current slice
-    for (int i = thread_offset; i < max_light_count; i += LC_SLICE_CULL_THREADS) {   
+    for (int i = thread_offset; i < max_light_count; i += LC_SLICE_CULL_THREADS) {
         int light_index = int(texelFetch(FrustumLights, i).x);
 
         LightData light_data = read_light_data(AllLightsData, light_index);

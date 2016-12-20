@@ -24,9 +24,6 @@ sync-video #f
 # Limit the pstats-rate. This causes huge lag on windows 10.
 pstats-max-rate 200
 
-# No stack trace on assertion, set this to true to make panda crash on assertions
-# (which will allow to debug it)
-# assert-abort #t
 # show-dll-error-dialog #f
 
 # File system should be case sensitive
@@ -174,3 +171,4 @@ allow-incomplete-render #t
 # gl-version 3 2
 
 no-singular-invert #f
+assert-abort #f

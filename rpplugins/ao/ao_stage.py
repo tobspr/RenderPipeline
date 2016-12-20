@@ -83,7 +83,7 @@ class AOStage(RenderStage):
         else:
             self.fatal("Unkown blur quality")
 
-        # Create N blur passes (each horizontal/vertical) which smooth out the result 
+        # Create N blur passes (each horizontal/vertical) which smooth out the result
         self.blur_targets = []
         current_tex = self.target_resolve.color_tex
 

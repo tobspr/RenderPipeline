@@ -40,7 +40,7 @@ class MotionBlurStage(RenderStage):
         RenderStage.__init__(self, *args)
         self.per_object_blur = False
         self.tile_size = 16
-        
+
 
     @property
     def produced_pipes(self):

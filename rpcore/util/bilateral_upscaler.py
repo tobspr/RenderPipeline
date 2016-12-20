@@ -42,7 +42,7 @@ class BilateralUpscaler(RPObject):
         """ Creates a new upscaler with the given name. Percentage controls
         the maximum amount of invalid pixels which can be processed, for example
         a value of 0.05 means that 5% of all pixels may be invalid.
-        
+
         Parameters:
             parent_stage: Stage which contains the upscaler
             halfres: Whether to upscale from quarte to half resolution, instead of
@@ -70,7 +70,7 @@ class BilateralUpscaler(RPObject):
             self.counter = Image.create_counter(self.name + ":BadPixelsCounter")
             self.counter.set_clear_color(Vec4(0))
             self.databuffer = Image.create_buffer(self.name + ":BadPixelsData", 1, "R32I")
-    
+
     def _prepare_target(self):
         """ Prepares all required render targets """
         self.target_upscale = self.parent_stage.create_target(self.name + ":Upscale")
@@ -102,7 +102,7 @@ class BilateralUpscaler(RPObject):
 
         if self.fillin:
             self.target_fillin.shader = fillin_shader
-        
+
     def set_dimensions(self):
         """ Adapts the targets to the current resolution """
         if self.fillin:

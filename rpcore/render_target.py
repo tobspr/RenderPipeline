@@ -129,7 +129,7 @@ class RenderTarget(RPObject):
 
         if not isinstance(params, (list, tuple)):
             params = (params, params)
-        
+
         def percent_to_number(v):
             if isinstance(v, str):
                 return {

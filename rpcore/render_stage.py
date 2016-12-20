@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec4
-
 from rplibs.six import itervalues, iteritems
 
 from rpcore.rpobject import RPObject

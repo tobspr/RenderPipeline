@@ -48,7 +48,7 @@ vec3 importance_sample_ggx(vec2 xi, float alpha)
 
     float cos_theta = sqrt(cos_theta_sq);
     float sin_theta = sqrt(1.0 - cos_theta_sq);
-    
+
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
@@ -66,7 +66,7 @@ vec4 importance_sample_ggx_pdf(vec2 E, float alpha)
 	h.x = sin_theta * cos(phi);
 	h.y = sin_theta * sin(phi);
 	h.z = cos_theta;
-	
+
 	float d = (cos_theta * m2 - cos_theta) * cos_theta + 1;
 	float D = m2 / (M_PI * d * d);
 	float pdf = D * cos_theta;
@@ -93,7 +93,7 @@ vec3 sample_hemisphere(vec2 Xi)
     return vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
 }
 
-vec3 tangent_to_world(vec3 t, vec3 n) 
+vec3 tangent_to_world(vec3 t, vec3 n)
 {
     vec3 tangent, binormal;
     find_arbitrary_tangent(n, tangent, binormal);

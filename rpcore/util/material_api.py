@@ -44,7 +44,7 @@ class MaterialAPI(RPObject):
         raise NotImplementedError("TODO")
 
     @classmethod
-    def make_emissive(cls, name="GeneratedMaterial", basecolor=Vec3(0.8), 
+    def make_emissive(cls, name="GeneratedMaterial", basecolor=Vec3(0.8),
                       emissive_factor=0.2, exact=False):
         """ Creates a new emissive material. If exact is set to True,
         the material will be configured to represent the given basecolor
@@ -59,7 +59,7 @@ class MaterialAPI(RPObject):
         m.set_roughness(1.0)
         m.set_refractive_index(1.5)
         m.set_metallic(0)
-        return m    
+        return m
 
     @classmethod
     def get_shading_model(cls, m):

@@ -31,7 +31,7 @@
  *
  *   The sphere size controls the size of the lights sphere size in world
  *   space units, and impacts the specular highlight. In case the intensity
- *   was specified in luminance, this also affects the intensity of the light. 
+ *   was specified in luminance, this also affects the intensity of the light.
  *
  * @param sphere-size Sphere size in world space
  */

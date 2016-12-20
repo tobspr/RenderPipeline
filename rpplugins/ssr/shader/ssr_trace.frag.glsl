@@ -190,7 +190,7 @@ void main()
     // Jitter ray position to make sure we catch all details
     float jitter = abs(rand(ivec2(gl_FragCoord.xy) % 8 +
         (MainSceneData.frame_index % GET_SETTING(ssr, history_length)) * 0.1));
-    
+
     // Rough sourfaces need more jitter
     jitter *= max(0.5, m.roughness);
 

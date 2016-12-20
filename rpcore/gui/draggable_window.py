@@ -98,7 +98,6 @@ class DraggableWindow(RPObject):
             parent=self._node)
         self._title_bar = DirectFrame(
             pos=(0, 1, 0), frameSize=(0, self._width, 0, -25),
-            # frameColor=(0.058, 0.058, 0.058, 1),
             frameColor=(1, 1, 1, 1),
             parent=self._node,
             state=DGG.NORMAL)

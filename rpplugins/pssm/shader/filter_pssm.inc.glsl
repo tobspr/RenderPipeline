@@ -52,7 +52,7 @@ vec3 get_pssm_split_biased_position(vec3 pos, vec3 normal, vec3 sun_vector, int 
     // bias.
     float slope_bias = GET_SETTING(pssm, slope_bias) * 0.1 * (1 + 0.2 * split);
     const float normal_bias = GET_SETTING(pssm, normal_bias) * 0.1;
-    
+
     // Compute the biased position based on the normal and slope scaled
     // bias.
     vec3 biased_pos = get_biased_position(pos, slope_bias, normal_bias, normal, sun_vector);

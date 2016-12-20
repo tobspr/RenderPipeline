@@ -81,12 +81,12 @@ void RPSpotLight::update_shadow_sources() {
  * @brief See RPLight::get_conversion_factor
  */
 float RPSpotLight::get_conversion_factor(IntensityType from, IntensityType to) const {
-    if (from == to) 
+    if (from == to)
         return 1.0;
 
     float cos_fov_half = cos(_fov / 360.0 * M_PI);
     float divisor = 2.0 * M_PI * (1 - cos_fov_half);
-    
+
     if (from == IT_luminance && to == IT_lumens)
         return divisor;
     else if(from == IT_lumens && to == IT_luminance)

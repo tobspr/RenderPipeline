@@ -76,13 +76,13 @@ class CullLightsStage(RenderStage):
         # Create all required buffers
         self.frustum_lights_ctr = Image.create_counter("VisibleLightCount")
         self.frustum_lights = Image.create_buffer("FrustumLights", self._pipeline.light_mgr.MAX_LIGHTS, "R16UI")
-        
+
         self.per_slice_lights = Image.create_buffer("PerSliceLights", self.culling_grid_slices * self._pipeline.light_mgr.MAX_LIGHTS, "R16UI")
         self.per_slice_lights_ctr = Image.create_buffer("PerSliceLightsCounter", self.culling_grid_slices, "R32I")
 
         self.per_cell_lights = Image.create_buffer("PerCellLights", 0, "R16UI")
         self.per_cell_light_counts = Image.create_buffer("PerCellLightCounts", 0, "R32I") # Needs to be R32 for atomic add in cull stage
-        
+
         self.grouped_cell_lights = Image.create_buffer("GroupedPerCellLights", 0, "R16UI")
         self.grouped_cell_lights_counts = Image.create_buffer("GroupedPerCellLightsCount", 0, "R16UI")
 
@@ -117,7 +117,7 @@ class CullLightsStage(RenderStage):
         self.target_cull.set_shader_input("PerSliceLights", self.per_slice_lights)
         self.target_cull.set_shader_input("PerSliceLightsCount", self.per_slice_lights_ctr)
         self.target_cull.set_shader_input("threadCount", self.cull_threads)
-        
+
         # Target which takes the per-voxel light list and sorts it by light type, to
         # get better branching coherency
         # TODO: Use no oversized triangle in this stage

@@ -46,7 +46,7 @@ void main() {
         return;
     }
     sun_pos_tc = sun_proj.xy * 0.5 + 0.5;
-    godray_factor = compute_screen_fade_factor(sun_pos_tc, 0.02);    
+    godray_factor = compute_screen_fade_factor(sun_pos_tc, 0.02);
 
 
     gl_Position = vec4(p3d_Vertex.xz, 0, 1);

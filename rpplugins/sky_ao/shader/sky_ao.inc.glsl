@@ -52,7 +52,7 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 
     if (quality == SKYAO_HIGH_QUALITY) {
         seed.x += 10 + 734 * (MainSceneData.frame_index % max(1, GET_SETTING(ao, clip_length)));
     }
-    
+
     float noise_amount = GET_SETTING(sky_ao, noise_amount);
     float jitter = rand(seed * 0.23423 + 0.96344) * 0.9;
     float rot_x  = rand(seed * 0.63452 + 0.45343) * noise_amount;
@@ -83,7 +83,7 @@ float compute_sky_ao(vec3 ws_position, vec3 ws_normal, const int quality, ivec2 
         for (int k = 1; k <= trace_steps; ++k) {
             float d = k + jitter.x;
             vec3 pos = ws_position + offset * d;
-            vec2 offcoord = (pos.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5; // TODO: optimize 
+            vec2 offcoord = (pos.xy - SkyAOCapturePosition.xy) / film_size * 0.5 + 0.5; // TODO: optimize
 
             float sample_z = textureLod(SkyAOHeight, offcoord, 0).x;
             if (sample_z > pos.z + position_bias) {

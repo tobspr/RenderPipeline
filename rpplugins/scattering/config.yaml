@@ -89,7 +89,7 @@ settings: !!omap
         label: Enable Godrays (beta)
         description: >
             This enables the (beta) support for godrays.
-    
+
     - godrays_max_samples:
         display_if: {enable_godrays: true}
         type: int
@@ -110,7 +110,7 @@ settings: !!omap
         description: >
             Splits computation of godrays over multiple frames to improve performance,
             might lead to artifacts though.
-    
+
     - godrays_strength:
         display_if: {enable_godrays: true}
         type: float

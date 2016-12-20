@@ -55,7 +55,7 @@ uniform int maxLightIndex;
     uniform mat4 PSSMSceneSunShadowMVP;
 #endif
 
-#if HAVE_PLUGIN(sky_ao) 
+#if HAVE_PLUGIN(sky_ao)
     #pragma include "/$$rp/rpplugins/sky_ao/shader/sky_ao.inc.glsl"
 #endif
 
@@ -153,7 +153,7 @@ uniform int maxLightIndex;
 
         #if HAVE_PLUGIN(env_probes)
             const float sky_ambient_factor = TimeOfDay.env_probes.sky_ambient_scale;
-            const float ambient_factor = TimeOfDay.env_probes.ambient_scale;    
+            const float ambient_factor = TimeOfDay.env_probes.ambient_scale;
         #else
             const float sky_ambient_factor = 0.05;
             const float ambient_factor = 0.1;

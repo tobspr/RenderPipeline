@@ -134,7 +134,7 @@ class RPLight : public ReferenceCount {
 
         // used to convert between luminance and luminous power
         virtual float get_conversion_factor(IntensityType from, IntensityType to) const = 0;
- 
+
         int _slot;
         int _ies_profile;
         size_t _source_resolution;

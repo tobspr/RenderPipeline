@@ -56,15 +56,8 @@ class TexturePreview(DraggableWindow):
         self._preview_image = None
         self._create_components()
 
-    def present(self, tex):
-        """ "Presents" a given texture and shows the window """
-        self._current_tex = tex
-
-        self.set_title(tex.get_name())
-
-        # Remove old content
-        self._content_node.node().remove_all_children()
-
+    def _find_dimensions(self, tex):
+        """ Determines the dimensions to show the texture at """
         w, h = tex.get_x_size(), tex.get_y_size()
         if h > 1 and w > 0:
             scale_x = (self._width - 40.0) / w
@@ -77,9 +70,20 @@ class TexturePreview(DraggableWindow):
                 pass
             display_w = int(scale_f * w)
             display_h = int(scale_f * h)
+            return display_w, display_h
         else:
             display_w = self._width - 40
             display_h = self._height - 110
+            return display_w, display_h
+
+    def present(self, tex):
+        """ "Presents" a given texture and shows the window """
+        self._current_tex = tex
+        self.set_title(tex.get_name())
+
+        # Remove old content
+        self._content_node.node().remove_all_children()
+        display_w, display_h = self._find_dimensions(tex)
 
         image = Sprite(
             image=tex, parent=self._content_node, x=20, y=90, w=display_w,
@@ -105,59 +109,29 @@ class TexturePreview(DraggableWindow):
         Text(text=size_desc, parent=self._content_node, x=self._width - 20.0,
              y=70, size=18, color=Vec3(0.34, 0.564, 0.192), align="right")
 
-        x_pos = len(size_desc) * 9 + 140
+        self._header_offset = len(size_desc) * 9 + 140
 
-        # Slider for viewing different mipmaps
         if tex.uses_mipmaps():
-            max_mips = tex.get_expected_num_mipmap_levels() - 1
-            self._mip_slider = Slider(
-                parent=self._content_node, size=140, min_value=0, max_value=max_mips,
-                callback=self._set_mip, x=x_pos, y=65, value=0)
-            x_pos += 140 + 5
+            self._make_mipmap_slider(tex)
 
-            self._mip_text = Text(
-                text="MIP: 5", parent=self._content_node, x=x_pos, y=72, size=18,
-                color=Vec3(1, 0.4, 0.4), may_change=1)
-            x_pos += 50 + 30
-
-        # Slider for viewing different Z-layers
         if tex.get_z_size() > 1:
-            self._slice_slider = Slider(
-                parent=self._content_node, size=250, min_value=0,
-                max_value=tex.get_z_size() - 1, callback=self._set_slice, x=x_pos,
-                y=65, value=0)
-            x_pos += 250 + 5
+            self._make_z_slider(tex)
 
-            self._slice_text = Text(
-                text="Z: 5", parent=self._content_node, x=x_pos, y=72, size=18,
-                color=Vec3(0.4, 1, 0.4), may_change=1)
-
-            x_pos += 50 + 30
-
-        # Slider to adjust brightness
-        self._bright_slider = Slider(
-            parent=self._content_node, size=140, min_value=-14, max_value=14,
-            callback=self._set_brightness, x=x_pos, y=65, value=0)
-        x_pos += 140 + 5
-        self._bright_text = Text(
-            text="Bright: 1", parent=self._content_node, x=x_pos, y=72, size=18,
-            color=Vec3(0.4, 0.4, 1), may_change=1)
-        x_pos += 100 + 30
-
-        # Slider to enable reinhard tonemapping
-        self._tonemap_box = LabeledCheckbox(
-            parent=self._content_node, x=x_pos, y=58, text="Tonemap",
-            text_color=Vec3(1, 0.4, 0.4), chb_checked=False,
-            chb_callback=self._set_enable_tonemap,
-            text_size=18, expand_width=90)
-        x_pos += 90 + 50
+        self._make_luminance_slider(tex)
+        self._make_tonemapping_options()
 
         # Button to export impage
-        self._btn_export = Button(parent=self._content_node, x=x_pos, y=58, text="Export",
+        self._btn_export = Button(parent=self._content_node, x=self._header_offset, y=58, text="Export",
                                   width=120, callback=self._export_image, bg=(0.34, 0.564, 0.192, 1))
 
-        x_pos += 120 + 30
+        self._header_offset += 120 + 30
 
+        self._prepare_inputs(tex, image, display_w, display_h)
+
+        self._preview_image = image
+        self.show()
+
+    def _prepare_inputs(self, tex, image, display_w, display_h):
         image.set_shader_input("slice", 0)
         image.set_shader_input("mipmap", 0)
         image.set_shader_input("brightness", 1)
@@ -174,8 +148,49 @@ class TexturePreview(DraggableWindow):
         image.set_shader(preview_shader)
         image.set_shader_input("DisplayTex", tex, stage_sampler)
 
-        self._preview_image = image
-        self.show()
+    def _make_mipmap_slider(self, tex):
+        max_mips = tex.get_expected_num_mipmap_levels() - 1
+        self._mip_slider = Slider(
+            parent=self._content_node, size=140, min_value=0, max_value=max_mips,
+            callback=self._set_mip, x=self._header_offset, y=65, value=0)
+        self._header_offset += 140 + 5
+
+        self._mip_text = Text(
+            text="MIP: 5", parent=self._content_node, x=self._header_offset, y=72, size=18,
+            color=Vec3(1, 0.4, 0.4), may_change=1)
+        self._header_offset += 50 + 30
+
+    def _make_z_slider(self, tex):
+        self._slice_slider = Slider(
+                parent=self._content_node, size=250, min_value=0,
+                max_value=tex.get_z_size() - 1, callback=self._set_slice, x=self._header_offset,
+                y=65, value=0)
+        self._header_offset += 250 + 5
+
+        self._slice_text = Text(
+            text="Z: 5", parent=self._content_node, x=self._header_offset, y=72, size=18,
+            color=Vec3(0.4, 1, 0.4), may_change=1)
+
+        self._header_offset += 50 + 30
+
+    def _make_luminance_slider(self, tex):
+        self._luminance_slider = Slider(
+            parent=self._content_node, size=140, min_value=-14, max_value=14,
+            callback=self._set_brightness, x=self._header_offset, y=65, value=0)
+        self._header_offset += 140 + 5
+        self._bright_text = Text(
+            text="Bright: 1", parent=self._content_node, x=self._header_offset, y=72, size=18,
+            color=Vec3(0.4, 0.4, 1), may_change=1)
+        self._header_offset += 100 + 30
+
+    def _make_tonemapping_options(self):
+        self._tonemap_box = LabeledCheckbox(
+            parent=self._content_node, x=self._header_offset, y=58, text="Tonemap",
+            text_color=Vec3(1, 0.4, 0.4), chb_checked=False,
+            chb_callback=self._set_enable_tonemap,
+            text_size=18, expand_width=90)
+        self._header_offset += 90 + 50
+
 
     def _set_slice(self):
         idx = int(self._slice_slider.value)
@@ -188,7 +203,7 @@ class TexturePreview(DraggableWindow):
         self._mip_text.set_text("MIP " + str(idx))
 
     def _set_brightness(self):
-        val = self._bright_slider.value
+        val = self._luminance_slider.value
         scale = 2 ** val
         self._bright_text.set_text("Bright: " + str(round(scale, 3)))
         self._preview_image.set_shader_input("brightness", scale)
@@ -201,10 +216,10 @@ class TexturePreview(DraggableWindow):
         DraggableWindow._create_components(self)
         self._content_node = self._node.attach_new_node("content")
 
-    def _export_image(self, event):  # pylint: disable=unused-variable
-        """ Exports the image to disk """
+    def _export_image(self, event):  # pylint: disable=unused-argument
+        """ Exports the image to disk, and also writes a csv file containing
+        the pixel values, in case the texture contains integer data """
         self.debug("Exporting image")
-
         Globals.base.graphics_engine.extract_texture_data(
             self._current_tex, Globals.base.win.get_gsg())
 
@@ -222,7 +237,6 @@ class TexturePreview(DraggableWindow):
             self._current_tex.store(img)
 
             output_lines = []
-            # output_lines.append([name, self._current_tex.get_component_type(), self._current_tex.get_format()])
             for y in range(self._current_tex.get_y_size()):
                 line = []
                 for x in range(self._current_tex.get_x_size()):

@@ -47,7 +47,7 @@ void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
 
     int start_offset = coord.y * LC_VIEW_CULLERS_SQRT + coord.x;
-    
+
     Frustum view_frustum = make_view_frustum(0, 0, SCREEN_SIZE_INT, 0.0, LC_MAX_DISTANCE);
 
     // Make sure we do not run into an infinite/huge loop

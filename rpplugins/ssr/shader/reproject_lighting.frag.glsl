@@ -79,7 +79,7 @@ void main() {
     #endif
 
     vec3 intersected_color = textureLod(Previous_PostAmbientScene, last_coord, 0).xyz;
-    
+
     #if HAVE_PLUGIN(color_correction)
         // Prevent super bright spots by clamping to a reasonable high color.
         // Otherwise very bright highlights lead to artifacts.

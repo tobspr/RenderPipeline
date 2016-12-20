@@ -27,36 +27,31 @@ THE SOFTWARE.
 from __future__ import division
 
 import sys
-import math
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties, Vec3
-from panda3d.core import GeomTristrips, Vec4, Filename
+from panda3d.core import PandaSystem, WindowProperties
+from panda3d.core import Vec4, Filename
 
 from direct.showbase.ShowBase import ShowBase
 from direct.stdpy.file import isfile, join
 
 from rplibs.yaml import load_yaml_file_flat
-from rplibs.six.moves import range  # pylint: disable=import-error
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
 from rpcore.rpobject import RPObject
 from rpcore.common_resources import CommonResources
-from rpcore.native import TagStateManager, SphereLight, SpotLight
-from rpcore.native import TubeLight, RectangleLight
+from rpcore.native import TagStateManager
 from rpcore.render_target import RenderTarget
 from rpcore.pluginbase.manager import PluginManager
 from rpcore.pluginbase.day_manager import DayTimeManager
 
 from rpcore.util.task_scheduler import TaskScheduler
 from rpcore.util.network_communication import NetworkCommunication
-from rpcore.util.material_api import MaterialAPI
 from rpcore.util.ies_profile_loader import IESProfileLoader
 from rpcore.util.scene_converter import SceneConverter
 from rpcore.util.light_geometry import LightGeometry
-from rpcore.loader import RPLoader
 
 from rpcore.gui.debugger import Debugger
 from rpcore.gui.loading_screen import LoadingScreen
@@ -75,6 +70,8 @@ from rpcore.stages.compute_low_precision_normals_stage import ComputeLowPrecisio
 from rpcore.stages.srgb_correction_stage import SRGBCorrectionStage
 from rpcore.stages.reference_stage import ReferenceStage
 
+
+__all__ = ("RenderPipeline")
 
 class RenderPipeline(RPObject):
 
@@ -110,26 +107,21 @@ class RenderPipeline(RPObject):
         the default effect will be set on all elements again. Due to this fact,
         this method is primarly useful for fast iterations when developing new
         shaders. """
+        self.debug("Reloading shaders ..")
         if self.settings["pipeline.display_debugger"]:
-            self.debug("Reloading shaders ..")
             self.debugger.error_msg_handler.clear_messages()
             self.debugger.set_reload_hint_visible(True)
             # for i in range(2):
             self._showbase.graphics_engine.render_frame()
 
-        self.debug("Cleanup states")
         self.tag_mgr.cleanup_states()
-        self.debug("Stage mgr")                
         self.stage_mgr.reload_shaders()
-        self.debug("Light mgr")                
         self.light_mgr.reload_shaders()
-        self.debug("Plugin hook")                
         self.plugin_mgr.trigger_hook("shader_reload")
         if self.settings["pipeline.display_debugger"]:
             self.debugger.set_reload_hint_visible(False)
-        self.debug("Custom shaders")                
         self._apply_custom_shaders()
-        self.debug("Done.")                
+        self.debug("Successfully reloaded shaders.")
 
     def _apply_custom_shaders(self):
         """ Re-applies all custom shaders the user applied, to avoid them getting
@@ -304,7 +296,7 @@ class RenderPipeline(RPObject):
         """ Prints information about the system used, including information
         about the used Panda3D build. Also checks if the Panda3D build is out
         of date. """
-        self.debug("Usice8ng Python {}.{} with architecture {}".format(
+        self.debug("Using Python {}.{} with architecture {}".format(
             sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
         self.debug("Using p3d{} built on {}".format(
             PandaSystem.get_version_string(), PandaSystem.get_build_date()))
@@ -481,12 +473,12 @@ class RenderPipeline(RPObject):
             import watchdog
             import watchdog.events
             import watchdog.observers
-        except Exception:
+        except ImportError:
             self.warn("File watching enabled (pipeline.auto_reload_plugin_shaders=True), "
                       "but watchdog package is not installed. Use 'ppython -m pip install watchdog' to "
                       "install it.")
             return
-        
+
         self._queued_plugin_reloads = set()
         base_path = join(Filename(self.mount_mgr.base_path).to_os_specific(), "rpplugins").replace("\\", "/")
         rp_instance = self

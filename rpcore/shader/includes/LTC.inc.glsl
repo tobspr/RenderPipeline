@@ -46,7 +46,7 @@ mat3 mat3_from_rows(vec3 c0, vec3 c1, vec3 c2)
 {
     return transpose(mat3(c0, c1, c2));
 }
- 
+
 vec2 LTC_Coords(float cosTheta, float roughness)
 {
     float theta = acos(cosTheta);

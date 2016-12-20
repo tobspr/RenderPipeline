@@ -42,7 +42,7 @@ void main() {
         result = 0.0;
         return;
     }
-    
+
     vec3 sun_vector = get_sun_vector();
     vec3 view_vector = normalize(m.position - MainSceneData.camera_pos);
     result = saturate(pow(saturate(dot(view_vector, sun_vector) + 0.000069 * 9), 23.0 * 1e3));

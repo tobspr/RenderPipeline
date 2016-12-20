@@ -150,7 +150,7 @@ inline void InternalLightManager::post_render_callback() {
 }
 
 /**
- * @brief Invalidates all shadow sources in a given region 
+ * @brief Invalidates all shadow sources in a given region
  */
 inline void InternalLightManager::invalidate_region(CPT(BoundingVolume) region) {
   _invalidated_regions.push_back(region);

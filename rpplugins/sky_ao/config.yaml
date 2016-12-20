@@ -10,7 +10,7 @@ settings: !!omap
         description: >
             Controls the ao sample radius, higher values produce blurrier results,
             but might cost more performance, and cause more jittering.
-  
+
     - max_radius:
         type: float
         range: [10, 2000.0]
@@ -29,7 +29,7 @@ settings: !!omap
         description: >
             A higher resolution provides more details, but also costs more
             performance and memory.
-  
+
     - sample_sequence:
         type: sample_sequence
         shader_runtime: true
@@ -39,7 +39,7 @@ settings: !!omap
         description: >
             Amout and Type of samples, higher values cost more performance
             but provide smoother results.
-    
+
     - trace_steps:
         type: int
         shader_runtime: true
@@ -75,7 +75,7 @@ settings: !!omap
         label: Normal offset
         description: >
             Moves the sky ao a bit along the pixel normals, to avoid self intersection.
-        
+
     - noise_amount:
         shader_runtime: true
         type: float

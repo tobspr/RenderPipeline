@@ -27,7 +27,7 @@ settings: !!omap
         label: Brightness
         description: >
             Controls the brightness of the volumetric shadows.
-    
+
     - volumetric_shadow_pow:
         display_if: { enable_volumetric_shadows: true }
         type: float

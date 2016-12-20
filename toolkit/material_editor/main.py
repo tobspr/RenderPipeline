@@ -152,7 +152,7 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
     def read_from_ui(self):
         if self.in_update:
             return
-        
+
         # Basecolor
         rgb = self._get_ui_basecolor_rgb()
         self.material.basecolor_r = rgb[0]
@@ -193,7 +193,7 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         for slider, lbl, start, end, prop in self.sliders:
             val = getattr(self.material, prop)
             slider.setValue((val - start) / (end - start) * 100.0)
-            
+
         self.in_update = False
         self.update_ui()
 
@@ -302,18 +302,18 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
                 getattr(self, prefix + name).hide()
                 getattr(self, prefix + name).setEnabled(False)
 
-    
-        def show_option(name):        
+
+        def show_option(name):
             for prefix in ["tt_", "slider_", "lbl_"]:
                 getattr(self, prefix + name).show()
                 getattr(self, prefix + name).setEnabled(True)
-    
+
         self.cb_metallic.show()
         show_option("roughness")
         show_option("specular")
         show_option("normal")
         show_option("param1")
-        
+
         if optional_param is None:
             hide_option("param1")
 

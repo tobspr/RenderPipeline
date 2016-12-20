@@ -59,7 +59,7 @@ class Application(ShowBase):
         ShowBase.__init__(self)
 
         os.chdir(BASE_PATH)
-        
+
         source_path = join(BASE_PATH, "source")
         extension = ".jpg"
         if isfile(join(source_path, "1.png")):
@@ -103,13 +103,13 @@ class Application(ShowBase):
                     node.set_shader_input("seed", random.random())
                     attr = node.get_attrib(ShaderAttrib)
                     workload.append((((size + 15) // 16, (size+15) // 16, 1), attr))
-                    
+
             size = size // 2
 
         widgets = ['Filtering: ', Bar(), Percentage(), '   ', ETA()]
         progressbar = ProgressBar(widgets=widgets, maxval=len(workload) - 1).start()
         for i, (wg_size, attr) in enumerate(workload):
-            self.graphicsEngine.dispatch_compute(wg_size, attr, self.win.gsg)        
+            self.graphicsEngine.dispatch_compute(wg_size, attr, self.win.gsg)
             progressbar.update(i)
         progressbar.finish()
 

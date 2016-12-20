@@ -75,7 +75,7 @@ class InternalLightManager {
 
         inline void set_command_list(GPUCommandList *cmd_list);
 
-        inline void post_render_callback();        
+        inline void post_render_callback();
 
         inline void invalidate_region(CPT(BoundingVolume) region);
         inline void add_dynamic_region(CPT(BoundingVolume) region);

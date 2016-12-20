@@ -135,7 +135,7 @@ Plane compute_plane(vec3 p1, vec3 p2)
 
 // Computes the six planes of the view frustum, or depending on the parameters, of the
 // given culling cell
-Frustum make_view_frustum(int cell_x, int cell_y, ivec2 tile_size, float min_dist, float max_dist) { 
+Frustum make_view_frustum(int cell_x, int cell_y, ivec2 tile_size, float min_dist, float max_dist) {
     vec3 rd_tr = transform_raydir(vec2(1, 1), cell_x, cell_y, tile_size);
     vec3 rd_tl = transform_raydir(vec2(-1, 1), cell_x, cell_y, tile_size);
     vec3 rd_br = transform_raydir(vec2(1, -1), cell_x, cell_y, tile_size);
@@ -223,10 +223,10 @@ bool cone_inside_plane(Cone cone, Plane plane)
     // Compute the farthest point on the end of the cone to the positive space of the plane.
     vec3 m = cross(cross(plane.N, cone.direction), cone.direction);
     vec3 Q = cone.pos + cone.direction * cone.height - m * cone.radius;
- 
+
     // The cone is in the negative halfspace of the plane if both
-    // the tip of the cone and the farthest point on the end of the cone to the 
-    // positive halfspace of the plane are both inside the negative halfspace 
+    // the tip of the cone and the farthest point on the end of the cone to the
+    // positive halfspace of the plane are both inside the negative halfspace
     // of the plane.
     return point_inside_plane(cone.pos, plane) && point_inside_plane(Q, plane );
 }
@@ -257,7 +257,7 @@ bool cull_light(LightData light, Frustum view_frustum) {
         Cone cone;
         cone.pos = light_pos;
         cone.height = radius;
-        
+
         // Need direction in view-space instead of world-space
         vec3 direction_ws = get_spotlight_direction(light);
         cone.direction = world_normal_to_view(direction_ws);
@@ -266,17 +266,17 @@ bool cull_light(LightData light, Frustum view_frustum) {
         float cos_cone_fov = get_spotlight_fov(light);
         float sin_cone_fov = sqrt(1 - cos_cone_fov * cos_cone_fov);
 
-        float hypotenuse = cone.height / cos_cone_fov; 
+        float hypotenuse = cone.height / cos_cone_fov;
 
         cone.radius = sin_cone_fov * hypotenuse;
         return cone_inside_frustum(cone, view_frustum);
     }
     */
-    
+
     // Fallback for everything
     Sphere sphere;
     sphere.radius = radius;
-    sphere.pos = light_pos; 
+    sphere.pos = light_pos;
     return sphere_inside_frustum(sphere, view_frustum);
 
 }

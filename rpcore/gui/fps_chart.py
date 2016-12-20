@@ -28,6 +28,7 @@ from __future__ import division
 import time
 
 from panda3d.core import ComputeNode, Vec4, Vec3, PTAInt, PTALVecBase4f, PTAFloat
+from panda3d.core import LVecBase2i
 
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.text import Text
@@ -42,6 +43,9 @@ class FPSChart(RPObject):
 
     """ Widget to show the FPS as a chart """
 
+    HISTORY_ENTRIES = 250
+    CHART_HEIGHT = 90
+
     def __init__(self, pipeline, parent):
         """ Inits the widget """
         RPObject.__init__(self)
@@ -55,7 +59,7 @@ class FPSChart(RPObject):
         """ Internal method to init the widgets components """
 
         # Create the buffer which stores the last FPS values
-        self._storage_buffer = Image.create_buffer("FPSValues", 250, "RGBA16")
+        self._storage_buffer = Image.create_buffer("FPSValues", self.HISTORY_ENTRIES, "RGBA16")
         self._storage_buffer.set_clear_color(Vec4(0))
         self._storage_buffer.clear_image()
 
@@ -69,11 +73,12 @@ class FPSChart(RPObject):
         self._chart_ms_max[0] = 40
 
         # Create the texture where the gui component is rendered inside
-        self._display_tex = Image.create_2d("FPSChartRender", 250, 120, "RGBA8")
+        self._display_tex = Image.create_2d("FPSChartRender", self.HISTORY_ENTRIES, self.CHART_HEIGHT, "RGBA8")
         self._display_tex.set_clear_color(Vec4(0))
         self._display_tex.clear_image()
         self._display_img = Sprite(
-            image=self._display_tex, parent=self._node, w=250, h=120, x=10, y=10)
+            image=self._display_tex, parent=self._node,
+            w=self.HISTORY_ENTRIES, h=self.CHART_HEIGHT, x=10, y=10)
 
         # Defer the further loading
         Globals.base.taskMgr.doMethodLater(0.3, self._late_init, "FPSChartInit")
@@ -84,12 +89,12 @@ class FPSChart(RPObject):
             text="40 ms", parent=self._node, x=20, y=25,
             size=13, color=Vec3(1), may_change=True)
         self._display_txt_bottom = Text(
-            text="0 ms", parent=self._node, x=20, y=120,
+            text="0 ms", parent=self._node, x=20, y=self.CHART_HEIGHT,
             size=13, color=Vec3(1), may_change=True)
 
         # Create the shader which generates the visualization texture
         self._cshader_node = ComputeNode("FPSChartUpdateChart")
-        self._cshader_node.add_dispatch(250 // 10, 120 // 4, 1)
+        self._cshader_node.add_dispatch((self.HISTORY_ENTRIES + 9) // 10, (self.CHART_HEIGHT + 3) // 4, 1)
         self._cshader_np = self._node.attach_new_node(self._cshader_node)
 
         self._cshader = RPLoader.load_shader("/$$rp/shader/fps_chart.compute.glsl")
@@ -98,6 +103,7 @@ class FPSChart(RPObject):
         self._cshader_np.set_shader_input("FPSValues", self._storage_buffer)
         self._cshader_np.set_shader_input("index", self._store_index)
         self._cshader_np.set_shader_input("maxMs", self._chart_ms_max)
+        self._cshader_np.set_shader_input("widgetSize", LVecBase2i(self.HISTORY_ENTRIES, self.CHART_HEIGHT))
 
         self._update_shader_node = ComputeNode("FPSChartUpdateValues")
         self._update_shader_node.add_dispatch(1, 1, 1)
@@ -114,7 +120,7 @@ class FPSChart(RPObject):
 
     def _update(self, task):
         """ Updates the widget """
-        self._store_index[0] = (self._store_index[0] + 1) % 250
+        self._store_index[0] = (self._store_index[0] + 1) % self.HISTORY_ENTRIES
 
         data = Vec4(0)
         data.x = Globals.clock.get_dt() * 1000.0
@@ -139,7 +145,7 @@ class FPSChart(RPObject):
                 round_interval = 100
             else:
                 round_interval = 1000
-            
+
             max_ms += round_interval - max_ms % round_interval
             self._chart_ms_max[0] = max_ms
             self._last_unit_switch = time.time()

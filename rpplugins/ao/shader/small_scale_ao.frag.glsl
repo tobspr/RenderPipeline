@@ -68,7 +68,7 @@ void main() {
     // Compute noise components
     float t = float(MainSceneData.frame_index % (GET_SETTING(ao, clip_length))) / float(GET_SETTING(ao, clip_length));
     t = 0; // XXX
-    
+
     float rotation_factor = M_PI * rand(coord % 256) + t * TWO_PI;
     mat2 rotation_mat = make_rotate_mat2(rotation_factor);
     float scale_factor = mix(0.5, 1.05, abs(rand(coord % 32 + 0.05 * t)));

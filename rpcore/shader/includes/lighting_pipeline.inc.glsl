@@ -169,7 +169,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
         shading_result += process_spotlight(m, light_data, v, shadow_factor);
     }
-    
+
     // Spherelights without shadow
     for (int i = 0; i < num_sphere_noshadow; ++i) {
         int light_offs = int(texelFetch(PerCellLights, curr_offs++).x);
@@ -192,7 +192,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         shading_result += process_spherelight(m, light_data, v, shadow_factor);
     }
 
-    
+
     // Rectanglelights without shadow
     for (int i = 0; i < num_rectangle_noshadow; ++i) {
         int light_offs = int(texelFetch(PerCellLights, curr_offs++).x);
@@ -245,19 +245,19 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         #if IS_SCREEN_SPACE
 
             if (num_total_lights > 0) {
-        
+
                 float light_factor = num_total_lights / float(LC_MAX_LIGHTS_PER_CELL);
                 shading_result = saturate(shading_result) * 0.2;
-        
-        
+
+
                 if (int(gl_FragCoord.x) % LC_TILE_SIZE_X == 0 ||
                     int(gl_FragCoord.y) % LC_TILE_SIZE_Y == 0) {
                     shading_result += 0.1;
                 }
-                
+
                 // shading_result += light_factor;
                 vec3 bg_color = vec3(0, 1, 0);
-                
+
                 if (num_total_lights > 5) {
                     bg_color = vec3(1, 1, 0);
                 }
@@ -273,7 +273,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
                 shading_result += bg_color * 0.2;
 
                 shading_result += vec3(render_number(tile_start + ivec2(3, 3), num_total_lights));
-            
+
             }
 
         #endif

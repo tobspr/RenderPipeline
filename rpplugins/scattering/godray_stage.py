@@ -46,12 +46,12 @@ class GodrayStage(RenderStage):
         }
 
     def create(self):
-        
+
         self.target_mask = self.create_target("MaskGodrays")
         self.target_mask.size = "50%"
         self.target_mask.add_color_attachment(bits=(1, 0, 0, 0))
         self.target_mask.prepare_buffer()
-        
+
         self.target = self.create_target("ComputeGodrays")
         self.target.size = "50%"
         self.target.add_color_attachment(bits=(16, 0, 0, 0))
@@ -90,7 +90,7 @@ class GodrayStage(RenderStage):
         self.target_merge.shader = self.load_plugin_shader("merge_godrays.frag.glsl")
         self.target_mask.shader = self.load_plugin_shader("mask_sun.frag.glsl")
         self.target_resolve.shader = self.load_plugin_shader("resolve_godrays.frag.glsl")
-        
+
         blur_shader = self.load_plugin_shader("blur_godrays.frag.glsl")
         self.target_blur_v.shader = blur_shader
         self.target_blur_h.shader = blur_shader

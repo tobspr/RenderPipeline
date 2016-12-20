@@ -14,6 +14,6 @@ if __name__ == "__main__":
     dest = PNMImage(w * 10, h, 1, 255)
     for i in range(10):
         sub = PNMImage("{}.png".format(i))
-        dest.copy_sub_image(sub, i * w, 0, 0, 0, w, h)    
+        dest.copy_sub_image(sub, i * w, 0, 0, 0, w, h)
 
     dest.write("atlas.png")

@@ -63,7 +63,7 @@ public:
                               float far_plane, const LVecBase3f& pos,
                               const LVecBase3f& direction, const LVecBase3f& up = LVector3::up());
     void set_lens(const Lens& lens, LVecBase3f pos);
-    
+
     inline void set_matrix_lens(const LMatrix4f& mvp);
 
     inline bool has_region() const;

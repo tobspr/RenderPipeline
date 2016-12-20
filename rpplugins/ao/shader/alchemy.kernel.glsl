@@ -44,7 +44,7 @@ vec2 offset_scale = pixel_size * sample_radius;
 
 START_ITERATE_SEQUENCE(ao, alchemy_sequence, vec2 offset)
 
-    
+
     vec2 offcoord = texcoord + offset * perturb_mat_2d * offset_scale;
 
     // Get view position at that offset

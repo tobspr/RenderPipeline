@@ -93,7 +93,7 @@ void RPSphereLight::update_shadow_sources() {
  * @brief See RPLight::get_conversion_factor
  */
 float RPSphereLight::get_conversion_factor(IntensityType from, IntensityType to) const {
-    if (from == to) 
+    if (from == to)
         return 1.0;
 
     float divisor = 4.0 * _sphere_radius * _sphere_radius * M_PI * M_PI;

@@ -48,7 +48,7 @@ class RPRectangleLight : public RPLight {
         inline void set_right_vector(const LVecBase3f& right_vector);
         inline const LVecBase3f& get_right_vector() const;
         MAKE_PROPERTY(right_vector, get_right_vector, set_right_vector);
-        
+
 
     public:
         virtual void write_to_command(GPUCommand &cmd);

@@ -62,12 +62,12 @@ class Sprite(RPObject):
                 w = 10
                 h = 10
 
-        self._width, self._height = w, h
+        self.width, self.height = w, h
         self._initial_pos = self._translate_pos(x, y)
 
         self.node = OnscreenImage(
             image=image, parent=parent, pos=self._initial_pos,
-            scale=(self._width / 2.0, 1, self._height / 2.0))
+            scale=(self.width / 2.0, 1, self.height / 2.0))
 
         if transparent:
             self.node.set_transparency(TransparencyAttrib.M_alpha)
@@ -111,11 +111,11 @@ class Sprite(RPObject):
 
     def get_width(self):
         """ Returns the width of the image in pixels """
-        return self._width
+        return self.width
 
     def get_height(self):
         """ Returns the height of the image in pixels """
-        return self._height
+        return elf._height
 
     def set_pos(self, x, y):
         """ Sets the position """
@@ -123,7 +123,7 @@ class Sprite(RPObject):
 
     def _translate_pos(self, x, y):
         """ Converts 2d coordinates to pandas coordinate system """
-        return Vec3(x + self._width / 2.0, 1, -y - self._height / 2.0)
+        return Vec3(x + self.width / 2.0, 1, -y - self.height / 2.0)
 
     def set_shader(self, shader):
         """ Sets a shader to be used for rendering the image """

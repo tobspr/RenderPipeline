@@ -63,11 +63,11 @@ void main() {
     int data_offset = LC_MAX_LIGHTS_PER_CELL * idx; // Culled lights offset
     int dest_offset = LC_MAX_LIGHTS_PER_CELL * idx; // Destination offset
 
-    // Offset into the per-cell culled light counts 
+    // Offset into the per-cell culled light counts
     int cell_lights_offset = idx * (1 + LIGHT_CLS_COUNT);
 
     // Get the amount of (unsorted) lights for this cell
-    int num_culled_lights = imageLoad(PerCellLightCountsBuffer, idx).x; 
+    int num_culled_lights = imageLoad(PerCellLightCountsBuffer, idx).x;
     imageStore(PerCellLightCountsBuffer, idx, ivec4(0));
 
     num_culled_lights = min(LC_MAX_LIGHTS_PER_CELL, num_culled_lights);

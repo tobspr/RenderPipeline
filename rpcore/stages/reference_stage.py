@@ -41,7 +41,7 @@ class ReferenceStage(RenderStage):
             "ShadedScene": self.target.color_tex,
             "PostReferenceStage": self.target.color_tex
         }
-        
+
     def create(self):
         self.last_cam_pos = Vec3(0)
         self.last_cam_hpr = Vec3(0)
@@ -49,7 +49,7 @@ class ReferenceStage(RenderStage):
         self.target = self.create_target("ReferenceReduceNoise")
         # NOTICE: 16bit is really required for proper fading between images,
         # otherwise pixels can "stay" because for example 32.99 * 0.99 = 32.5 = 32 -> Pixel stays
-        self.target.add_color_attachment(bits=16) 
+        self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
         self.target.set_clear_color(Vec4(1, 0, 0, 0))
         self.target.set_shader_input("cameraMoved", False)

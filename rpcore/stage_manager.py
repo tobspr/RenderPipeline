@@ -114,17 +114,17 @@ class StageManager(RPObject):
                 continue
 
             if pipe.startswith("PreviousFrame::"):
-                # Special case: Pipes from the previous frame. 
+                # Special case: Pipes from the previous frame.
                 pipe_name = pipe.split("::")[-1]
                 if "[" not in pipe_name:
                     self.error("When using PreviousFrame:: you need to specify the texture format! I.e. PreviousFrame::AmbientOcclusion[RGBA8]")
                     continue
-                
+
                 pipe_name = pipe_name.split("[", 1)
                 pipe_type = pipe_name[-1].strip("[]")
                 pipe_resolution = "100%"
                 pipe_name = pipe_name[0]
-                
+
                 if "," in pipe_type:
                     pipe_type, pipe_resolution = pipe_type.split(",", 1)
 

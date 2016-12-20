@@ -28,19 +28,17 @@
 
 #pragma include "render_pipeline_base.inc.glsl"
 
-#pragma optionNV (unroll all)
-
 layout(local_size_x = 10, local_size_y = 4, local_size_z = 1) in;
 
 uniform writeonly image2D RESTRICT DestTex;
 uniform samplerBuffer FPSValues;
 uniform int index;
 uniform float maxMs;
+uniform ivec2 widgetSize;
 
 void main() {
 
-    // TODO: Might make this an input
-    const ivec2 widget_size = ivec2(250, 120);
+    const ivec2 widgetSize = ivec2(250, 120);
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 
     // Store the current pixels color
@@ -49,15 +47,15 @@ void main() {
     int buffer_offset = coord.x + index;
 
     // Make sure the value does not get negative
-    buffer_offset += 10 * widget_size.x;
-    buffer_offset = buffer_offset % widget_size.x;
+    buffer_offset += 10 * widgetSize.x;
+    buffer_offset = buffer_offset % widgetSize.x;
 
     vec4 ms_value = texelFetch(FPSValues, buffer_offset);
     vec4 prev_ms_value = texelFetch(
-        FPSValues, (buffer_offset - 1 + widget_size.x) % widget_size.x);
+        FPSValues, (buffer_offset - 1 + widgetSize.x) % widgetSize.x);
 
-    ivec4 ms_pixel = clamp(ivec4(ms_value / maxMs * widget_size.y), ivec4(1), ivec4(widget_size.y - 2));
-    ivec4 prev_ms_pixel = clamp(ivec4(prev_ms_value / maxMs * widget_size.y), ivec4(1), ivec4(widget_size.y - 3));
+    ivec4 ms_pixel = clamp(ivec4(ms_value / maxMs * widgetSize.y), ivec4(1), ivec4(widgetSize.y - 2));
+    ivec4 prev_ms_pixel = clamp(ivec4(prev_ms_value / maxMs * widgetSize.y), ivec4(1), ivec4(widgetSize.y - 2));
 
     // Actual frame time
     if (coord.y >= min(ms_pixel.x, prev_ms_pixel.x) &&

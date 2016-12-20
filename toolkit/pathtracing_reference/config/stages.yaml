@@ -56,7 +56,7 @@ global_stage_order:
   - BloomStage
   - TonemappingStage
   - SRGBCorrectionStage
-  
+
   # Past this point, we work on 8 bit targets
   - SMAAStage
   - FXAAStage

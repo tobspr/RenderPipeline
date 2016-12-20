@@ -42,8 +42,8 @@ layout(r8) uniform writeonly image2D DestTex;
 
 void main() {
     const int width = 512;
-    
-    int index = int(gl_FragCoord.x) + int(gl_FragCoord.y) * width; 
+
+    int index = int(gl_FragCoord.x) + int(gl_FragCoord.y) * width;
     int max_entries = texelFetch(InvalidPixelCounter, 0).x;
     if (index >= max_entries)
         discard;

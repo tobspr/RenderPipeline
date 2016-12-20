@@ -59,7 +59,7 @@ vec3 get_merged_scattering(vec3 view_vector, vec3 inscattered_light)
 
   // Render clouds to provide more variance for the cubemap
   vec2 skydome_coord = get_skydome_coord(view_vector);
-  
+
   vec3 cloud_color = textureLod(DefaultSkydome, skydome_coord, 0).xyz;
   cloud_color *= cloud_color * 7;
   cloud_color = mix(vec3(0.5), cloud_color, saturate((view_vector.z + 0.01) / 0.25));

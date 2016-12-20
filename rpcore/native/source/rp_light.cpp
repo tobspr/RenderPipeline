@@ -66,7 +66,7 @@ RPLight::RPLight(LightType light_type) :
 void RPLight::write_to_command(GPUCommand &cmd) {
     // V0.x
     cmd.push_int(_light_type);
-    
+
     // V0.y
     cmd.push_int(_ies_profile);
 
@@ -84,7 +84,7 @@ void RPLight::write_to_command(GPUCommand &cmd) {
 
     // V0.w
     cmd.push_float(_max_cull_distance);
-    
+
     // V1.xyz
     cmd.push_vec3(_position);
 

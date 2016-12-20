@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  *
  */
- 
+
  #pragma once
 
  /*
@@ -74,7 +74,7 @@ float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, int ies_pro
     // for spot lights, for sphere lights we use the actual angle.
     // This is NOT physically correct for spotlights without a FoV of 180deg.
     // However, IES profiles might look quite boring when not getting rescaled,
-    // so the rescaling is performed. 
+    // so the rescaling is performed.
     float linear_angle = (cos_angle - fov) / (1 - fov);
     float angle_att = saturate(linear_angle);
 

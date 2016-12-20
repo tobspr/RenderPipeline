@@ -41,7 +41,7 @@ https://eheitzresearch.wordpress.com/415-2/
 
 uniform sampler2D LTCMatTex;
 uniform sampler2D LTCAmpTex;
- 
+
 mat3 mat3_from_columns(vec3 c0, vec3 c1, vec3 c2)
 {
     mat3 m = mat3(c0, c1, c2);
@@ -55,7 +55,7 @@ mat3 mat3_from_rows(vec3 c0, vec3 c1, vec3 c2)
     m = transpose(m);
     return m;
 }
- 
+
 vec2 LTC_Coords(float cosTheta, float roughness)
 {
     float theta = acos(cosTheta);
@@ -86,7 +86,7 @@ float IntegrateEdge(vec3 v1, vec3 v2)
     float cosTheta = dot(v1, v2);
     cosTheta = clamp(cosTheta, -0.9999, 0.9999);
 
-    float theta = acos(cosTheta);    
+    float theta = acos(cosTheta);
     float res = cross(v1, v2).z * theta / sin(theta);
 
     return res;
@@ -207,7 +207,7 @@ void ClipQuadToHorizon(inout vec3 L[5], out int n)
     {
         n = 4;
     }
-    
+
     if (n == 3)
         L[3] = L[0];
     if (n == 4)
@@ -221,7 +221,7 @@ mat3 mul(mat3 a, mat3 b) {
 }
 
 vec3 mul(mat3 a, vec3 p) {
-    return a * p;   
+    return a * p;
 }
 
 vec3 LTC_Evaluate(
@@ -254,7 +254,7 @@ vec3 LTC_Evaluate(
 
     int n;
     ClipQuadToHorizon(L, n);
-    
+
     if (n == 0)
         return vec3(0, 0, 0);
 

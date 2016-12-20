@@ -293,7 +293,7 @@ void main() {
         // Detect invalid normals by comparing the material normal to the actual depth-based
         // normal
         vec3 depth_based_nrm = get_world_normal_from_depth(texcoord);
-        
+
         float diff = dot(depth_based_nrm, m.normal);
         float threshold = 0.2;
         if (diff < threshold) {

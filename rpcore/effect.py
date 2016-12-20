@@ -307,9 +307,9 @@ class Effect(RPObject):
         try:
             with open(temp_path, "r") as handle:
                 old_content = handle.read()
-        except Exception:
+        except IOError:
             pass
-        
+
         if old_content == shader_content:
             return temp_path
 

@@ -108,7 +108,7 @@ vec3 get_rectangle_rightvector(LightData data) {
 
 /*
 
-Tube light dataset 
+Tube light dataset
 
 */
 

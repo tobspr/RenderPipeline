@@ -626,7 +626,7 @@ float2 SMAACalculatePredicatedThreshold(float2 texcoord,
     float4 Ptop  = SMAASamplePoint(predicationTex, offset[0].zw);
 
     float2 delta = float2(distance(P, Pleft), distance(P, Ptop));
-    
+
     // float2 delta = abs(neighbours.xx - neighbours.yz);
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
     return SMAA_PREDICATION_SCALE * SMAA_THRESHOLD * (1.0 - SMAA_PREDICATION_STRENGTH * edges);
@@ -770,7 +770,7 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
     #endif
 
-    
+
 
 
     // Calculate color deltas:

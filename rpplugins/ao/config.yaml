@@ -1,6 +1,6 @@
 
 settings: !!omap
-    
+
     - blur_quality:
         type: enum
         values: ["LOW", "MEDIUM", "HIGH", "ULTRA"]
@@ -8,7 +8,7 @@ settings: !!omap
         label: Blur quality
         description: >
             Controls the quality of the post-ao blur, higher values produce smoother
-            ambient occlusion, but also cost more performance. 
+            ambient occlusion, but also cost more performance.
 
     # Occlusion sttings
     - occlusion_strength:
@@ -44,7 +44,7 @@ settings: !!omap
             Controls how long to keep AO samples in the history. Bigger values
             will produce a smoother effect but might also produce artifacts,
             especially when moving.
-    
+
     - max_resolve_dist:
         type: float
         range: [0.0, 1.0]

@@ -92,7 +92,7 @@ def ask_for_troubleshoot(url):
     if CMD_ARGS.ci_build:
         print("\nSETUP FAILED!")
         return
-        
+
     if not url:
         print("\nSorry, no troubleshooting options are available.\n")
         return

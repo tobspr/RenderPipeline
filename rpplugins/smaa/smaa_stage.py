@@ -34,7 +34,7 @@ class SMAAStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["ShadedScene", "GBuffer"]
-        
+
     def __init__(self, pipeline):
         RenderStage.__init__(self, pipeline)
         self.area_tex = None
@@ -77,4 +77,4 @@ class SMAAStage(RenderStage):
         self.blend_target.shader = self.load_plugin_shader("blending_weights.frag.glsl")
         self.neighbor_target.shader = self.load_plugin_shader("neighborhood_blending.frag.glsl")
         self.predicate_target.shader = self.load_plugin_shader("predication.frag.glsl")
-        
+

@@ -10,7 +10,7 @@ vertex:
     transform: |
 
         int data_index = gl_InstanceID * 4;
-    
+
         vec4 data_0 = texelFetch(InstancingData, data_index);
         vec4 data_1 = texelFetch(InstancingData, data_index + 1);
         vec4 data_2 = texelFetch(InstancingData, data_index + 2);

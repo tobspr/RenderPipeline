@@ -35,7 +35,7 @@
  * @details This contructs a new tube light with default settings.
  */
 RPTubeLight::RPTubeLight() :
-    RPLight(RPLight::LT_tube_light), 
+    RPLight(RPLight::LT_tube_light),
     _tube_radius(0.5),
     _tube_length(4),
     _tube_direction(1, 0, 0) {
@@ -72,7 +72,7 @@ void RPTubeLight::init_shadow_sources() {
  * @see RPLight::update_shadow_sources
  */
 void RPTubeLight::update_shadow_sources() {
-    
+
     std::cout << "Tube lights do not support shadows yet!" << std::endl;
     nassertv(false);
 }
@@ -82,7 +82,7 @@ void RPTubeLight::update_shadow_sources() {
  * @brief See RPLight::get_conversion_factor
  */
 float RPTubeLight::get_conversion_factor(IntensityType from, IntensityType to) const {
-    if (from == to) 
+    if (from == to)
         return 1.0;
 
     float divisor = M_PI * (2.0 * M_PI * _tube_radius * _tube_length + 4.0 * M_PI * _tube_radius * _tube_radius);

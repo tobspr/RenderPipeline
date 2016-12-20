@@ -58,7 +58,7 @@ int classify_light(int light_type, bool casts_shadows) {
             return casts_shadows ? LIGHT_CLS_RECTANGLE_SHADOW : LIGHT_CLS_RECTANGLE_NOSHADOW;
         case LT_TUBE_LIGHT:
             return casts_shadows ? LIGHT_CLS_TUBE_SHADOW : LIGHT_CLS_TUBE_NOSHADOW;
-    
+
     };
     return LIGHT_CLS_INVALID;
 }

@@ -90,7 +90,7 @@ vec3 ggx_importance_sample(Material m, vec2 xi, out float pdf) {
     float tan_theta_m_sqr = alpha_sqr * xi.x / (1.0 - xi.x);
     float cos_theta_m = 1.0 / sqrt(1.0 + tan_theta_m_sqr);
     float temp = 1.0 + tan_theta_m_sqr / alpha_sqr;
-    pdf = ONE_BY_PI / (alpha_sqr * cos_theta_m * cos_theta_m * cos_theta_m * temp * temp); 
+    pdf = ONE_BY_PI / (alpha_sqr * cos_theta_m * cos_theta_m * cos_theta_m * temp * temp);
     float sin_theta_m = sqrt(max(0, 1 - cos_theta_m * cos_theta_m));
 
     return vec3(
@@ -185,7 +185,7 @@ bool ray_sphere_intersection(RefRay r, RefSphere s)
     return d1 > 0;
 
     // return true;
- 
+
     // return sq >= 0 && pre > -pre;
 }
 
@@ -240,8 +240,8 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
     // Specular
     for (uint i = 0; i < num_samples; ++i) {
         vec2 xi = hammersley(i, num_samples);
-        xi.x = mod(xi.x + 6.283926 * jitter, 1.0); 
-        xi.y = mod(xi.y + 5.852342 * jitter, 1.0); 
+        xi.x = mod(xi.x + 6.283926 * jitter, 1.0);
+        xi.y = mod(xi.y + 5.852342 * jitter, 1.0);
 
         // float pdf;
         // vec3 h = ggx_importance_sample(m, xi.xy, pdf);
@@ -260,7 +260,7 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
             accum += ndf * fresnel * visibility / max(1e-3, 4.0 * fr_cos_theta(h) * pdf * fr_cos_theta(l) );
         }
     }
-    
+
     accum /= num_samples;
     accum *= light_emitting_color;
 
@@ -274,8 +274,8 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
 
     for (uint i = 0; i < num_samples; ++i) {
         vec2 xi = hammersley(i, num_samples);
-        xi.x = mod(xi.x + 3.582343 * jitter, 1.0); 
-        xi.y = mod(xi.y + 5.852342 * jitter, 1.0); 
+        xi.x = mod(xi.x + 3.582343 * jitter, 1.0);
+        xi.y = mod(xi.y + 5.852342 * jitter, 1.0);
 
         float pdf;
         vec3 h = lambert_importance_sample(m, xi.yx, pdf);

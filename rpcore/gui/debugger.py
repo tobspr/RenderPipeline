@@ -76,7 +76,7 @@ class Debugger(RPObject):
         if self.advanced_info:
             Globals.base.doMethodLater(
                 0.5, lambda task: self.collect_scene_data(), "RPDebugger_collectSceneDataInitial")
-        
+
         Globals.base.doMethodLater(0.1, self.update_stats, "RPDebugger_updateStats")
 
     @property
@@ -102,14 +102,14 @@ class Debugger(RPObject):
             self.exposure_widget = ExposureWidget(self.pipeline, self.exposure_node)
 
         self.fps_node = self.fullscreen_node.attach_new_node("FPSChart")
-        self.fps_node.set_pos(Vec3(21, 1, -100))
+        self.fps_node.set_pos(Vec3(21, 1, -140))
         self.fps_widget = FPSChart(self.pipeline, self.fps_node)
 
-        self.pixel_widget = PixelInspector(self.pipeline)
-        self.buffer_viewer = BufferViewer(self.pipeline, self.window_node)
         self.pipe_viewer = PipeViewer(self.pipeline, self.window_node)
         self.rm_selector = RenderModeSelector(self.pipeline, self.window_node)
+        self.buffer_viewer = BufferViewer(self.pipeline, self.window_node)
         self.error_msg_handler = ErrorMessageDisplay()
+        self.pixel_widget = PixelInspector(self.pipeline)
 
         self.handle_window_resize()
 
@@ -179,7 +179,7 @@ class Debugger(RPObject):
         # When using small resolutions, scale the GUI so its still useable,
         # otherwise the sub-windows are bigger than the main window
         # XXX: Disabled. Looks weird
-        
+
         self.gui_scale = max(0.3, min(1.0, Globals.native_resolution.x / 1920.0))
         self.window_node.set_scale(self.gui_scale)
 
@@ -188,17 +188,19 @@ class Debugger(RPObject):
 
         if self.advanced_info:
             self.exposure_node.set_pos(effective_w - 200, 1, -effective_h + 120)
-        self.hint_reloading.set_pos((effective_w - 658) // 2, (effective_h - 80) // 2)
+        self.hint_reloading.set_pos(
+            (effective_w - self.hint_reloading.width) // 2,
+            (effective_h - self.hint_reloading.height) // 2)
 
-        self.keybinding_instructions.set_pos(30, effective_h - 510.0)
+        self.keybinding_instructions.set_pos(30, effective_h - self.keybinding_instructions.height)
         self.keybinding_text.np.set_pos(-Globals.base.get_aspect_ratio() + 0.07, 0, -0.9)
         self.keybinding_text.set_pixel_size(16 * max(0.8, self.gui_scale))
 
         self.overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         if self.python_warning:
             self.python_warning.set_pos(
-                (effective_w - 1054) // 2,
-                (effective_h - 118 - 90))
+                (effective_w - self.python_warning.width) // 2,
+                (effective_h - self.python_warning.height - 90))
 
         for text in self.debug_lines:
             text.set_pixel_size(7 * max(1, self.gui_scale) * Globals.base.get_aspect_ratio())
@@ -231,7 +233,7 @@ class Debugger(RPObject):
         pth = sys.executable
         editor = os.path.dirname(os.path.realpath(__file__))
         editor = os.path.join(editor, "..", "..", "toolkit", name, "main.py")
-        subprocess.Popen([pth, editor], shell=True)        
+        subprocess.Popen([pth, editor], shell=True)
 
     def export_scene(self):
         """ Exports the current scene to mitsuba """
@@ -246,7 +248,7 @@ class Debugger(RPObject):
     def start_plugin_editor(self):
         """ Starts the material editor """
         self._start_editor("plugin_configurator")
-        
+
     def start_daytime_editor(self):
         """ Starts the material editor """
         self._start_editor("day_time_editor")

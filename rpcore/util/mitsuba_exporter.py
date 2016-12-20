@@ -43,11 +43,11 @@ def to_safe_name(name):
 
 def vec2xml(v):
     """ Converts a vector to a valid xml string """
-    return "{:.8f}, {:.8f}, {:.8f}".format(*v) 
+    return "{:.8f}, {:.8f}, {:.8f}".format(*v)
 
 def color2xml(v):
     """ Converts a color to a valid xml string """
-    return "{:.8f}, {:.8f}, {:.8f}".format(*[max(i, 0.0001) for i in v]) 
+    return "{:.8f}, {:.8f}, {:.8f}".format(*[max(i, 0.0001) for i in v])
 
 
 class MitsubaExporter(RPObject):
@@ -84,7 +84,7 @@ class MitsubaExporter(RPObject):
                     geom, state = geom_node.get_geom(i), geom_node.get_geom_state(i)
                     self._add_geom(name, geom, state, transform)
                 geom_id += 1
-        
+
     def _add_geom(self, name, geom, state, transform):
         """ Adds a geom and state to the list of geoms to get exported """
         if geom.get_num_primitives() != 1:
@@ -103,7 +103,7 @@ class MitsubaExporter(RPObject):
 
         # Get reader for vertices and normals
         vtx_data = geom.get_vertex_data()
-        
+
         vtx_reader = GeomVertexReader(vtx_data, "vertex")
         vtx_column = vtx_reader.get_column()
 
@@ -112,17 +112,17 @@ class MitsubaExporter(RPObject):
 
         tc_reader = GeomVertexReader(vtx_data, "texcoord")
         tc_column = tc_reader.get_column()
-        
+
 
         # Sanity checks
         if not vtx_column or vtx_column.get_num_values() != 3:
             self.error("Unsupported geom with vertex not being 3f:", name)
             return
-        
+
         if not nrm_column or nrm_column.get_num_values() != 3:
             self.error("Unsupported geom with normal not being 3f:", name)
             return
-        
+
         if not tc_column or tc_column.get_num_values() != 2:
             self.error("Unsupported geom with texcoord not being 2f:", name)
             return
@@ -150,7 +150,7 @@ class MitsubaExporter(RPObject):
             vertices = (primitive.get_vertex(i + 0) + 1,
                         primitive.get_vertex(i + 1) + 1,
                         primitive.get_vertex(i + 2) + 1)
-                        
+
             content.append("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}".format(*vertices))
 
         self.export_objects[name] = content
@@ -160,11 +160,11 @@ class MitsubaExporter(RPObject):
         fwd = transform.get_mat().xform(Vec3(0, 1, 0))
         return "<lookat target='{}' origin='{}' up='{}'/>".format(
             vec2xml(fwd + transform.get_pos()), vec2xml(transform.get_pos()), "0, 0, 1")
-        
+
     def _generate_xml_for_tex(self, name, tex, start_path, color_scale):
         """ Generates the xml string for a given texture """
         output = []
-        
+
         def get_wrap(wrap):
             return {
                 SamplerState.WM_clamp: "clamp",
@@ -233,7 +233,7 @@ class MitsubaExporter(RPObject):
         add("   </integrator>")
 
         add("<emitter type='envmap'>")
-        add("    <string name='filename' value='_envmap.png' />") 
+        add("    <string name='filename' value='_envmap.png' />")
         add("    <float name='gamma' value='1.0' />")
         add("</emitter>")
 
@@ -327,7 +327,7 @@ class MitsubaExporter(RPObject):
             add("<shape type='obj'>")
             add("  <string name='filename' value='{}' />".format(obj_filename))
 
-            if shading_model == MaterialAPI.SM_CLEARCOAT: 
+            if shading_model == MaterialAPI.SM_CLEARCOAT:
                 add("<bsdf type='roughcoating'>")
                 add("    <string name='distribution' value='ggx' />")
                 add("    <float name='alpha' value='0.0036' />")
@@ -350,7 +350,7 @@ class MitsubaExporter(RPObject):
                 add("    <string name='distribution' value='ggx'/>")
 
                 reflectance = "specular" if metallic else "diffuse"
-                
+
                 output += self._generate_xml_for_tex(reflectance + "Reflectance", diff_tex, path, material.get_base_color())
                 output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness()))
 

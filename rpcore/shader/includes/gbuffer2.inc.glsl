@@ -40,7 +40,7 @@ Data1[RGBA16F]:  [Normal X]    [Normal Y]    [Metallic]      [Specular IOR]
 Data2[RGBA16F]:  [Velocity X]  [Velocity Y]  [Shading Model] [SM Param 0  ]
 
 
-SM Param 0 is an arbitrary parameter that depends on the shading model, for 
+SM Param 0 is an arbitrary parameter that depends on the shading model, for
 transparent objects it determines the alpha for example.
 
 */
@@ -57,7 +57,7 @@ uniform struct {
 #pragma include "includes/transforms.inc.glsl"
 
 
-// 
+//
 // Skybox
 //
 
@@ -124,7 +124,7 @@ int gbuffer_get_shading_model(ivec2 coord) {
     return int(texelFetch(GBuffer.Data2, coord, 0).z);
 }
 
-// Per-Object Velocity 
+// Per-Object Velocity
 vec2 gbuffer_get_object_velocity(vec2 coord) {
     return textureLod(GBuffer.Data2, coord, 0).xy;
 }
@@ -178,7 +178,7 @@ vec3 gbuffer_reconstruct_ws_position(vec2 coord) {
 }
 
 vec3 gbuffer_reconstruct_ws_position(ivec2 coord) {
-    return gbuffer_reconstruct_ws_position(int_coord_to_float(coord));   
+    return gbuffer_reconstruct_ws_position(int_coord_to_float(coord));
 }
 
 // View-Space Position
@@ -188,7 +188,7 @@ vec3 gbuffer_reconstruct_vs_position(vec2 coord) {
 }
 
 vec3 gbuffer_reconstruct_vs_position(ivec2 coord) {
-    return gbuffer_reconstruct_vs_position(int_coord_to_float(coord));   
+    return gbuffer_reconstruct_vs_position(int_coord_to_float(coord));
 }
 
 // View-Space Normal (Reconstructed)
@@ -205,8 +205,8 @@ vec3 gbuffer_reconstruct_vs_normal_from_depth(vec2 coord) {
 
     vec3 dx_nx = gbuffer_reconstruct_vs_position(coord + pixel_size * vec2(-1, 0)) - view_pos;
     vec3 dx_ny = gbuffer_reconstruct_vs_position(coord + pixel_size * vec2(0, -1)) - view_pos;
-    
-    // TODO: Handle screen edges    
+
+    // TODO: Handle screen edges
     // TODO: use dFdx() / dFdy() for more efficient computation (shouldn't do much)
 
     // Find the closest distance in depth and use that sample

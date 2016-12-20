@@ -70,7 +70,7 @@ void ShadowSource::set_perspective_lens(float fov, float near_plane,
 */
 
 void ShadowSource::set_lens(const Lens& lens, LVecBase3f pos) {
-    
+
     // Construct the transformation matrix
     set_matrix_lens(LMatrix4f::translate_mat(-pos) * lens.get_projection_mat());
 
@@ -80,4 +80,4 @@ void ShadowSource::set_lens(const Lens& lens, LVecBase3f pos) {
     _bounds = BoundingSphere(pos + center, (hexahedron->get_max() - center).length());
 
 }
-    
+

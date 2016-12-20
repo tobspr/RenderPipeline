@@ -51,6 +51,7 @@ class CommonResources(RPObject):
         self._load_fonts()
         self._load_textures()
         self._setup_inputs()
+        self._first_update = True
 
     def _load_fonts(self):
         """ Loads the default font used for rendering and assigns it to
@@ -176,8 +177,8 @@ class CommonResources(RPObject):
     def _load_debug_font_atlas(self):
         """ Loads the font atlas for the debug font """
         tex = RPLoader.load_texture("/$$rp/data/debug_font_atlas/atlas.png")
-        tex.set_minfilter(SamplerState.FT_nearest)        
-        tex.set_magfilter(SamplerState.FT_nearest)        
+        tex.set_minfilter(SamplerState.FT_nearest)
+        tex.set_magfilter(SamplerState.FT_nearest)
         tex.set_wrap_u(SamplerState.WM_border_color)
         tex.set_wrap_v(SamplerState.WM_border_color)
         tex.set_border_color(Vec4(1, 1, 1, 1))
@@ -221,9 +222,13 @@ class CommonResources(RPObject):
         update("camera_pos", self._showbase.camera.get_pos(Globals.render))
 
         # Compute last view projection mat
-        curr_vp = self._input_ubo.get_input("view_proj_mat_no_jitter")
-        update("last_view_proj_mat_no_jitter", curr_vp)
-        curr_inv_vp = Mat4(curr_vp)
+        last_vp = self._input_ubo.get_input("view_proj_mat_no_jitter")
+        if self._first_update:
+            # Prevent trying to invert a singular matrix
+            last_vp = Mat4.identMat()
+            self._first_update = False
+        update("last_view_proj_mat_no_jitter", last_vp)
+        curr_inv_vp = Mat4(last_vp)
         curr_inv_vp.invert_in_place()
         update("last_inv_view_proj_mat_no_jitter", curr_inv_vp)
 
@@ -243,7 +248,7 @@ class CommonResources(RPObject):
         curr_vp = view_mat * proj_mat
         update("view_proj_mat_no_jitter", curr_vp)
         curr_inv_vp = Mat4(curr_vp)
-        curr_inv_vp .invert_in_place()
+        curr_inv_vp.invert_in_place()
         update("inv_view_proj_mat_no_jitter", curr_inv_vp)
 
         # Store the frame delta

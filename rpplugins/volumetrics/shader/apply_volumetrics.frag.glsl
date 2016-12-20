@@ -64,7 +64,7 @@ void main() {
     #endif
 
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-    
+
 
     vec3 fog_color = TimeOfDay.volumetrics.fog_color * 4.5 * TimeOfDay.volumetrics.fog_brightness * TimeOfDay.scattering.sun_intensity;
 

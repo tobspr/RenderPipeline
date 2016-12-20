@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec3, Material, Vec4, MaterialAttrib, GeomTristrips
+import math
+
+from panda3d.core import MaterialAttrib, GeomTristrips
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
@@ -148,17 +150,17 @@ class SceneConverter(RPObject):
             rp_light.intensity_lumens = self.LUMENS_CONVERSION_FACTOR * light_node.color.w
             rp_light.color = light_node.color.xyz
             rp_light.casts_shadows = light_node.shadow_caster
-            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x            
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             rp_light.up_vector = light.get_mat(Globals.base.render).xform_vec((0, 0, 0.5))
             rp_light.right_vector = light.get_mat(Globals.base.render).xform_vec((0, 0.5, 0))
             self._register_light(light, rp_light)
 
     def _convert_environment_probes(self):
-        """ Converts all empties named ENVPROBE_? to environment probes """        
+        """ Converts all empties named ENVPROBE_? to environment probes """
         have_envmaps = self.pipeline.plugin_mgr.is_plugin_enabled("env_probes")
         if not have_envmaps:
             self.debug("Not creating any environment probe, because the env_probes plugin is not enabled")
-        
+
         for node_path in self.scene.find_all_matches("**/ENVPROBE*"):
             if have_envmaps:
                 probe = self.pipeline.add_environment_probe()
@@ -186,7 +188,7 @@ class SceneConverter(RPObject):
                 geom = geom_node.get_geom(i)
                 needs_conversion = False
 
-                # Check if this geom contains any GeomTristrips 
+                # Check if this geom contains any GeomTristrips
                 for prim in geom.get_primitives():
                     if isinstance(prim, GeomTristrips):
                         needs_conversion = True
@@ -214,7 +216,6 @@ class SceneConverter(RPObject):
             geom_count = geom_node.get_num_geoms()
             for i in range(geom_count):
                 state = geom_node.get_geom_state(i)
-                geom = geom_node.get_geom(i)
 
                 # Get material, and extract its shading model
                 material = state.get_attrib(MaterialAttrib).get_material()

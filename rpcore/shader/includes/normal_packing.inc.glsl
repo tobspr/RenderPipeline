@@ -107,7 +107,7 @@ vec3 unpack_normal_unsigned(vec2 packed_nrm) {
 // XXX: Probably belongs into its own header
 vec2 pack_depth(float d) {
     float x = d * 1000.0;
-    float fx = fract(x);    
+    float fx = fract(x);
     return vec2(fx, (x - fx) / 1000.0 ).xy;
 }
 

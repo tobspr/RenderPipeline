@@ -55,7 +55,7 @@ void main() {
 
     // Find the index of the cell we are about to process
     // Add one since the first pixel is the count of visible cells
-    int idx = 1 + thread_id / LC_CULL_THREADS; 
+    int idx = 1 + thread_id / LC_CULL_THREADS;
     int num_total_cells = texelFetch(CellListBuffer, 0).x;
     ivec2 tile_size = ivec2(LC_TILE_SIZE_X, LC_TILE_SIZE_Y);
 

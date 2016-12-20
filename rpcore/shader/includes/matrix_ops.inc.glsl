@@ -67,7 +67,7 @@ mat3 make_rotate_mat3_x(float rot_radians) {
         1, 0, 0,
         0, cos_x, -sin_x,
         0, sin_x, cos_x
-    );   
+    );
 }
 
 

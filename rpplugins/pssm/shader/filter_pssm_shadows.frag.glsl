@@ -182,7 +182,7 @@ void main() {
                     float factor = step(sampled_depth, ref_depth);
                     num_blockers += factor;
                     sum_blockers += sampled_depth * factor;
-                
+
                 END_ITERATE_SEQUENCE();
 
                 // Examine ratio between blockers and non-blockers

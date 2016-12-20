@@ -207,7 +207,7 @@ vec3 get_inscattered_light(vec3 surface_pos, vec3 view_dir, inout vec3 attenuati
             float phaseR = phaseFunctionR(nustart_pos);
             float phaseM = phaseFunctionM(nustart_pos);
 
-            // XXX 
+            // XXX
             phaseR *= GET_SETTING(scattering, rayleigh_factor);
 
             inscattered_light = max(inscatter.rgb * phaseR + getMie(inscatter) * phaseM, 0.0f);
@@ -245,5 +245,5 @@ void do_scattering(vec3 surface_pos, vec3 view_dir, out vec3 scattering, out vec
     // scattering *= saturate(distance(surface_pos, MainSceneData.camera_pos) / 500.0 - 0.0);
 
     get_reflected_light(surface_pos, irradiance_factor, attenuation, sun_color);
-    
+
 }
