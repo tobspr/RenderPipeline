@@ -26,13 +26,6 @@
 
 #pragma once
 
-#define SHADING_MODEL_DEFAULT 0
-#define SHADING_MODEL_EMISSIVE 1
-#define SHADING_MODEL_CLEARCOAT 2
-#define SHADING_MODEL_TRANSPARENT 3
-#define SHADING_MODEL_SKIN 4
-#define SHADING_MODEL_FOLIAGE 5
-
 // Pandas material representation
 struct Panda3DMaterial {
     vec4 baseColor;

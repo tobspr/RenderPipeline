@@ -40,6 +40,7 @@ from rpcore.stages.cull_lights_stage import CullLightsStage
 from rpcore.stages.flag_used_cells_stage import FlagUsedCellsStage
 from rpcore.stages.shadow_stage import ShadowStage
 
+from rpcore.util.material_api import MaterialAPI
 
 class LightManager(RPObject):
 
@@ -202,6 +203,15 @@ class LightManager(RPObject):
         defines["SHADOW_ATLAS_SIZE"] = self.pipeline.settings["shadows.atlas_size"]
 
         # Register all light types as defines
+        # Cant use RPLight class since its not exposed, so use
+        # arbitrary subclass
         for attr in dir(SphereLight):
             if attr.startswith("LT_"):
                 defines[attr.upper()] = getattr(SphereLight, attr)
+
+        # Register all shading models as defines
+        for member in dir(MaterialAPI):
+            if member.startswith("SM_"):
+                name = "SHADING_MODEL_" + member[3:]
+                defines[name] = getattr(MaterialAPI, member)
+
