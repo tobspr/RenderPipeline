@@ -55,6 +55,7 @@ from rpcore.util.network_communication import NetworkCommunication
 from rpcore.util.material_api import MaterialAPI
 from rpcore.util.ies_profile_loader import IESProfileLoader
 from rpcore.util.scene_converter import SceneConverter
+from rpcore.util.light_geometry import LightGeometry
 from rpcore.loader import RPLoader
 
 from rpcore.gui.debugger import Debugger
@@ -303,7 +304,7 @@ class RenderPipeline(RPObject):
         """ Prints information about the system used, including information
         about the used Panda3D build. Also checks if the Panda3D build is out
         of date. """
-        self.debug("Using Python {}.{} with architecture {}".format(
+        self.debug("Usice8ng Python {}.{} with architecture {}".format(
             sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
         self.debug("Using p3d{} built on {}".format(
             PandaSystem.get_version_string(), PandaSystem.get_build_date()))
@@ -680,59 +681,7 @@ class RenderPipeline(RPObject):
         self.light_mgr.internal_mgr.invalidate_region(region)
 
     def make_light_geometry(self, light):
-        """ Creates the appropriate geometry to represent the given light """
-        material = MaterialAPI.make_emissive(basecolor=light.color * light.intensity_luminance, exact=True)
+        """ Creates the appropriate geometry to represent the given light. Checkout
+        the render pipeline wiki or the LightGeometry class for more information. """
+        return LightGeometry.make(light)
 
-        if isinstance(light, SphereLight):
-            model = RPLoader.load_model("/$$rp/data/builtin_models/lights/sphere.bam")
-            MaterialAPI.force_apply_material(model, material)
-            model.reparent_to(Globals.base.render)
-            model.set_pos(light.pos)
-            model.set_scale(light.sphere_radius)
-            model.set_name("LightDebugGeometry")
-            return model
-
-        elif isinstance(light, RectangleLight):
-            parent = Globals.base.render.attachNewNode("LightDebugGeometry")
-            for side in [1, -1]:
-                model = RPLoader.load_model("/$$rp/data/builtin_models/lights/rectangle.bam")
-                if side == 1:
-                    MaterialAPI.force_apply_material(model, material)
-                else:
-                    material_backface = MaterialAPI.make_emissive(basecolor=Vec3(0), exact=True)
-                    MaterialAPI.force_apply_material(model, material_backface)
-
-                model.look_at(light.up_vector.cross(light.right_vector) * side, light.up_vector)
-                model.set_sz(light.up_vector.length())
-                model.set_sx(light.right_vector.length())
-                model.reparent_to(parent)
-                model.set_pos(light.pos)
-                model.set_name("LightDebugGeometry")    
-            return parent
-
-        elif isinstance(light, SpotLight):
-            self.warn("TODO: make_light_geometry for spot lights")
-            
-        elif isinstance(light, TubeLight):
-            model = RPLoader.load_model("/$$rp/data/builtin_models/lights/tube.bam")
-            
-            left = model.find("**/TubeEndLeft")
-            left.set_y(light.tube_length / 2 - light.tube_radius)
-            left.set_scale(light.tube_radius)
-            left.set_name("LightDebugGeometry")
-
-            right = model.find("**/TubeEndRight")
-            right.set_y(-light.tube_length / 2 + light.tube_radius)
-            right.set_scale(light.tube_radius)
-            right.set_name("LightDebugGeometry")
-
-            mid = model.find("**/TubeMid")
-            mid.set_scale(light.tube_radius, light.tube_radius, light.tube_length / 2 - light.tube_radius)
-            mid.set_name("LightDebugGeometry")
-
-            MaterialAPI.force_apply_material(model, material)
-            model.look_at(light.tube_direction)
-            model.reparent_to(Globals.base.render)
-            model.set_pos(light.pos)
-            model.set_name("LightDebugGeometry")
-            return model

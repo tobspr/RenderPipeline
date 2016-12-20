@@ -35,22 +35,23 @@
  *
  * @param light_type Type of the light
  */
-RPLight::RPLight(LightType light_type) {
-    _light_type = light_type;
-    _needs_update = false;
-    _casts_shadows = false;
-    _slot = -1;
-    _position.fill(0);
-    _color.fill(1);
-    _ies_profile = -1;
-    _source_resolution = 512;
-    _near_plane = 0.5;
-    _max_cull_distance = 50.0;
-    _intensity = 20;
-    _intensity_type = IT_lumens;
-    _depth_bias = 1.0;
-    _nrm_bias = 1.0;
-    _slope_bias = 1.0;
+RPLight::RPLight(LightType light_type) :
+    _light_type(light_type),
+    _needs_update(false),
+    _casts_shadows(false),
+    _slot(-1),
+    _position(0, 0, 0),
+    _color(0, 0, 0),
+    _ies_profile(-1),
+    _source_resolution(512),
+    _near_plane(0.5),
+    _max_cull_distance(50.0),
+    _intensity(20),
+    _intensity_type(IT_lumens),
+    _depth_bias(1.0),
+    _nrm_bias(1.0),
+    _slope_bias(1.0)
+{
 }
 
 /**

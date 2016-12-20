@@ -40,13 +40,17 @@ class MaterialAPI(RPObject):
 
     @classmethod
     def make_material(cls, basecolor=Vec3(0.8), specular_ior=0.8):
-        pass
+        """ Creates a new material with the given properties """
+        raise NotImplementedError("TODO")
 
     @classmethod
-    def make_emissive(cls, basecolor=Vec3(0.8), emissive_factor=0.2, exact=False):
-        """ Creates a new emissive material """
+    def make_emissive(cls, name="GeneratedMaterial", basecolor=Vec3(0.8), 
+                      emissive_factor=0.2, exact=False):
+        """ Creates a new emissive material. If exact is set to True,
+        the material will be configured to represent the given basecolor
+        1:1 on screen, this is useful for the light debug geometry. """
         m = Material()
-        m.set_name("GeneratedMaterial")
+        m.set_name(name)
         if not exact:
             m.set_base_color(Vec4(basecolor * emissive_factor, 1))
         else:
@@ -64,7 +68,8 @@ class MaterialAPI(RPObject):
 
     @classmethod
     def force_apply_material(cls, nodepath, material):
-        """ Forcedly overrides the material on the given nodepath """
+        """ Forcedly overrides the material on the given nodepath, by applying
+        it to the material attribute of every geom. """
         for geom_np in nodepath.find_all_matches("**/+GeomNode"):
             geom_node = geom_np.node()
             for i in range(geom_node.get_num_geoms()):
