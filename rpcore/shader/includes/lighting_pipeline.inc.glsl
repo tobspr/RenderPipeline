@@ -74,10 +74,10 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
     // TODO: make this configurable
     // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float bias_mult = 1.0;
-    const float slope_bias = 0.05 * bias_mult;
-    const float normal_bias = 0.01 * bias_mult;
-    const float const_bias = 0.005 * bias_mult;
+    const float bias_mult = 0.1;
+    const float slope_bias = 0.01 * bias_mult;
+    const float normal_bias = 3 * bias_mult;
+    const float const_bias = 0.01 * bias_mult;
 
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 

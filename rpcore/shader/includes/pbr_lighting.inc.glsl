@@ -408,8 +408,6 @@ vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
         specular_coat *= f0_coat * schlick_coat.x + (1.0 - f0_coat) * schlick_coat.y;
         
         specular = approx_merge_clearcoat_specular(specular, specular_coat);
-        // specular = mix(specular, specular_coat * 20, schlick.y);
-        // specular = vec3(schlick.y);
     };
 
     return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);

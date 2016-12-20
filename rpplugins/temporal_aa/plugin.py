@@ -24,10 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import SamplerState
-
 from rpcore.globals import Globals
-from rpcore.loader import RPLoader
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .temporal_aa_stage import TemporalAAStage

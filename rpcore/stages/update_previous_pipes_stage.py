@@ -80,7 +80,7 @@ class UpdatePreviousPipesStage(RenderStage):
         lines = []
 
         # Collect all samplers and generate the required uniforms and copy code
-        for i, (from_tex, to_tex, resolution) in enumerate(self._transfers):
+        for i, (from_tex, to_tex, _) in enumerate(self._transfers):
             index = str(i)
             uniforms.append(self.get_sampler_type(from_tex) + " SrcTex" + index)
             uniforms.append(self.get_sampler_type(to_tex, True) + " DestTex" + index)

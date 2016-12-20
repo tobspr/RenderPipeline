@@ -31,10 +31,6 @@ THE SOFTWARE.
 
 from __future__ import print_function
 
-import sys
-import os
-import subprocess
-
 from panda3d.core import ModifierButtons, Vec3, PStatClient
 from panda3d.core import Point3, CurveFitter
 

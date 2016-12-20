@@ -38,9 +38,11 @@ class ImageFormatTypes(object):  # pylint: disable=too-few-public-methods
     from panda3d's builtin Texture class. """
 
     T_float = Texture.T_float
+    T_short = Texture.T_short
     T_unsigned_byte = Texture.T_unsigned_byte
     T_int = Texture.T_int
     T_unsigned_short = Texture.T_unsigned_short
+    T_unsigned_int = Texture.T_unsigned_int
     T_unsigned_int_24_8 = Texture.T_unsigned_int_24_8
 
     TT_buffer_texture = Texture.TT_buffer_texture

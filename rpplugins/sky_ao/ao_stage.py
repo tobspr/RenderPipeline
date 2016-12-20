@@ -26,8 +26,6 @@ THE SOFTWARE.
 
 from __future__ import division
 
-from panda3d.core import Vec4, LVecBase2i
-
 from rpcore.render_stage import RenderStage
 from rpcore.util.bilateral_upscaler import BilateralUpscaler
 

@@ -201,7 +201,7 @@ class TexturePreview(DraggableWindow):
         DraggableWindow._create_components(self)
         self._content_node = self._node.attach_new_node("content")
 
-    def _export_image(self, event):
+    def _export_image(self, event):  # pylint: disable=unused-variable
         """ Exports the image to disk """
         self.debug("Exporting image")
 

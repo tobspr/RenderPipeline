@@ -36,6 +36,12 @@ class MotionBlurStage(RenderStage):
     required_inputs = []
     required_pipes = ["ShadedScene", "GBuffer", "LowPrecisionDepth", "CombinedVelocity"]
 
+    def __init__(self, *args):
+        RenderStage.__init__(self, *args)
+        self.per_object_blur = False
+        self.tile_size = 16
+        
+
     @property
     def produced_pipes(self):
         return {"ShadedScene": self.target_cam_blur.color_tex}

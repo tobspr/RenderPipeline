@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import LVecBase2i, Vec4
+from panda3d.core import LVecBase2i
 from rpcore.render_stage import RenderStage
 from rpcore.util.bilateral_upscaler import BilateralUpscaler
 
@@ -35,6 +35,11 @@ class AOStage(RenderStage):
     required_pipes = ["GBuffer", "LowPrecisionDepth", "LowPrecisionHalfresDepth", "PreviousFrame::ResolvedAO[RG8,50%]",
                       "CombinedVelocity", "LowPrecisionHalfresNormals", "LowPrecisionNormals",
                       "PreviousFrame::SceneDepth[R32I]"]
+
+    def __init__(self, *args):
+        RenderStage.__init__(self, *args)
+        self.enable_small_scale_ao = True
+        self.quality = "MEDIUM"
 
     @property
     def produced_pipes(self):

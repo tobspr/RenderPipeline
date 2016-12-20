@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec2, Vec3, TextNode, Vec4
+from panda3d.core import Vec3, Vec4
 from direct.gui.DirectButton import DirectButton
 from direct.gui.DirectGui import DGG
 

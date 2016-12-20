@@ -26,9 +26,9 @@ THE SOFTWARE.
 
 import os
 
-from direct.stdpy.file import isfile, isdir, join
+from direct.stdpy.file import isdir, join
 from panda3d.core import GeomVertexReader, Mat4, Vec3, Vec4
-from panda3d.core import PNMImage, TransformState, MaterialAttrib
+from panda3d.core import PNMImage, MaterialAttrib
 from panda3d.core import TextureAttrib, SamplerState
 
 from rpcore.rpobject import RPObject
@@ -156,7 +156,7 @@ class MitsubaExporter(RPObject):
         self.export_objects[name] = content
         self.export_states[name] = (state, transform)
 
-    def _generate_transform(self, transform, is_cam=False):
+    def _generate_cam_transform(self, transform):
         fwd = transform.get_mat().xform(Vec3(0, 1, 0))
         return "<lookat target='{}' origin='{}' up='{}'/>".format(
             vec2xml(fwd + transform.get_pos()), vec2xml(transform.get_pos()), "0, 0, 1")
@@ -214,7 +214,7 @@ class MitsubaExporter(RPObject):
         add("        <string name='fovAxis' value='x'/>")
         add("        <float name='nearClip' value='{}'/>".format(cam_lens.get_near()))
         add("        <transform name='toWorld'>")
-        add("            " + self._generate_transform(cam_transform, True))
+        add("            " + self._generate_cam_transform(cam_transform))
         add("        </transform>")
         add("        <sampler type='ldsampler'>")
         add("            <integer name='sampleCount' value='64'/>")
@@ -301,7 +301,7 @@ class MitsubaExporter(RPObject):
 
 
         self.debug("Exporting materials ..")
-        for obj_filename, (state, transform) in self.export_states.items():
+        for obj_filename, (state, _) in self.export_states.items():
 
             material_attrib = state.get_attrib(MaterialAttrib)
             if not material_attrib:
@@ -320,7 +320,6 @@ class MitsubaExporter(RPObject):
 
             diff_tex = texture_attrib.get_on_texture(texture_attrib.get_on_stage(0))
             rough_tex = texture_attrib.get_on_texture(texture_attrib.get_on_stage(3))
-
 
             shading_model = MaterialAPI.get_shading_model(material)
             metallic = material.get_metallic() > 0.5
@@ -353,13 +352,9 @@ class MitsubaExporter(RPObject):
                 reflectance = "specular" if metallic else "diffuse"
                 
                 output += self._generate_xml_for_tex(reflectance + "Reflectance", diff_tex, path, material.get_base_color())
-                
-                # add("            <texture name='alpha' type='scale'>")
-                # output += self._generate_xml_for_tex(rough_tex, path)
-                # add("                <rgb name='scale' value='{}' />".format(material.get_roughness() ** 2))
-                # add("            </texture>")
+                output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness()))
 
-                add("    <float name='alpha' value='{}'/>".format(material.get_roughness() ** 2)) # uses disney roughness
+                # add("    <float name='alpha' value='{}'/>".format(material.get_roughness() ** 2)) # uses disney roughness
                 add("  </bsdf>")
 
             else:

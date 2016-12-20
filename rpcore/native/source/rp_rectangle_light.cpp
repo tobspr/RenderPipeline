@@ -70,8 +70,9 @@ void RPRectangleLight::init_shadow_sources() {
  */
 void RPRectangleLight::update_shadow_sources() {
     _shadow_sources[0]->set_resolution(get_shadow_map_resolution());
-    LVecBase3f direction = _up_vector.cross(_right_vector);
-    _shadow_sources[0]->set_perspective_lens(170, 0.05, _max_cull_distance, _position - direction * 0.5, direction);
+    LVecBase3f direction = _up_vector.cross(_right_vector).normalized();
+
+    _shadow_sources[0]->set_perspective_lens(170, 0.51, _max_cull_distance, _position - direction * 0.5, direction, _up_vector);
 }
 
 

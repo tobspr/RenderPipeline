@@ -60,7 +60,8 @@ public:
     inline void set_region(const LVecBase4i& region, const LVecBase4f& region_uv);
     inline void set_resolution(size_t resolution);
     void set_perspective_lens(float fov, float near_plane,
-                                     float far_plane, LVecBase3f pos, LVecBase3f direction);
+                              float far_plane, const LVecBase3f& pos,
+                              const LVecBase3f& direction, const LVecBase3f& up = LVector3::up());
     void set_lens(const Lens& lens, LVecBase3f pos);
     
     inline void set_matrix_lens(const LMatrix4f& mvp);

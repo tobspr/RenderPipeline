@@ -31,7 +31,6 @@ from rplibs.six import itervalues, iteritems
 from rpcore.rpobject import RPObject
 from rpcore.render_target import RenderTarget
 from rpcore.loader import RPLoader
-from rpcore.image import Image
 
 
 class RenderStage(RPObject):

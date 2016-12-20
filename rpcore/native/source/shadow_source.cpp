@@ -52,13 +52,12 @@ ShadowSource::ShadowSource() {
  * @param direction Direction (Orientation) of the lens
  */
 void ShadowSource::set_perspective_lens(float fov, float near_plane,
-                                               float far_plane, LVecBase3f pos,
-                                               LVecBase3f direction) {
+      float far_plane, const LVecBase3f& pos, const LVecBase3f& direction, const LVecBase3f& up) {
     // Construct a temporary lens to generate the lens matrix
     PerspectiveLens temp_lens(fov, fov);
     temp_lens.set_film_offset(0, 0);
     temp_lens.set_near_far(near_plane, far_plane);
-    temp_lens.set_view_vector(direction, LVector3::up());
+    temp_lens.set_view_vector(direction.normalized(), up.normalized());
     set_lens(temp_lens, pos);
 }
 

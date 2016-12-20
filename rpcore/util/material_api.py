@@ -46,6 +46,7 @@ class MaterialAPI(RPObject):
     def make_emissive(cls, basecolor=Vec3(0.8), emissive_factor=0.2, exact=False):
         """ Creates a new emissive material """
         m = Material()
+        m.set_name("GeneratedMaterial")
         if not exact:
             m.set_base_color(Vec4(basecolor * emissive_factor, 1))
         else:

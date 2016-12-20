@@ -25,8 +25,6 @@ THE SOFTWARE.
 """
 from __future__ import division
 
-from panda3d.core import PTAInt
-
 from rpcore.render_stage import RenderStage
 
 

@@ -77,6 +77,9 @@ bool is_skybox(vec3 pos) {
     return is_skybox(pos, MainSceneData.camera_pos);
 }
 
+bool needs_shading(Material m) {
+    return !is_skybox(m) && m.shading_model != SHADING_MODEL_EMISSIVE;
+}
 
 
 //

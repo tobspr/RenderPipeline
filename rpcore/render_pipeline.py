@@ -31,15 +31,14 @@ import math
 import time
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
-from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties
+from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties, Vec3
 from panda3d.core import GeomTristrips, Vec4, Filename
 
 from direct.showbase.ShowBase import ShowBase
-from direct.stdpy.file import isfile, walk, getmtime, join
+from direct.stdpy.file import isfile, join
 
 from rplibs.yaml import load_yaml_file_flat
 from rplibs.six.moves import range  # pylint: disable=import-error
-from rplibs.six import iteritems  # pylint: disable=import-error
 
 from rpcore.globals import Globals
 from rpcore.effect import Effect
@@ -334,6 +333,26 @@ class RenderPipeline(RPObject):
             lights.append(rp_light)
             # self.make_light_geometry(rp_light)
 
+        for light in scene.find_all_matches("**/+RectangleLight"):
+            light_node = light.node()
+            rp_light = RectangleLight()
+            rp_light.pos = light.get_pos(Globals.base.render)
+            rp_light.max_cull_distance = light_node.max_distance
+            rp_light.intensity_lumens = 20.0 * light_node.color.w
+            rp_light.color = light_node.color.xyz
+            rp_light.casts_shadows = light_node.shadow_caster
+            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
+            
+            up = light.get_mat(Globals.base.render).xform_vec((0, 0, 0.5))
+            right = light.get_mat(Globals.base.render).xform_vec((0, 0.5, 0))
+
+            rp_light.up_vector = up
+            rp_light.right_vector = right
+            self.add_light(rp_light)
+            light.remove_node()
+            lights.append(rp_light)
+            self.make_light_geometry(rp_light)
+
         envprobes = []
         for np in scene.find_all_matches("**/ENVPROBE*"):
             probe = self.add_environment_probe()
@@ -581,7 +600,7 @@ class RenderPipeline(RPObject):
             import watchdog
             import watchdog.events
             import watchdog.observers
-        except:
+        except Exception:
             self.warn("File watching enabled (pipeline.auto_reload_plugin_shaders=True), "
                       "but watchdog package is not installed. Use 'ppython -m pip install watchdog' to "
                       "install it.")
@@ -603,7 +622,7 @@ class RenderPipeline(RPObject):
                 path_parts = pth.strip("/").split("/")
                 plugin_id = path_parts[0]
                 rp_instance.debug("Queuing plugin", plugin_id, "for reload, since", pth, "changed")
-                rp_instance._queued_plugin_reloads.add(plugin_id)
+                rp_instance._queued_plugin_reloads.add(plugin_id)  # pylint: disable=W0212
 
         handler = EventHandler()
         observer = watchdog.observers.Observer()
@@ -787,23 +806,30 @@ class RenderPipeline(RPObject):
 
         if isinstance(light, SphereLight):
             model = RPLoader.load_model("/$$rp/data/builtin_models/lights/sphere.bam")
-            model.set_material(material, 1000)
-            model.reparent_to(render)
+            MaterialAPI.force_apply_material(model, material)
+            model.reparent_to(Globals.base.render)
             model.set_pos(light.pos)
             model.set_scale(light.sphere_radius)
             model.set_name("LightDebugGeometry")
             return model
 
         elif isinstance(light, RectangleLight):
-            model = RPLoader.load_model("/$$rp/data/builtin_models/lights/rectangle.bam")
-            model.set_material(material, 1000)
-            model.look_at(light.up_vector.cross(light.right_vector))
-            model.set_sz(light.up_vector.length())
-            model.set_sx(light.right_vector.length())
-            model.reparent_to(render)
-            model.set_pos(light.pos)
-            model.set_name("LightDebugGeometry")
-            return model
+            parent = Globals.base.render.attachNewNode("LightDebugGeometry")
+            for side in [1, -1]:
+                model = RPLoader.load_model("/$$rp/data/builtin_models/lights/rectangle.bam")
+                if side == 1:
+                    MaterialAPI.force_apply_material(model, material)
+                else:
+                    material_backface = MaterialAPI.make_emissive(basecolor=Vec3(0), exact=True)
+                    MaterialAPI.force_apply_material(model, material_backface)
+
+                model.look_at(light.up_vector.cross(light.right_vector) * side, light.up_vector)
+                model.set_sz(light.up_vector.length())
+                model.set_sx(light.right_vector.length())
+                model.reparent_to(parent)
+                model.set_pos(light.pos)
+                model.set_name("LightDebugGeometry")    
+            return parent
 
         elif isinstance(light, SpotLight):
             self.warn("TODO: make_light_geometry for spot lights")
@@ -825,9 +851,9 @@ class RenderPipeline(RPObject):
             mid.set_scale(light.tube_radius, light.tube_radius, light.tube_length / 2 - light.tube_radius)
             mid.set_name("LightDebugGeometry")
 
-            model.set_material(material, 1000)
+            MaterialAPI.force_apply_material(model, material)
             model.look_at(light.tube_direction)
-            model.reparent_to(render)
+            model.reparent_to(Globals.base.render)
             model.set_pos(light.pos)
             model.set_name("LightDebugGeometry")
             return model

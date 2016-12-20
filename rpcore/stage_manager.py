@@ -124,7 +124,6 @@ class StageManager(RPObject):
                 pipe_type = pipe_name[-1].strip("[]")
                 pipe_resolution = "100%"
                 pipe_name = pipe_name[0]
-                pipe_handle = None
                 
                 if "," in pipe_type:
                     pipe_type, pipe_resolution = pipe_type.split(",", 1)

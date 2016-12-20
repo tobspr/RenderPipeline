@@ -25,7 +25,6 @@ THE SOFTWARE.
 """
 
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.stages.ambient_stage import AmbientStage
 
 from .capture_stage import SkyAOCaptureStage
 from .ao_stage import SkyAOStage
@@ -47,9 +46,6 @@ class Plugin(BasePlugin):
         self.capture_stage.resolution = self.get_setting("resolution")
         self.capture_stage.max_radius = self.get_setting("max_radius")
         self.capture_stage.capture_height = self.get_setting("capture_height")
-
-        # Make the stages use our output
-        # AmbientStage.required_pipes.append("SkyAO")
 
     def on_post_stage_setup(self):
         if self.is_plugin_enabled("env_probes"):

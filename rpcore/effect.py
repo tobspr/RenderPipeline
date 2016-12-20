@@ -302,7 +302,17 @@ class Effect(RPObject):
         shader_content = "\n".join(parsed_lines)
         temp_path = "/$$rptemp/$$effect-" + cache_key + ".glsl"
 
-        self.debug("Writing", temp_path)
+        # Avoid writing the effect if nothing changed
+        old_content = None
+        try:
+            with open(temp_path, "r") as handle:
+                old_content = handle.read()
+        except Exception:
+            pass
+        
+        if old_content == shader_content:
+            return temp_path
+
         with open(temp_path, "w") as handle:
             handle.write(shader_content)
 

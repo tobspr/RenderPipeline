@@ -61,6 +61,11 @@ void main() {
             result = vec4(0, 0, 0, 1);
             return;
         }
+
+        if (!needs_shading(m)) {
+            result = vec4(0, 0, 0, 1);
+            return;
+        }
     #endif
 
     // Apply all lights

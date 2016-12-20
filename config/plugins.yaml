@@ -6,7 +6,7 @@
 enabled:
     - smaa
     - temporal_aa
-    # - ao
+    - ao
     # - bloom
     # - clouds
     # - color_correction
