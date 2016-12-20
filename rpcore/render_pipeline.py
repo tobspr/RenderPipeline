@@ -54,6 +54,7 @@ from rpcore.util.task_scheduler import TaskScheduler
 from rpcore.util.network_communication import NetworkCommunication
 from rpcore.util.material_api import MaterialAPI
 from rpcore.util.ies_profile_loader import IESProfileLoader
+from rpcore.util.scene_converter import SceneConverter
 from rpcore.loader import RPLoader
 
 from rpcore.gui.debugger import Debugger
@@ -279,131 +280,10 @@ class RenderPipeline(RPObject):
         return probe
 
     def prepare_scene(self, scene):
-        """ Prepares a given scene, by converting panda lights to render pipeline
-        lights. This also converts all empties with names starting with 'ENVPROBE'
-        to environment probes. Conversion of blender to render pipeline lights
-        is done by scaling their intensity by 100 to match lumens.
-
-        Additionally, this finds all materials with the 'TRANSPARENT' shading
-        model, and sets the proper effects on them to ensure they are rendered
-        properly.
-
-        This method also returns a dictionary with handles to all created
-        objects, that is lights, environment probes, and transparent objects.
-        This can be used to store them and process them later on, or delete
-        them when a newer scene is loaded."""
-        lights = []
-
-        # TODO: Split into several sub-methods or even its own class
-        for light in scene.find_all_matches("**/+PointLight"):
-            self.error("Found PointLight '" + light.get_name() + "' in your scene. Please "
-                       "re-export your geometry using the newest BAM Exporter version to convert "
-                       "them to SphereLights")
-
-        for light in scene.find_all_matches("**/+SphereLight"):
-            light_node = light.node()
-            rp_light = SphereLight()
-            rp_light.pos = light.get_pos(Globals.base.render)
-            rp_light.max_cull_distance = light_node.max_distance
-            rp_light.intensity_lumens = 20.0 * light_node.color.w
-            rp_light.color = light_node.color.xyz
-            rp_light.casts_shadows = light_node.shadow_caster
-            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.sphere_radius = light_node.radius
-
-            self.add_light(rp_light)
-            light.remove_node()
-            lights.append(rp_light)
-            # self.make_light_geometry(rp_light)
-
-        for light in scene.find_all_matches("**/+Spotlight"):
-            light_node = light.node()
-            rp_light = SpotLight()
-            rp_light.pos = light.get_pos(Globals.base.render)
-            rp_light.max_cull_distance = light_node.max_distance
-            rp_light.intensity_lumens = 20.0 * light_node.color.w
-            rp_light.color = light_node.color.xyz
-            rp_light.casts_shadows = light_node.shadow_caster
-            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            rp_light.fov = light_node.exponent / math.pi * 180.0
-            lpoint = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
-            rp_light.direction = lpoint
-            self.add_light(rp_light)
-            light.remove_node()
-            lights.append(rp_light)
-            # self.make_light_geometry(rp_light)
-
-        for light in scene.find_all_matches("**/+RectangleLight"):
-            light_node = light.node()
-            rp_light = RectangleLight()
-            rp_light.pos = light.get_pos(Globals.base.render)
-            rp_light.max_cull_distance = light_node.max_distance
-            rp_light.intensity_lumens = 20.0 * light_node.color.w
-            rp_light.color = light_node.color.xyz
-            rp_light.casts_shadows = light_node.shadow_caster
-            rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
-            
-            up = light.get_mat(Globals.base.render).xform_vec((0, 0, 0.5))
-            right = light.get_mat(Globals.base.render).xform_vec((0, 0.5, 0))
-
-            rp_light.up_vector = up
-            rp_light.right_vector = right
-            self.add_light(rp_light)
-            light.remove_node()
-            lights.append(rp_light)
-            self.make_light_geometry(rp_light)
-
-        envprobes = []
-        for np in scene.find_all_matches("**/ENVPROBE*"):
-            probe = self.add_environment_probe()
-            probe.set_mat(np.get_mat())
-            probe.border_smoothness = 0.0001
-            probe.parallax_correction = True
-            np.remove_node()
-            envprobes.append(probe)
-
-        tristrips_warning_emitted = False
-        transparent_objects = []
-        for geom_np in scene.find_all_matches("**/+GeomNode"):
-            geom_node = geom_np.node()
-            geom_count = geom_node.get_num_geoms()
-            for i in range(geom_count):
-                state = geom_node.get_geom_state(i)
-                geom = geom_node.get_geom(i)
-
-                needs_conversion = False
-                for prim in geom.get_primitives():
-                    if isinstance(prim, GeomTristrips):
-                        needs_conversion = True
-                        if not tristrips_warning_emitted:
-                            self.warn("At least one GeomNode ('" + str(geom_node.get_name()) + "' and possibly more..) contains tristrips.")
-                            self.warn("Due to a NVIDIA Driver bug, we have to convert them to triangles now.")
-                            self.warn("Consider exporting your models with the Bam Exporter to avoid this.")
-                            tristrips_warning_emitted = True
-                            break
-
-                if needs_conversion:
-                    geom_node.modify_geom(i).decompose_in_place()
-
-                if not state.has_attrib(MaterialAttrib):
-                    self.warn("Geom", geom_node, "has no material! Please fix this.")
-                    continue
-
-                material = state.get_attrib(MaterialAttrib).get_material()
-                shading_model = MaterialAPI.get_shading_model(material)
-
-                # SHADING_MODEL_TRANSPARENT
-                if shading_model == MaterialAPI.SM_TRANSPARENT:
-                    if geom_count > 1:
-                        self.error("Transparent materials must be on their own geom!\n"
-                                   "If you are exporting from blender, split them into\n"
-                                   "seperate meshes, then re-export your scene. The\n"
-                                   "problematic mesh is: '" + str(geom_np.get_name()) + "'")
-                        continue
-                    self.set_effect(geom_np, "effects/default.yaml",
-                                    {"render_forward": True, "render_gbuffer": False, "render_shadow": False}, 100)
-
-        return {"lights": lights, "envprobes": envprobes, "transparent_objects": transparent_objects}
+        """ Prepares a given scene. Please head over to the render pipeline wiki,
+        or to util/scene_converter.py:convert for a detailed documentation on how
+        this works, and what it returns. """
+        return SceneConverter(self, scene).convert()
 
     def _create_managers(self):
         """ Internal method to create all managers and instances. This also
@@ -754,7 +634,6 @@ class RenderPipeline(RPObject):
             for i, material in enumerate(Globals.render.find_all_materials()):
                 if not material.has_base_color() or not material.has_roughness() or not material.has_refractive_index():
                     self.warn("Skipping non-pbr material '" + material.name + "'")
-                    self.warn("Properties:", material.has_base_color(), material.has_roughness(), material.has_refractive_index())
                     continue
                 handle.write(("{} " * 11).format(
                     self._get_serialized_material_name(material, i),

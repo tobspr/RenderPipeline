@@ -90,7 +90,6 @@ class NetworkCommunication(RPObject):
         while True:
             if cls.NEXT_UPDATE:
                 if time.time() - cls.NEXT_UPDATE[0] > 0.35:
-                    print("Resending", cls.NEXT_UPDATE)
                     update, cls.NEXT_UPDATE = cls.NEXT_UPDATE, None
                     cls.__internal_send_message(update[1], update[2])
 
