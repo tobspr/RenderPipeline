@@ -27,6 +27,7 @@ THE SOFTWARE.
 import math
 
 from panda3d.core import MaterialAttrib, GeomTristrips
+from panda3d.core import SphereLight as PandaSphereLight
 
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
@@ -45,7 +46,7 @@ class SceneConverter(RPObject):
     # Amount in lumens to multiply the lights intensity value with. This is
     # because blender uses a different light intensity, and lights would be
     # way too dark when imported from blender otherwise
-    LUMENS_CONVERSION_FACTOR = 20.0
+    LUMENS_CONVERSION_FACTOR = 40.0
 
 
     class ConversionResult(object):
@@ -95,9 +96,10 @@ class SceneConverter(RPObject):
     def _convert_lights(self):
         """ Converts all lights """
         for light in self.scene.find_all_matches("**/+PointLight"):
-            self.error("Found PointLight '" + light.get_name() + "' in your scene. "
-                       "Please re-export your geometry using the newest BAM Exporter "
-                       "version to convert them to SphereLights")
+            if not isinstance(light.node(), PandaSphereLight):
+                self.error("Found PointLight '" + light.get_name() + "' in your scene. "
+                        "Please re-export your geometry using the newest BAM Exporter "
+                        "version to convert them to SphereLights")
         self._convert_sphere_lights()
         self._convert_spot_lights()
         self._convert_rectangle_lights()
@@ -218,12 +220,12 @@ class SceneConverter(RPObject):
                 state = geom_node.get_geom_state(i)
 
                 # Get material, and extract its shading model
-                material = state.get_attrib(MaterialAttrib).get_material()
-                if not material:
-                    self.error("Geom '" + str(geom_np.get_name) + "' has a material "
+                material_attrib = state.get_attrib(MaterialAttrib)
+                if not material_attrib or not material_attrib.get_material():
+                    self.error("Geom '" + str(geom_np.get_name()) + "' has a material "
                                "attrib, but no material assigned!")
                     continue
-
+                material = material_attrib.get_material()
                 shading_model = MaterialAPI.get_shading_model(material)
 
                 if shading_model == MaterialAPI.SM_TRANSPARENT:

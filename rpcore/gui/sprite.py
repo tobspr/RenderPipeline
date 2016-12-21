@@ -109,14 +109,6 @@ class Sprite(RPObject):
         """ Sets the current image """
         self.node.set_image(img)
 
-    def get_width(self):
-        """ Returns the width of the image in pixels """
-        return self.width
-
-    def get_height(self):
-        """ Returns the height of the image in pixels """
-        return elf._height
-
     def set_pos(self, x, y):
         """ Sets the position """
         self.node.set_pos(self._translate_pos(x, y))

@@ -55,7 +55,6 @@ global_stage_order:
   # Post AA & Effects
   - BloomStage
   - TonemappingStage
-  - ReferenceStage
   - SRGBCorrectionStage
 
   # Past this point, we work on 8 bit targets
@@ -72,6 +71,7 @@ global_stage_order:
   - ColorCorrectionStage
 
   # Finishing stages, do not insert anything below
+  - ReferenceStage
   - UpscaleStage
   - FinalStage
   - UpdatePreviousPipesStage

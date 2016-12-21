@@ -27,15 +27,18 @@ THE SOFTWARE.
 import os
 
 from direct.stdpy.file import isdir, join
-from panda3d.core import GeomVertexReader, Mat4, Vec3, Vec4
-from panda3d.core import PNMImage, MaterialAttrib
+from panda3d.core import GeomVertexReader, Mat4, Vec3, Vec4, LVecBase2i
+from panda3d.core import MaterialAttrib, NodePath, ShaderAttrib
 from panda3d.core import TextureAttrib, SamplerState
 
 from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
+from rpcore.loader import RPLoader
 from rpcore.native import SphereLight, SpotLight, RectangleLight
 from rpcore.native import TubeLight
+from rpcore.image import Image
 from rpcore.util.material_api import MaterialAPI
+
 
 def to_safe_name(name):
     """ Converts a string to a valid filename """
@@ -72,7 +75,7 @@ class MitsubaExporter(RPObject):
                 self.debug("Skipping skybox")
                 continue
             elif "lightdebuggeometry" in repr_name:
-                self.debug("Skipping light debug geometry")
+                # self.debug("Skipping light debug geometry")
                 continue
 
             self.debug("Adding", np.get_name())
@@ -207,34 +210,41 @@ class MitsubaExporter(RPObject):
         add = output.append
         add("<?xml version='1.0' encoding='utf-8'?>")
         add("<scene version='0.5.0'>")
-        add("    <sensor type='perspective'>")
-        add("        <float name='farClip' value='{}'/>".format(cam_lens.get_far()))
-        add("        <float name='focusDistance' value='3.0'/>")
-        add("        <float name='fov' value='{}'/>".format(cam_lens.get_fov().x))
-        add("        <string name='fovAxis' value='x'/>")
-        add("        <float name='nearClip' value='{}'/>".format(cam_lens.get_near()))
-        add("        <transform name='toWorld'>")
-        add("            " + self._generate_cam_transform(cam_transform))
-        add("        </transform>")
-        add("        <sampler type='ldsampler'>")
-        add("            <integer name='sampleCount' value='64'/>")
-        add("        </sampler>")
-        add("        <film type='ldrfilm'>")
-        add("            <boolean name='banner' value='false'/>")
-        add("            <string name='fileFormat' value='png'/>")
-        add("            <string name='pixelFormat' value='rgb'/>")
-        add("            <integer name='width' value='{}'/>".format(Globals.base.win.get_x_size()))
-        add("            <integer name='height' value='{}'/>".format(Globals.base.win.get_y_size()))
-        add("            <rfilter type='box'/>")
-        add("        </film>")
-        add("    </sensor>")
-        add("   <integrator type='path'>")
-        add("       <integer name='maxDepth' value='2' />")
-        add("   </integrator>")
+        add("  <sensor type='perspective'>")
+        add("    <float name='farClip' value='{}'/>".format(cam_lens.get_far()))
+        add("    <float name='focusDistance' value='3.0'/>")
+        add("    <float name='fov' value='{}'/>".format(cam_lens.get_fov().x))
+        add("    <string name='fovAxis' value='x'/>")
+        add("    <float name='nearClip' value='{}'/>".format(cam_lens.get_near()))
+        add("    <transform name='toWorld'>")
+        add("      " + self._generate_cam_transform(cam_transform))
+        add("    </transform>")
+        add("    <sampler type='ldsampler'>")
+        add("      <integer name='sampleCount' value='64'/>")
+        add("    </sampler>")
+        add("    <film type='ldrfilm'>")
+        add("      <boolean name='banner' value='false'/>")
+        add("      <string name='fileFormat' value='png'/>")
+        add("      <string name='pixelFormat' value='rgb'/>")
+        add("      <integer name='width' value='{}'/>".format(Globals.base.win.get_x_size()))
+        add("      <integer name='height' value='{}'/>".format(Globals.base.win.get_y_size()))
+        add("      <rfilter type='box'/>")
+        add("    </film>")
+        add("  </sensor>")
+        add("  <integrator type='path'>")
+        add("    <integer name='maxDepth' value='2' />")
+        add("  </integrator>")
 
         add("<emitter type='envmap'>")
-        add("    <string name='filename' value='_envmap.png' />")
-        add("    <float name='gamma' value='1.0' />")
+        add("  <string name='filename' value='_envmap.png' />")
+        add("  <float name='gamma' value='1.0' />")
+        add("  <float name='scale' value='10.0' />")
+        add("  <transform name='toWorld'>")
+        add("    <rotate x='1' angle='90' />")
+        add("    <rotate y='1' angle='180' />")
+        add("    <rotate z='1' angle='270' />")
+        add("  </transform>")
+
         add("</emitter>")
 
         self.debug("Exporting lights ..")
@@ -261,8 +271,8 @@ class MitsubaExporter(RPObject):
                 add("<shape type='rectangle'>")
                 add("  <transform name='toWorld'>")
                 add("    <scale x='{}' y='{}' z='1' />".format(light.right_vector.length(), light.up_vector.length()))
-                add("    <lookat origin='{}' target='{}' up='0, 0, 1' />".format(
-                    vec2xml(light.pos), vec2xml(light.pos + light.up_vector.cross(light.right_vector))))
+                add("    <lookat origin='{}' target='{}' up='{}' />".format(
+                    vec2xml(light.pos), vec2xml(light.pos + light.up_vector.cross(light.right_vector)), vec2xml(light.up_vector)))
                 add("  </transform>")
                 add("  <emitter type='area'>")
                 add("    <rgb name='radiance' value='" + color2xml(light.color * light.intensity_luminance) + "' />")
@@ -342,7 +352,7 @@ class MitsubaExporter(RPObject):
                 if metallic:
                     add("  <bsdf type='roughconductor'>")
                     add("    <string name='material' value='Ag' />")
-                    add("    <boolean name='sampleVisible' value='false' />")
+                    # add("    <boolean name='sampleVisible' value='false' />")
                 else:
                     add("  <bsdf type='roughplastic'>")
                     add("    <float name='intIOR' value='{}'/>".format(material.get_refractive_index()))
@@ -352,7 +362,7 @@ class MitsubaExporter(RPObject):
                 reflectance = "specular" if metallic else "diffuse"
 
                 output += self._generate_xml_for_tex(reflectance + "Reflectance", diff_tex, path, material.get_base_color())
-                output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness()))
+                output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness() ** 2))
 
                 # add("    <float name='alpha' value='{}'/>".format(material.get_roughness() ** 2)) # uses disney roughness
                 add("  </bsdf>")
@@ -369,10 +379,37 @@ class MitsubaExporter(RPObject):
         add("</scene>")
         return output
 
+    def _write_envmap(self, path):
+        """ Exctracts the current environment map and writes it to disk """
+        self.debug("Extracting environment map ..")
+        envmap_input = self.pipeline.stage_mgr.inputs["DefaultEnvmapSpec"]
+        w, h = 2048, 1024
+        target = Image.create_2d("Envmap", w, h, "RGBA16")
+
+        shader = RPLoader.load_shader("/$$rp/rpcore/shader/export_envmap.frag.glsl")
+        np = NodePath("")
+        np.set_shader(shader)
+        np.set_shader_input("SourceTex", envmap_input)
+        np.set_shader_input("DestTex", target)
+        np.set_shader_input("size", LVecBase2i(w, h))
+        attr = np.get_attrib(ShaderAttrib)
+        Globals.base.graphics_engine.dispatch_compute(
+            ((w + 15) // 16, (h + 15) // 16, 1), attr, Globals.base.win.get_gsg()
+        )
+
+        self.debug("Writing environment map")
+        target.write(path)
+
+        self.debug("Done.")
+        del target
+
     def write(self, path):
         """ Writes out the generated objects """
         if not isdir(path):
             os.makedirs(path)
+
+        # Write the environment map
+        self._write_envmap(join(path, "_envmap.png"))
 
         # Write all dependend objects
         for name, contents in self.export_objects.items():
@@ -395,9 +432,5 @@ class MitsubaExporter(RPObject):
             handle.write("del mitsuba.*.log\n")
             handle.write("pause\n")
 
-        # Write the environment map
-        envmap = PNMImage(32, 16, 3, 2**16 - 1)
-        envmap.fill(1.0 / 2**16)
-        envmap.write(join(path, "_envmap.png"))
 
         self.debug("Done.")

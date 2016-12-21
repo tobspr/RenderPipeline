@@ -152,20 +152,28 @@ class Image(RPObject, Texture, ImageFormatTypes):
         Image.REGISTERED_IMAGES.append(self)
         self.set_clear_color(0)
         self.clear_image()
-        self.sort = RenderTarget.CURRENT_SORT
+
+        # Copy the current sort value, so that images created in a render
+        # stage appear at the same location as the render target itself
+        # in the buffer viewer.
+        self.sort = RenderTarget.CURRENT_SORT + 1
 
     def clear_image(self):
+        """ Clears the image to its specified clear color """
         Texture.clear_image(self)
-        self.prepare(Globals.base.win.gsg.get_prepared_objects())
+
+        # XXX: Is this really required?:
+        # self.prepare(Globals.base.win.gsg.get_prepared_objects())
 
     def __del__(self):
         """ Destroys the image """
-        # TODO: Free data
+        Image.REGISTERED_IMAGES.remove(self)
 
     def write(self, pth):
         """ Writes the image to disk """
         Globals.base.graphicsEngine.extract_texture_data(self, Globals.base.win.gsg)
-        if self.get_texture_type() in [Texture.TT_3d_texture, Texture.TT_cube_map]:
-            Texture.write(self, "#_" + pth, 0, 0, True, False)
-        else:
-            Texture.write(self, pth)
+        # FIXME: Should remove extension, add "#_#" and then write it
+        # if self.get_texture_type() in [Texture.TT_3d_texture, Texture.TT_cube_map]:
+        #     Texture.write(self, pth, 0, 0, True, False)
+        # else:
+        Texture.write(self, pth)

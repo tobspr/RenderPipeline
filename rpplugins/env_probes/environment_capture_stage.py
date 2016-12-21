@@ -39,7 +39,7 @@ class EnvironmentCaptureStage(RenderStage):
 
     """ This stage renders the scene to a cubemap """
 
-    required_inputs = ["DefaultEnvmap", "AllLightsData", "maxLightIndex"]
+    required_inputs = ["DefaultEnvmapSpec", "AllLightsData", "maxLightIndex"]
     required_pipes = []
 
     def __init__(self, pipeline):

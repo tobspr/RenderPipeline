@@ -34,7 +34,7 @@ class GBufferStage(RenderStage):
     """ This is the main pass stage, rendering the objects and creating the
     GBuffer which is used in later stages """
 
-    required_inputs = ["DefaultEnvmap"]
+    required_inputs = []
     required_pipes = []
 
     @property

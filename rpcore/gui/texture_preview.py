@@ -80,28 +80,14 @@ class TexturePreview(DraggableWindow):
         """ "Presents" a given texture and shows the window """
         self._current_tex = tex
         self.set_title(tex.get_name())
-
-        # Remove old content
         self._content_node.node().remove_all_children()
+
         display_w, display_h = self._find_dimensions(tex)
 
         image = Sprite(
             image=tex, parent=self._content_node, x=20, y=90, w=display_w,
             h=display_h, any_filter=False, transparent=False)
-        description = ""
-
-        # Image size
-        description += "{:d} x {:d} x {:d}".format(
-            tex.get_x_size(), tex.get_y_size(), tex.get_z_size())
-
-        # Image type
-        description += ", {:s}, {:s}".format(
-            Image.format_format(tex.get_format()).upper(),
-            Image.format_component_type(tex.get_component_type()).upper())
-
-        Text(text=description, parent=self._content_node, x=17, y=70,
-             size=16, color=Vec3(0.6, 0.6, 0.6))
-
+        self._make_description(tex)
         estimated_bytes = tex.estimate_texture_memory()
         size_desc = "Estimated memory: {:2.2f} MB".format(
             estimated_bytes / (1024.0 ** 2))
@@ -117,19 +103,27 @@ class TexturePreview(DraggableWindow):
         if tex.get_z_size() > 1:
             self._make_z_slider(tex)
 
-        self._make_luminance_slider(tex)
+        self._make_luminance_slider()
         self._make_tonemapping_options()
 
-        # Button to export impage
-        self._btn_export = Button(parent=self._content_node, x=self._header_offset, y=58, text="Export",
-                                  width=120, callback=self._export_image, bg=(0.34, 0.564, 0.192, 1))
+        self._btn_export = Button(
+            parent=self._content_node, x=self._header_offset, y=58, text="Export",
+            width=120, callback=self._export_image, bg=(0.34, 0.564, 0.192, 1))
 
         self._header_offset += 120 + 30
-
         self._prepare_inputs(tex, image, display_w, display_h)
-
         self._preview_image = image
         self.show()
+
+    def _make_description(self, tex):
+        description = ""
+        description += "{:d} x {:d} x {:d}".format(
+            tex.get_x_size(), tex.get_y_size(), tex.get_z_size())
+        description += ", {:s}, {:s}".format(
+            Image.format_format(tex.get_format()).upper(),
+            Image.format_component_type(tex.get_component_type()).upper())
+        Text(text=description, parent=self._content_node, x=17, y=70,
+             size=16, color=Vec3(0.6, 0.6, 0.6))
 
     def _prepare_inputs(self, tex, image, display_w, display_h):
         image.set_shader_input("slice", 0)
@@ -173,7 +167,7 @@ class TexturePreview(DraggableWindow):
 
         self._header_offset += 50 + 30
 
-    def _make_luminance_slider(self, tex):
+    def _make_luminance_slider(self):
         self._luminance_slider = Slider(
             parent=self._content_node, size=140, min_value=-14, max_value=14,
             callback=self._set_brightness, x=self._header_offset, y=65, value=0)

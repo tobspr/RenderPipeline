@@ -42,7 +42,7 @@ from rpcore.stages.shadow_stage import ShadowStage
 
 from rpcore.util.material_api import MaterialAPI
 
-class LightManager(RPObject):
+class LightManager(RPObject):  # pylint: disable=too-many-instance-attributes
 
     """ This class is a wrapper around the InternalLightManager, and provides
     additional functionality like setting up all required stages and defines."""

@@ -34,7 +34,7 @@
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 
-uniform samplerCube DefaultEnvmap;
+uniform samplerCube DefaultEnvmapSpec;
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
 
@@ -86,10 +86,11 @@ uniform int maxLightIndex;
         float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
 
         // Sample default environment map
-        vec3 ibl_specular = textureLod(DefaultEnvmap, cubemap_yup_to_zup(reflected_dir),
+        vec3 ibl_specular = textureLod(DefaultEnvmapSpec, cubemap_yup_to_zup(reflected_dir),
             env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 
         // Get cheap irradiance by sampling low levels of the environment map
+        // FIXME: Use DefaultEnvmapDiff here
         float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
         vec3 ibl_diffuse = textureLod(DefaultEnvmap, cubemap_yup_to_zup(m.normal),
             ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;

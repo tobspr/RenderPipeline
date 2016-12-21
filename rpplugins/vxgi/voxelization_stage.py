@@ -39,7 +39,7 @@ class VoxelizationStage(RenderStage):
 
     """ This stage voxelizes the whole scene """
 
-    required_inputs = ["DefaultEnvmap", "AllLightsData", "maxLightIndex"]
+    required_inputs = ["DefaultEnvmapSpec", "AllLightsData", "maxLightIndex"]
     required_pipes = []
 
     # The different states of voxelization

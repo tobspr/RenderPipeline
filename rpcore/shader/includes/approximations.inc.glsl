@@ -37,10 +37,21 @@ at least physically based.
 
 
 float approx_sphere_light_specular_energy(float roughness, float sphere_radius, float d_sq) {
-    float r = roughness * roughness;
-    float inv_r = (1 - roughness) * (1 - roughness);
-    r *= inv_r * inv_r * inv_r;
-    return r * min(1.0, sphere_radius * sphere_radius);
+    float f = 1.0;
+
+    // Smaller lights emit less energy, we have to convert from lumens here
+    f *= sphere_radius * sphere_radius;
+
+    // Light size decreases quadradically by distance
+    f *= 1.0 / max(0.01, d_sq);
+
+    // Prevent super bright highlights on small roughness values
+    f *= roughness * roughness * 70;
+    f *= max(0.02, (1 - roughness) * (1 - roughness));
+
+    f *= ONE_BY_PI;
+
+    return f;
 }
 
 float approx_spot_light_specular_energy(float roughness, float cos_fov) {

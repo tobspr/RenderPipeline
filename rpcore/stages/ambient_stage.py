@@ -31,15 +31,15 @@ class AmbientStage(RenderStage):
 
     """ This stage computes the ambient term """
 
-    required_inputs = ["DefaultEnvmap", "PrefilteredBRDF", "PrefilteredMetalBRDF",
-                       "PrefilteredCoatBRDF"]
+    required_inputs = ["DefaultEnvmapSpec", "DefaultEnvmapDiff", "PrefilteredBRDF",
+                       "PrefilteredMetalBRDF", "PrefilteredCoatBRDF"]
     required_pipes = ["ShadedScene", "GBuffer"]
 
     @property
     def produced_pipes(self):
         return {
             "ShadedScene": self.target.color_tex,
-                "PostAmbientScene": self.target.color_tex
+            "PostAmbientScene": self.target.color_tex
         }
 
     def create(self):

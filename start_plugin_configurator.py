@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# pylint: skip-file
+
 import os
 import sys
 import subprocess

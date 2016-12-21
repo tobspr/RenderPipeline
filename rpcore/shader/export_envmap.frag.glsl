@@ -24,49 +24,24 @@
  *
  */
 
-/**
- * @brief Sets the tube radius
- */
-inline void RPTubeLight::set_tube_radius(float tube_radius) {
-    nassertv(tube_radius >= 0.0099); // Invalid size
-    _tube_radius = tube_radius;
-    set_needs_update(true);
-}
+#version 440
 
-/**
- * @brief Returns the tube radius
- */
-inline float RPTubeLight::get_tube_radius() const {
-    return _tube_radius;
-}
+#pragma include "render_pipeline_base.inc.glsl"
 
-/**
- * @brief Sets the tube length
- */
-inline void RPTubeLight::set_tube_length(float tube_length) {
-    nassertv(tube_length >= 0.0099); // Invalid size
-    _tube_length = tube_length;
-    set_needs_update(true);
-}
+layout(local_size_x=16, local_size_y=16) in;
 
-/**
- * @brief Returns the tube length
- */
-inline float RPTubeLight::get_tube_length() const {
-    return _tube_length;
-}
+uniform ivec2 size;
+uniform samplerCube SourceTex;
+layout(rgba16f) uniform writeonly image2D DestTex;
 
-/**
- * @brief Sets the tube direction
- */
-inline void RPTubeLight::set_tube_direction(const LVecBase3f& tube_direction) {
-    _tube_direction = tube_direction.normalized();
-    set_needs_update(true);
-}
+void main() {
+    ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 local_coord = coord / vec2(size);
 
-/**
- * @brief Returns the tube direction
- */
-inline const LVecBase3f& RPTubeLight::get_tube_direction() const {
-    return _tube_direction;
+    vec3 direction = spherical_to_cartesian(local_coord.y * M_PI, (1 - local_coord.x) * TWO_PI);
+    direction = direction.xzy * vec3(1, 1, -1);
+    vec3 data = textureLod(SourceTex, direction, 0).xyz;
+    data *= DEFAULT_ENVMAP_BRIGHTNESS;
+    data *= 0.1; // Scale down because png can only handle [0, 1] range
+    imageStore(DestTex, coord, vec4(data, 1));
 }

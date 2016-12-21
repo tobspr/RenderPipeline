@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+# pylint: skip-file
+
 from __future__ import print_function, division
 
 import os
@@ -38,7 +40,6 @@ from direct.showbase.ShowBase import ShowBase
 
 BASE_PATH = realpath(dirname(__file__))
 sys.path.insert(0, join(BASE_PATH, "..", ".."))
-
 
 from rplibs.progressbar import FileTransferSpeed, ETA, ProgressBar, Percentage
 from rplibs.progressbar import Bar
@@ -56,7 +57,9 @@ class Application(ShowBase):
             gl-debug #t
         """)
 
+        print("init showbase")
         ShowBase.__init__(self)
+        print("done..")
 
         os.chdir(BASE_PATH)
 
@@ -65,11 +68,40 @@ class Application(ShowBase):
         if isfile(join(source_path, "1.png")):
             extension = ".png"
 
-        cubemap = self.loader.load_texture("source/envmap.hdr")
-        mipmap, size = -1, 1024
+        # Initial update
+        self.taskMgr.step()
 
-        # cshader = Shader.load_compute(Shader.SL_GLSL, "filter.compute.glsl")
-        cshader = Shader.load_compute(Shader.SL_GLSL, "filter_spherical.compute.glsl")
+        print("Loading source data ..")
+        cubemap = self.loader.load_texture("source/envmap.hdr")
+
+        print("Filtering diffuse cubemap ..")
+        diffuse_size = 16
+
+        cshader = Shader.load_compute(Shader.SL_GLSL, "filter_diffuse.compute.glsl")
+
+        dest_cubemap = Texture("Dest")
+        dest_cubemap.setup_cube_map(diffuse_size, Texture.T_float, Texture.F_rgba16)
+        dest_cubemap.set_minfilter(Texture.FT_linear)
+        dest_cubemap.set_magfilter(Texture.FT_linear)
+        dest_cubemap.set_clear_color(Vec4(0))
+        dest_cubemap.clear_image()
+
+        for i in range(6):
+            node = NodePath("")
+            node.set_shader_input("SourceTex", cubemap)
+            node.set_shader_input("DestTex", dest_cubemap, False, True, -1, 0, i)
+            node.set_shader_input("totalSize", diffuse_size)
+            node.set_shader_input("currentFace", i)
+            node.set_shader(cshader)
+            attr = node.get_attrib(ShaderAttrib)
+            self.graphicsEngine.dispatch_compute(((diffuse_size + 15) // 16, (diffuse_size + 15) // 16, 1), attr, self.win.gsg)
+
+        self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.gsg)
+        dest_cubemap.write("cubemap_diffuse.txo")
+
+        print("Generating specular workload ..")
+        mipmap, size = -1, 1024
+        cshader = Shader.load_compute(Shader.SL_GLSL, "filter_specular.compute.glsl")
 
         dest_cubemap = Texture("Dest")
         dest_cubemap.setup_cube_map(size, Texture.T_float, Texture.F_rgba16)
@@ -79,9 +111,6 @@ class Application(ShowBase):
         dest_cubemap.clear_image()
 
         random.seed(123)
-
-        for i in range(3):
-            self.taskMgr.step()
 
         workload = []
 
@@ -116,7 +145,7 @@ class Application(ShowBase):
         print("Writing txo ..")
 
         self.graphicsEngine.extract_texture_data(dest_cubemap, self.win.gsg)
-        dest_cubemap.write("cubemap.txo")
+        dest_cubemap.write("cubemap_specular.txo")
 
         print("Done.")
 

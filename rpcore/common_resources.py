@@ -53,7 +53,13 @@ class CommonResources(RPObject):
         self._setup_inputs()
         self._first_update = True
 
-    def _load_fonts(self):
+    @staticmethod
+    def load_default_skybox():
+        """ Loads the default skybox model """
+        return RPLoader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
+
+    @staticmethod
+    def _load_fonts():
         """ Loads the default font used for rendering and assigns it to
         Globals.font for further usage """
         font = RPLoader.load_font("/$$rp/data/font/Roboto-Medium.ttf")
@@ -64,45 +70,6 @@ class CommonResources(RPObject):
         font.set_fg(Vec4(1, 1, 1, 1))
         Globals.font = font
 
-    def _setup_inputs(self):
-        """ Creates commonly used shader inputs such as the current mvp and
-        registers them to the stage manager so they can be used for rendering """
-
-        self._input_ubo = GroupedInputBlock("MainSceneData")
-        inputs = (
-            ("camera_pos", "vec3"),
-            ("view_proj_mat_no_jitter", "mat4"),
-            ("inv_view_proj_mat_no_jitter", "mat4"),
-            ("last_view_proj_mat_no_jitter", "mat4"),
-            ("last_inv_view_proj_mat_no_jitter", "mat4"),
-            ("view_mat_z_up", "mat4"),
-            ("proj_mat", "mat4"),
-            ("inv_proj_mat", "mat4"),
-            ("view_mat_billboard", "mat4"),
-            ("frame_delta", "float"),
-            ("smooth_frame_delta", "float"),
-            ("frame_time", "float"),
-            ("current_film_offset", "vec2"),
-            ("frame_index", "int"),
-            ("screen_size", "ivec2"),
-            ("native_screen_size", "ivec2"),
-            ("lc_tile_count", "ivec2"),
-            ("ws_frustum_directions", "mat4"),
-            ("vs_frustum_directions", "mat4"), # XXX: Unused
-        )
-        for name, ipt_type in inputs:
-            self._input_ubo.register_pta(name, ipt_type)
-
-        self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
-
-        # Main camera and main render have to be regular inputs, since they are
-        # used in the shaders by that name.
-        self._pipeline.stage_mgr.inputs["mainCam"] = self._showbase.cam
-        self._pipeline.stage_mgr.inputs["mainRender"] = self._showbase.render
-
-        # Set the correct frame rate interval
-        Globals.clock.set_average_frame_rate_interval(3.0)
-
     def write_config(self):
         """ Generates the shader configuration for the common inputs """
         content = self._input_ubo.generate_shader_code()
@@ -112,94 +79,6 @@ class CommonResources(RPObject):
                 handle.write(content)
         except IOError as msg:
             self.error("Failed to write common resources shader configuration!", msg)
-
-    def _load_textures(self):
-        """ Loads commonly used textures and makes them available via the
-        stage manager """
-        self._load_environment_cubemap()
-        self._load_prefiltered_brdf()
-        self._load_ltc_data()
-        self._load_skydome()
-        self._load_debug_font_atlas()
-
-    def _load_environment_cubemap(self):
-        """ Loads the default cubemap used for the environment, which is used
-        when no other environment data is available """
-        envmap = RPLoader.load_cube_map(
-            "/$$rp/data/default_cubemap/cubemap.txo", read_mipmaps=True)
-        envmap.set_minfilter(SamplerState.FT_linear_mipmap_linear)
-        # envmap.set_format(Image.F_rgba16)
-        envmap.set_magfilter(SamplerState.FT_linear)
-        envmap.set_wrap_u(SamplerState.WM_repeat)
-        envmap.set_wrap_v(SamplerState.WM_repeat)
-        envmap.set_wrap_w(SamplerState.WM_repeat)
-        self._pipeline.stage_mgr.inputs["DefaultEnvmap"] = envmap
-
-    def _load_prefiltered_brdf(self):
-        """ Loads the prefiltered brdf """
-        luts = {
-            "PrefilteredBRDF": "slices/env_brdf_#.png",
-            "PrefilteredMetalBRDF": "slices_metal/env_brdf.png",
-            "PrefilteredCoatBRDF": "slices_coat/env_brdf.png",
-        }
-
-        for name, src in iteritems(luts):
-            loader_method = RPLoader.load_texture
-            if "#" in src:
-                loader_method = RPLoader.load_3d_texture
-
-            brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(src))
-            brdf_tex.set_minfilter(SamplerState.FT_linear)
-            brdf_tex.set_magfilter(SamplerState.FT_linear)
-            brdf_tex.set_wrap_u(SamplerState.WM_clamp)
-            brdf_tex.set_wrap_v(SamplerState.WM_clamp)
-            brdf_tex.set_wrap_w(SamplerState.WM_clamp)
-            brdf_tex.set_anisotropic_degree(0)
-            self._pipeline.stage_mgr.inputs[name] = brdf_tex
-
-    def _load_ltc_data(self):
-        """ Loads the precomputed luts for LTC, used for rectangular
-        area light shading """
-        tex_amp = RPLoader.load_texture("/$$rp/data/ltc/ltc_amp.dds")
-        tex_amp.set_minfilter(SamplerState.FT_linear)
-        tex_amp.set_magfilter(SamplerState.FT_linear)
-        tex_amp.set_wrap_u(SamplerState.WM_clamp)
-        tex_amp.set_wrap_v(SamplerState.WM_clamp)
-        self._pipeline.stage_mgr.inputs["LTCAmpTex"] = tex_amp
-
-        tex_mat = RPLoader.load_texture("/$$rp/data/ltc/ltc_mat.dds")
-        tex_mat.set_minfilter(SamplerState.FT_linear)
-        tex_mat.set_magfilter(SamplerState.FT_linear)
-        tex_mat.set_wrap_u(SamplerState.WM_clamp)
-        tex_mat.set_wrap_v(SamplerState.WM_clamp)
-        self._pipeline.stage_mgr.inputs["LTCMatTex"] = tex_mat
-
-    def _load_debug_font_atlas(self):
-        """ Loads the font atlas for the debug font """
-        tex = RPLoader.load_texture("/$$rp/data/debug_font_atlas/atlas.png")
-        tex.set_minfilter(SamplerState.FT_nearest)
-        tex.set_magfilter(SamplerState.FT_nearest)
-        tex.set_wrap_u(SamplerState.WM_border_color)
-        tex.set_wrap_v(SamplerState.WM_border_color)
-        tex.set_border_color(Vec4(1, 1, 1, 1))
-        self._pipeline.stage_mgr.inputs["DebugFontAtlas"] = tex
-
-    def _load_skydome(self):
-        """ Loads the skydome """
-        # skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
-        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.jpg")
-        skydome.set_wrap_u(SamplerState.WM_clamp)
-        skydome.set_wrap_v(SamplerState.WM_clamp)
-        self._pipeline.stage_mgr.inputs["DefaultSkydome"] = skydome
-
-        skydome_overlay = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.jpg")
-        skydome_overlay.set_wrap_u(SamplerState.WM_clamp)
-        skydome_overlay.set_wrap_v(SamplerState.WM_clamp)
-        self._pipeline.stage_mgr.inputs["DefaultSkydomeOverlay"] = skydome_overlay
-
-    def load_default_skybox(self):
-        skybox = RPLoader.load_model("/$$rp/data/builtin_models/skybox/skybox.bam")
-        return skybox
 
     def update(self):
         """ Updates the commonly used resources, mostly the shader inputs """
@@ -282,3 +161,135 @@ class CommonResources(RPObject):
         update("screen_size", Globals.resolution)
         update("native_screen_size", Globals.native_resolution)
         update("lc_tile_count", self._pipeline.light_mgr.num_tiles)
+
+    def _setup_inputs(self):
+        """ Creates commonly used shader inputs such as the current mvp and
+        registers them to the stage manager so they can be used for rendering """
+
+        self._input_ubo = GroupedInputBlock("MainSceneData")
+        inputs = (
+            ("camera_pos", "vec3"),
+            ("view_proj_mat_no_jitter", "mat4"),
+            ("inv_view_proj_mat_no_jitter", "mat4"),
+            ("last_view_proj_mat_no_jitter", "mat4"),
+            ("last_inv_view_proj_mat_no_jitter", "mat4"),
+            ("view_mat_z_up", "mat4"),
+            ("proj_mat", "mat4"),
+            ("inv_proj_mat", "mat4"),
+            ("view_mat_billboard", "mat4"),
+            ("frame_delta", "float"),
+            ("smooth_frame_delta", "float"),
+            ("frame_time", "float"),
+            ("current_film_offset", "vec2"),
+            ("frame_index", "int"),
+            ("screen_size", "ivec2"),
+            ("native_screen_size", "ivec2"),
+            ("lc_tile_count", "ivec2"),
+            ("ws_frustum_directions", "mat4"),
+            ("vs_frustum_directions", "mat4"), # XXX: Unused
+        )
+        for name, ipt_type in inputs:
+            self._input_ubo.register_pta(name, ipt_type)
+
+        self._pipeline.stage_mgr.input_blocks.append(self._input_ubo)
+
+        # Main camera and main render have to be regular inputs, since they are
+        # used in the shaders by that name.
+        self._pipeline.stage_mgr.inputs["mainCam"] = self._showbase.cam
+        self._pipeline.stage_mgr.inputs["mainRender"] = self._showbase.render
+
+        # Set the correct frame rate interval
+        Globals.clock.set_average_frame_rate_interval(3.0)
+
+    def _load_textures(self):
+        """ Loads commonly used textures and makes them available via the
+        stage manager """
+        self._load_environment_cubemap()
+        self._load_prefiltered_brdf()
+        self._load_ltc_data()
+        self._load_skydome()
+        self._load_debug_font_atlas()
+
+    def _load_environment_cubemap(self):
+        """ Loads the default cubemap used for the environment, which is used
+        when no other environment data is available """
+        envmap_spec = RPLoader.load_cube_map(
+            "/$$rp/data/default_cubemap/cubemap_specular.txo", read_mipmaps=True)
+        envmap_spec.set_minfilter(SamplerState.FT_linear_mipmap_linear)
+        envmap_spec.set_magfilter(SamplerState.FT_linear)
+        envmap_spec.set_wrap_u(SamplerState.WM_repeat)
+        envmap_spec.set_wrap_v(SamplerState.WM_repeat)
+        envmap_spec.set_wrap_w(SamplerState.WM_repeat)
+        self._pipeline.stage_mgr.inputs["DefaultEnvmapSpec"] = envmap_spec
+
+        envmap_diff = RPLoader.load_cube_map(
+            "/$$rp/data/default_cubemap/cubemap_diffuse.txo")
+        envmap_diff.set_minfilter(SamplerState.FT_linear)
+        envmap_diff.set_magfilter(SamplerState.FT_linear)
+        envmap_diff.set_wrap_u(SamplerState.WM_repeat)
+        envmap_diff.set_wrap_v(SamplerState.WM_repeat)
+        envmap_diff.set_wrap_w(SamplerState.WM_repeat)
+        self._pipeline.stage_mgr.inputs["DefaultEnvmapDiff"] = envmap_diff
+
+
+    def _load_prefiltered_brdf(self):
+        """ Loads the prefiltered brdf """
+        luts = {
+            "PrefilteredBRDF": "slices/env_brdf_#.png",
+            "PrefilteredMetalBRDF": "slices_metal/env_brdf.png",
+            "PrefilteredCoatBRDF": "slices_coat/env_brdf.png",
+        }
+
+        for name, src in iteritems(luts):
+            loader_method = RPLoader.load_texture
+            if "#" in src:
+                loader_method = RPLoader.load_3d_texture
+
+            brdf_tex = loader_method("/$$rp/data/environment_brdf/{}".format(src))
+            brdf_tex.set_minfilter(SamplerState.FT_linear)
+            brdf_tex.set_magfilter(SamplerState.FT_linear)
+            brdf_tex.set_wrap_u(SamplerState.WM_clamp)
+            brdf_tex.set_wrap_v(SamplerState.WM_clamp)
+            brdf_tex.set_wrap_w(SamplerState.WM_clamp)
+            brdf_tex.set_anisotropic_degree(0)
+            self._pipeline.stage_mgr.inputs[name] = brdf_tex
+
+    def _load_ltc_data(self):
+        """ Loads the precomputed luts for LTC, used for rectangular
+        area light shading """
+        tex_amp = RPLoader.load_texture("/$$rp/data/ltc/ltc_amp.dds")
+        tex_amp.set_minfilter(SamplerState.FT_linear)
+        tex_amp.set_magfilter(SamplerState.FT_linear)
+        tex_amp.set_wrap_u(SamplerState.WM_clamp)
+        tex_amp.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["LTCAmpTex"] = tex_amp
+
+        tex_mat = RPLoader.load_texture("/$$rp/data/ltc/ltc_mat.dds")
+        tex_mat.set_minfilter(SamplerState.FT_linear)
+        tex_mat.set_magfilter(SamplerState.FT_linear)
+        tex_mat.set_wrap_u(SamplerState.WM_clamp)
+        tex_mat.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["LTCMatTex"] = tex_mat
+
+    def _load_debug_font_atlas(self):
+        """ Loads the font atlas for the debug font """
+        tex = RPLoader.load_texture("/$$rp/data/debug_font_atlas/atlas.png")
+        tex.set_minfilter(SamplerState.FT_nearest)
+        tex.set_magfilter(SamplerState.FT_nearest)
+        tex.set_wrap_u(SamplerState.WM_border_color)
+        tex.set_wrap_v(SamplerState.WM_border_color)
+        tex.set_border_color(Vec4(1, 1, 1, 1))
+        self._pipeline.stage_mgr.inputs["DebugFontAtlas"] = tex
+
+    def _load_skydome(self):
+        """ Loads the skydome """
+        # skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.txo")
+        skydome = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.jpg")
+        skydome.set_wrap_u(SamplerState.WM_clamp)
+        skydome.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["DefaultSkydome"] = skydome
+
+        skydome_overlay = RPLoader.load_texture("/$$rp/data/builtin_models/skybox/skybox.jpg")
+        skydome_overlay.set_wrap_u(SamplerState.WM_clamp)
+        skydome_overlay.set_wrap_v(SamplerState.WM_clamp)
+        self._pipeline.stage_mgr.inputs["DefaultSkydomeOverlay"] = skydome_overlay

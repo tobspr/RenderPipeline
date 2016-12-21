@@ -35,7 +35,7 @@ class ForwardStage(RenderStage):
     """ Forward shading stage, which first renders all forward objects,
     and then merges them with the scene """
 
-    required_inputs = ["DefaultEnvmap", "PrefilteredBRDF", "PrefilteredCoatBRDF"]
+    required_inputs = ["DefaultEnvmapSpec", "PrefilteredBRDF", "PrefilteredCoatBRDF"]
     required_pipes = ["SceneDepth", "ShadedScene", "CellIndices"]
 
     @property

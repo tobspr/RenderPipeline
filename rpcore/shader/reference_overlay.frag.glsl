@@ -32,11 +32,18 @@ uniform sampler2D ShadedScene;
 uniform sampler2D Previous_PostReferenceStage;
 uniform bool cameraMoved;
 
+uniform bool displayReference;
+uniform bool displayDifference;
+uniform sampler2D ReferenceTex;
+
 out vec3 result;
 
 void main() {
     vec2 texcoord = get_texcoord();
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
+    vec3 reference_color = textureLod(ReferenceTex, texcoord, 0).xyz;
 
+    /*
     #if SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
         vec3 prev = saturate(textureLod(Previous_PostReferenceStage, texcoord, 0).xyz);
         vec3 curr = saturate(textureLod(ShadedScene, texcoord, 0).xyz);
@@ -45,7 +52,16 @@ void main() {
         if (cameraMoved)
             result = curr;
 
-    #else
-        result = textureLod(ShadedScene, texcoord, 0).xyz;
-    #endif
+    #else*/
+    result = scene_color;
+    //#endif
+
+    if (displayReference) {
+        if (displayDifference) {
+            result = saturate(abs(scene_color - reference_color) / 0.1);
+        } else {
+            result = reference_color;
+        }
+    }
+
 }

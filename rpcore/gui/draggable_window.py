@@ -33,7 +33,6 @@ from rpcore.rpobject import RPObject
 from rpcore.globals import Globals
 from rpcore.gui.text import Text
 
-
 class DraggableWindow(RPObject):
 
     """ This is a simple draggable but not resizeable window """

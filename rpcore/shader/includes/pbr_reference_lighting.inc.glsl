@@ -184,9 +184,6 @@ bool ray_sphere_intersection(RefRay r, RefSphere s)
     float d1 = pre + sqrt(below_root);
     return d1 > 0;
 
-    // return true;
-
-    // return sq >= 0 && pre > -pre;
 }
 
 // Convert from Global to local coordinates

@@ -104,6 +104,13 @@ class Effect(RPObject):
         options_hash = "".join(["1" if options[key] else "0" for key in sorted(iterkeys(options))])
         return file_hash + "-" + options_hash
 
+    @staticmethod
+    def _convert_filename_to_name(filename):
+        """ Constructs an effect name from a filename, this is used for writing
+        out temporary files """
+        return filename.replace(".yaml", "").replace("effects/", "") \
+            .replace("/", "_").replace("\\", "_").replace(".", "-")
+
     def __init__(self):
         """ Constructs a new empty effect, this is a private constructor and
         should not be called. Instead, use Effect.load() """
@@ -152,12 +159,6 @@ class Effect(RPObject):
             self.warn("Pass '" + pass_id + "' not found!")
             return False
         return self._shader_objs[pass_id]
-
-    def _convert_filename_to_name(self, filename):
-        """ Constructs an effect name from a filename, this is used for writing
-        out temporary files """
-        return filename.replace(".yaml", "").replace("effects/", "")\
-            .replace("/", "_").replace("\\", "_").replace(".", "-")
 
     def _parse_content(self, parsed_yaml):
         """ Internal method to construct the effect from a yaml object """
@@ -219,7 +220,7 @@ class Effect(RPObject):
         cache_key = self.effect_name + "@" + stage + "-" + pass_id + "@" + self.effect_hash
         return self._process_shader_template(template_src, cache_key, injects)
 
-    def _process_shader_template(self, template_src, cache_key, injections):  # noqa # pylint: disable=too-many-branches
+    def _process_shader_template(self, template_src, cache_key, injections):  # noqa # pylint: disable=too-many-branches, too-many-locals
         """ Generates a compiled shader object from a given shader
         source location and code injection definitions. """
         with open(template_src, "r") as handle:

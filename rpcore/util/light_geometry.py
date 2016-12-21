@@ -94,7 +94,7 @@ class LightGeometry(RPObject):
             model.reparent_to(parent)
             model.set_pos(light.pos)
             model.set_name(cls.DEBUG_GEOMETRY_NAME)
-            return parent
+        return parent
 
     @classmethod
     def _make_tube_light(cls, light):
@@ -128,7 +128,7 @@ class LightGeometry(RPObject):
     @classmethod
     def _make_spot_light(cls, light):  # pylint: disable=unused-argument
         """ Internal method to create the geometry for a spot light """
-        cls.warn("TODO: Implement spot lights in light ")
+        RPObject.global_warn("LightGeometry", "TODO: Implement spot lights in light geometry")
         return Globals.base.render.attach_new_node(cls.DEBUG_GEOMETRY_NAME)
 
     @classmethod

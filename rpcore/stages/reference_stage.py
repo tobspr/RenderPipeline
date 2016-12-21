@@ -24,8 +24,9 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Vec4, Vec3
+from panda3d.core import Vec4, Vec3, Texture, TexturePool
 
+from rpcore.loader import RPLoader
 from rpcore.render_stage import RenderStage
 from rpcore.globals import Globals
 
@@ -33,7 +34,21 @@ class ReferenceStage(RenderStage):
 
     """ This stage is used for the reference mode, to reduce noise"""
 
+    REFERENCE_MODES = ["PIPELINE", "MITSUBA", "DIFFERENCE"]
+    CURRENT_MODE = "PIPELINE"
+
     required_pipes = ["ShadedScene", "PreviousFrame::PostReferenceStage[RGBA16]"]
+
+    # FIXME: Refactor this code, and move code out of the debugger calling this.
+
+    @classmethod
+    def switch_to_mode(cls, mode):
+        cls.CURRENT_MODE = mode
+
+    def __init__(self, *args):
+        RenderStage.__init__(self, *args)
+        self.current_mode = "PIPELINE"
+        self.current_tex = Texture("")
 
     @property
     def produced_pipes(self):
@@ -46,13 +61,18 @@ class ReferenceStage(RenderStage):
         self.last_cam_pos = Vec3(0)
         self.last_cam_hpr = Vec3(0)
 
-        self.target = self.create_target("ReferenceReduceNoise")
+        self.target = self.create_target("ReferenceOverlay")
         # NOTICE: 16bit is really required for proper fading between images,
         # otherwise pixels can "stay" because for example 32.99 * 0.99 = 32.5 = 32 -> Pixel stays
         self.target.add_color_attachment(bits=16)
         self.target.prepare_buffer()
         self.target.set_clear_color(Vec4(1, 0, 0, 0))
         self.target.set_shader_input("cameraMoved", False)
+
+        self.target.set_shader_input("ReferenceTex", self.current_tex)
+        self.target.set_shader_input("displayReference", False)
+        self.target.set_shader_input("displayDifference", False)
+
 
     def update(self):
         # Invalidate on camera movement / rotation change
@@ -64,5 +84,36 @@ class ReferenceStage(RenderStage):
         self.last_cam_hpr = curr_hpr
         self.target.set_shader_input("cameraMoved", dist > 0.01)
 
+        if self.current_mode != ReferenceStage.CURRENT_MODE:
+            self.debug("Switching from", self.current_mode, "to", ReferenceStage.CURRENT_MODE)
+            self.current_mode = ReferenceStage.CURRENT_MODE
+
+            if self.current_mode == "PIPELINE":
+                self.target.set_shader_input("displayReference", False)
+                self.target.set_shader_input("displayDifference", False)
+
+            elif self.current_mode == "MITSUBA":
+                self.target.set_shader_input("displayReference", True)
+                self.target.set_shader_input("displayDifference", False)
+
+                TexturePool.release_texture(self.current_tex)
+                self.current_tex = None
+
+                # Load scene image
+                try:
+                    self.current_tex = RPLoader.load_texture("exported/scene.png")
+                except Exception:  # pylint: disable=broad-except
+                    self.warn("No reference render found")
+                    self.current_tex = Texture("")
+                    self.target.set_shader_input("ReferenceTex", self.current_tex)
+                    self.target.set_shader_input("displayReference", False)
+                    self.target.set_shader_input("displayDifference", False)
+
+            elif self.current_mode == "DIFFERENCE":
+                self.target.set_shader_input("displayReference", True)
+                self.target.set_shader_input("displayDifference", True)
+
+            self.target.set_shader_input("ReferenceTex", self.current_tex)
+
     def reload_shaders(self):
-        self.target.shader = self.load_shader("reference_reduce_noise.frag.glsl")
+        self.target.shader = self.load_shader("reference_overlay.frag.glsl")

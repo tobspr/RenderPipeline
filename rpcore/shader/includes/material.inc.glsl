@@ -133,7 +133,7 @@ MaterialShaderOutput make_default_material_output() {
         m.position = position;
         m.specular = ior_to_specular(m_out.specular_ior);
         m.linear_roughness = m_out.roughness;
-        m.roughness *= m.roughness;
+        m.roughness = m_out.roughness * m_out.roughness;
         return m;
     }
 #endif

@@ -70,7 +70,7 @@ class NetworkCommunication(RPObject):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             sock.sendto(message.encode("utf-8"), ("127.0.0.1", port))
-        except Exception as msg:  # pylint: disable=general-exception
+        except Exception as msg:  # pylint: disable=broad-except
             RPObject.global_warn("Network", "Exception during send:", msg)
         finally:
             sock.close()

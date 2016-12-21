@@ -563,6 +563,7 @@ class RenderPipeline(RPObject):
         defines["IS_INTEL"] = "intel" in vendor
 
         defines["REFERENCE_MODE"] = self.settings["pipeline.reference_mode"]
+        defines["HIGH_QUALITY_LIGHTING"] = self.settings["lighting.high_quality_lighting"]
         self.light_mgr.init_defines()
         self.plugin_mgr.init_defines()
 

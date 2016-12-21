@@ -39,7 +39,8 @@ uniform sampler3D PrefilteredBRDF;
 uniform sampler2D PrefilteredMetalBRDF;
 uniform sampler2D PrefilteredCoatBRDF;
 
-uniform samplerCube DefaultEnvmap;
+uniform samplerCube DefaultEnvmapDiff;
+uniform samplerCube DefaultEnvmapSpec;
 
 #if HAVE_PLUGIN(scattering)
     uniform samplerCube ScatteringIBLDiffuse;
@@ -80,9 +81,13 @@ vec3 compute_bloom_luminance(vec3 bloom_color, float bloom_ec, float current_ev)
     return bloom_color * pow(2, bloom_ev - 3);
 }
 
-vec3 get_default_envmap(vec3 v, float mip) {
-    // return textureLod(DefaultEnvmap, cubemap_yup_to_zup(v), mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
-    return textureLod(DefaultEnvmap, v.xzy, mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+vec3 get_envmap_specular(vec3 v, float mip) {
+    return textureLod(DefaultEnvmapSpec, v.xzy, mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+}
+
+
+vec3 get_envmap_diffuse(vec3 n) {
+    return textureLod(DefaultEnvmapDiff, n.xzy, 0).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 }
 
 
@@ -100,7 +105,6 @@ void main() {
     #endif
 
 
-
     // Skip skybox shading
     if (is_skybox(m)) {
 
@@ -108,7 +112,7 @@ void main() {
             result = textureLod(ShadedScene, texcoord, 0).xyz + scattering_color;
 
             #if !HAVE_PLUGIN(scattering)
-                result = get_default_envmap(view_vector, 0);
+                result = get_envmap_specular(view_vector, 0);
 
             #endif
         #else
@@ -117,7 +121,7 @@ void main() {
             #if USE_WHITE_ENVIRONMENT
                 result = vec3(DEFAULT_ENVMAP_BRIGHTNESS);
             #else
-                result = get_default_envmap(view_vector, 0);
+                result = get_envmap_specular(view_vector, 0);
             #endif
         #endif
 
@@ -154,14 +158,11 @@ void main() {
     float NxV = clamp(-dot(m.normal, view_vector), 1e-5, 1.0);
 
     // Get mipmap offset for the material roughness
-    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
+    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmapSpec, roughness , NxV);
 
     // Sample default environment map
-    vec3 ibl_specular = get_default_envmap(reflected_dir, env_mipmap) * sky_ao_factor;
-
-    // Get cheap irradiance by sampling low levels of the environment map
-    float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
-    vec3 ibl_diffuse = get_default_envmap(m.normal, ibl_diffuse_mip) * sky_ao_factor;
+    vec3 ibl_specular = get_envmap_specular(reflected_dir, env_mipmap) * sky_ao_factor;;
+    vec3 ibl_diffuse = get_envmap_diffuse(m.normal) * sky_ao_factor;
 
     // Scattering specific code
     #if HAVE_PLUGIN(scattering)
@@ -222,7 +223,7 @@ void main() {
     // Mix between normal and metallic fresnel
     fresnel = mix(fresnel, metallic_fresnel, m.metallic);
 
-    if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
+    BRANCH_CLEARCOAT(m) {
         vec3 env_brdf_coat = get_brdf_from_lut(
             PrefilteredCoatBRDF, NxV, m.linear_roughness * 1.333);
 
@@ -231,7 +232,8 @@ void main() {
                 ScatteringIBLSpecular, reflected_dir,
                 get_specular_mipmap(m)).xyz * sky_ao_factor;
         #else
-            vec3 ibl_specular_base = get_default_envmap(reflected_dir, get_mipmap_for_roughness(DefaultEnvmap, m.roughness, NxV));
+            vec3 ibl_specular_base = get_envmap_specular(
+                reflected_dir, get_mipmap_for_roughness(DefaultEnvmapSpec, m.roughness, NxV));
         #endif
 
         #if REFERENCE_MODE && USE_WHITE_ENVIRONMENT
@@ -292,10 +294,10 @@ void main() {
     #if SPECIAL_MODE_ACTIVE(INVALID_NORMALS)
         // Detect invalid normals by comparing the material normal to the actual depth-based
         // normal
-        vec3 depth_based_nrm = get_world_normal_from_depth(texcoord);
+        vec3 depth_based_nrm = gbuffer_reconstruct_ws_normal_from_depth(texcoord);
 
         float diff = dot(depth_based_nrm, m.normal);
-        float threshold = 0.2;
+        float threshold = 0.5;
         if (diff < threshold) {
             result = vec3(10, 0, 0);
             return;

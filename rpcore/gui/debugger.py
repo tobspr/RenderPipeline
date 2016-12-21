@@ -57,6 +57,8 @@ from rpcore.image import Image
 
 from rpcore.util.mitsuba_exporter import MitsubaExporter
 
+from rpcore.stages.reference_stage import ReferenceStage
+
 
 class Debugger(RPObject):
 
@@ -67,6 +69,7 @@ class Debugger(RPObject):
         self.debug("Creating debugger")
         self.pipeline = pipeline
         self.analyzer = SceneGraphAnalyzer()
+        self.display_mode = ReferenceStage.REFERENCE_MODES[0]
 
         self.fullscreen_node = Globals.base.pixel2d.attach_new_node("rp_debugger")
         self.window_node = self.fullscreen_node.attach_new_node("Windows")
@@ -82,6 +85,10 @@ class Debugger(RPObject):
     @property
     def advanced_info(self):
         return self.pipeline.settings["pipeline.advanced_debugging_info"]
+
+    @property
+    def reference_mode(self):
+        return self.pipeline.settings["pipeline.reference_mode"]
 
     def create_components(self):
         """ Creates the gui components """
@@ -166,6 +173,11 @@ class Debugger(RPObject):
             color=Vec3(0.8, 0.8, 0.8))
         self.toggle_keybindings_visible()
 
+        # Reference mode hint
+        if self.reference_mode:
+            self.refmode_hint = TextNode(
+                text="PIPELINE", align="right", color=Vec3(0.8, 0.8, 0.8))
+
     def set_reload_hint_visible(self, flag):
         """ Sets whether the shader reload hint is visible """
         if flag:
@@ -193,8 +205,12 @@ class Debugger(RPObject):
             (effective_h - self.hint_reloading.height) // 2)
 
         self.keybinding_instructions.set_pos(30, effective_h - self.keybinding_instructions.height)
-        self.keybinding_text.np.set_pos(-Globals.base.get_aspect_ratio() + 0.07, 0, -0.9)
+        self.keybinding_text.np.set_pos(-Globals.base.get_aspect_ratio() + 0.07, 0, -0.93)
         self.keybinding_text.set_pixel_size(16 * max(0.8, self.gui_scale))
+
+        if self.reference_mode:
+            self.refmode_hint.np.set_pos(Globals.base.get_aspect_ratio() - 0.07, 0, -0.93)
+            self.refmode_hint.set_pixel_size(16 * max(0.8, self.gui_scale))
 
         self.overlay_node.set_pos(Globals.base.get_aspect_ratio() - 0.07, 1, 1.0 - 0.07)
         if self.python_warning:
@@ -211,18 +227,30 @@ class Debugger(RPObject):
 
     def init_keybindings(self):
         """ Inits the debugger keybindings """
-        Globals.base.accept("v", partial(self._show_and_launch, self.buffer_viewer.toggle))
-        Globals.base.accept("c", partial(self._show_and_launch, self.pipe_viewer.toggle))
-        Globals.base.accept("z", partial(self._show_and_launch, self.rm_selector.toggle))
+        Globals.base.accept("v", partial(self._show_then_execute, self.buffer_viewer.toggle))
+        Globals.base.accept("c", partial(self._show_then_execute, self.pipe_viewer.toggle))
+        Globals.base.accept("z", partial(self._show_then_execute, self.rm_selector.toggle))
         Globals.base.accept("f5", self.toggle_gui_visible)
-        Globals.base.accept("f6",partial(self._show_and_launch, self.toggle_keybindings_visible))
+        Globals.base.accept("f6", partial(self._show_then_execute, self.toggle_keybindings_visible))
         Globals.base.accept("r", self.pipeline.reload_shaders)
         Globals.base.accept("m", self.start_material_editor)
         Globals.base.accept("p", self.start_plugin_editor)
         Globals.base.accept("t", self.start_daytime_editor)
         Globals.base.accept("k", self.export_scene)
 
-    def _show_and_launch(self, method):
+        if self.reference_mode:
+            Globals.base.accept("f7", self._toggle_display_mode)
+
+    def _toggle_display_mode(self):
+        """ Toggles the current display mode, in case the reference mode is enabled """
+        curr_index = ReferenceStage.REFERENCE_MODES.index(self.display_mode)
+        next_mode = ReferenceStage.REFERENCE_MODES[(curr_index + 1) % len(ReferenceStage.REFERENCE_MODES)]
+        self.display_mode = next_mode
+        self.refmode_hint.text = self.display_mode
+        ReferenceStage.switch_to_mode(self.display_mode)
+
+    def _show_then_execute(self, method):
+        """ Ensures the gui is visible and then calls the given method """
         if Globals.base.render2d.is_hidden():
             Globals.base.render2d.show()
         method()
@@ -251,8 +279,8 @@ class Debugger(RPObject):
 
     def start_daytime_editor(self):
         """ Starts the material editor """
-        self._start_editor("day_time_editor")
 
+        self._start_editor("day_time_editor")
 
     def toggle_gui_visible(self):
         """ Shows / Hides the gui """

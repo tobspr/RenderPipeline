@@ -104,8 +104,13 @@ vec3 get_tube_area_light_diff_vector(vec3 pos, vec3 light_pos, float tube_radius
 // Makes sure the light influence reaches 0 on culling distance
 float light_clip_falloff(LightData light, vec3 pos) {
 
+
     float d = distance(pos, get_light_position(light));
     float max_d = get_max_cull_distance(light);
+
+    #if 0
+        return step(d, max_d);
+    #endif
 
     // Falloff has the following characteristics
     // f(0.8)  = 1
@@ -173,7 +178,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
     float tube_length = get_tube_length(light);
     vec3 tube_direction = get_tube_direction(light);
 
-    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
+    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH) && !HIGH_QUALITY_LIGHTING
         float NxV = saturate(dot(m.normal, v));
         vec3 l_unscaled = light_pos - m.position;
 
@@ -223,6 +228,10 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
 
         // LTC for tube lights - good results, but slow
         vec3 l = normalize(light_pos - m.position);
+
+        if (dot(m.normal, l) < 0.0)
+            return vec3(0);
+
         vec3 h = normalize(l + v);
 
         vec3 right_vector = tube_direction;
@@ -252,7 +261,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         points[8] = light_pos - right_vector - tube_radius * tube_direction;
         points[9] = light_pos - right_vector - tube_radius * tube_direction * sqrt_05 - up_vector * sqrt_05;
 
-        vec2 coords = LTC_Coords(dot(m.normal, v), m.roughness);
+        vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
         mat3 minv = LTC_Matrix(LTCMatTex, coords);
         vec3 specular = LTC_Evaluate(m.normal, v, m.position, minv, points, num_points);
         vec3 diffuse = LTC_Evaluate(m.normal, v, m.position, mat3(1), points, num_points);
@@ -297,7 +306,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
     vec3 light_pos = get_light_position(light);
     float sphere_radius = get_spherelight_sphere_radius(light);
 
-    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH)
+    #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH) && !HIGH_QUALITY_LIGHTING
         vec3 l_unscaled = light_pos - m.position;
 
         vec3 specular = vec3(0);
@@ -335,6 +344,10 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
 
         // LTC for sphere lights - good results, but slow
         vec3 l = normalize(light_pos - m.position);
+
+        if (dot(m.normal, l) < 0.0)
+            return vec3(0);
+
         vec3 h = normalize(l + v);
 
         vec3 up_vector, right_vector;
@@ -343,7 +356,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         up_vector *= sphere_radius;
         right_vector *= sphere_radius;
 
-        const int num_points = 16;
+        const int num_points = LTC_MAX_VERTICES;
         vec3 points[LTC_MAX_VERTICES];
 
         for (int i = 0; i < num_points; ++i) {
@@ -356,7 +369,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
             points[i] = light_pos + sin(phi) * up_vector * radius + cos(phi) * right_vector * radius;
         }
 
-        vec2 coords = LTC_Coords(dot(m.normal, v), m.roughness);
+        vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
         mat3 minv = LTC_Matrix(LTCMatTex, coords);
         vec3 specular = LTC_Evaluate(m.normal, v, m.position, minv, points, num_points);
         vec3 diffuse = LTC_Evaluate(m.normal, v, m.position, mat3(1), points, num_points);
@@ -386,7 +399,10 @@ vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
     points[2] = light_pos + right_vector + up_vector;
     points[3] = light_pos - right_vector + up_vector;
 
-    vec2 coords = LTC_Coords(dot(m.normal, v), m.roughness);
+    if (dot(m.normal, normalize(light_pos - m.position)) < 0.0)
+        return vec3(0);
+
+    vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
     mat3 minv = LTC_Matrix(LTCMatTex, coords);
     vec3 specular = LTC_EvaluateRect(m.normal, v, m.position, minv, points);
     vec3 diffuse = LTC_EvaluateRect(m.normal, v, m.position, mat3(1), points);

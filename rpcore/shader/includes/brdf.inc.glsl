@@ -283,7 +283,8 @@ float get_specular_mipmap(float roughness) {
 
     // Approximation to match importance sampled reference, tuned for a
     // resolution of 128.
-    return (roughness * 12.0 - pow(roughness, 6.0) * 1.5);
+    // return (roughness * 12.0 - pow(roughness, 6.0) * 1.5);
+    return roughness * 7.0;
 }
 
 float get_specular_mipmap(Material m) {
@@ -312,7 +313,7 @@ float get_effective_roughness(Material m) {
 }
 
 float get_mipmap_for_roughness(samplerCube map, float roughness, float NxV) {
-    return sqrt(roughness) * 7.0;
+    return sqrt(roughness) * 10.0;
 }
 
 
