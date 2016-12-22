@@ -48,10 +48,23 @@ uniform sampler2D ShadowAtlas;
     uniform sampler2DShadow ShadowAtlasPCF;
 #endif
 
-// Sphere lights only store the index of their first shadow source,
-// but they have 6 in total. This method finds the index offset of the
+
+// When the shadow drops below this threshold, the light is skipped
+#define SHADOW_THRESHOLD 0.001
+
+// Determines whether to shadowed pixels, in most cases this is actually
+// slower due to the branch
+#if 0
+#define CHECK_SHADOW_OR_CONTINUE(shadow) if ((shadow) < SHADOW_THRESHOLD) continue;
+#else
+#define CHECK_SHADOW_OR_CONTINUE(shadow) ;
+#endif
+
+
+// Lights only store the index of their first shadow source,
+// but they have up to 6 in total. This method finds the index offset of the
 // shadow source, depending on the direction
-int get_spherelight_shadow_source_offset(vec3 direction) {
+int get_cubemap_shadow_offset(vec3 direction) {
     vec3 abs_dir = abs(direction);
     float max_comp = max3(abs_dir.x, abs_dir.y, abs_dir.z);
     if (abs_dir.x >= max_comp - 1e-5) return direction.x >= 0.0 ? 0 : 1;
@@ -62,22 +75,18 @@ int get_spherelight_shadow_source_offset(vec3 direction) {
 // Filters a shadow map
 float filter_shadowmap(Material m, SourceData source, vec3 l) {
 
-    // TODO: Examine if this is faster
-    // if (dot(m.normal, -l) < 0) return 0.0;
-
     mat4 mvp = get_source_mvp(source);
     vec4 uv = get_source_uv(source);
 
-    float rotation = interleaved_gradient_noise(
-        gl_FragCoord.xy + MainSceneData.frame_index % 32);
+    float rotation = interleaved_gradient_noise(gl_FragCoord.xy + MainSceneData.frame_index % 32);
     mat2 rotation_mat = make_rotate_mat2(rotation);
 
     // TODO: make this configurable
-    // XXX: Scale by resolution (higher resolution needs smaller bias)
-    const float bias_mult = 0.1;
-    const float slope_bias = 0.01 * bias_mult;
-    const float normal_bias = 3 * bias_mult;
-    const float const_bias = 0.01 * bias_mult;
+    // Scale by resolution (higher resolution needs smaller bias)
+    const float bias_mult = 512.0 / (uv.w * SHADOW_ATLAS_SIZE);
+    const float slope_bias = 0.05 * bias_mult;
+    const float normal_bias = 0.01 * bias_mult;
+    const float const_bias = 0.0022 * bias_mult;
 
     vec3 biased_pos = get_biased_position(m.position, slope_bias, normal_bias, m.normal, -l);
 
@@ -85,7 +94,7 @@ float filter_shadowmap(Material m, SourceData source, vec3 l) {
     vec2 projected_coord = projected.xy * uv.zw + uv.xy;
 
     const int num_samples = 8;
-    const float filter_size = 2.0 / SHADOW_ATLAS_SIZE;
+    const float filter_size = 3.5 / SHADOW_ATLAS_SIZE;
 
     float accum = 0.0;
 
@@ -131,14 +140,14 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
 
     // Get the per-class light counts
     // To be safe, we use a min() to avoid huge loops in case some texture is not cleared or so.
-    uint num_spot_noshadow      = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x);
-    uint num_spot_shadow        = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x);
-    uint num_sphere_noshadow    = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_NOSHADOW).x);
-    uint num_sphere_shadow      = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_SHADOW).x);
-    uint num_rectangle_noshadow = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_RECTANGLE_NOSHADOW).x);
-    uint num_rectangle_shadow   = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_RECTANGLE_SHADOW).x);
-    uint num_tube_noshadow      = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_TUBE_NOSHADOW).x);
-    uint num_tube_shadow        = min(LC_MAX_LIGHTS, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_TUBE_SHADOW).x);
+    uint num_spot_noshadow      = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_NOSHADOW).x);
+    uint num_spot_shadow        = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPOT_SHADOW).x);
+    uint num_sphere_noshadow    = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_NOSHADOW).x);
+    uint num_sphere_shadow      = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_SPHERE_SHADOW).x);
+    uint num_rectangle_noshadow = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_RECTANGLE_NOSHADOW).x);
+    uint num_rectangle_shadow   = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_RECTANGLE_SHADOW).x);
+    uint num_tube_noshadow      = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_TUBE_NOSHADOW).x);
+    uint num_tube_shadow        = min(LC_MAX_LIGHTS_PER_CELL, texelFetch(PerCellLightsCounts, count_offs + 1 + LIGHT_CLS_TUBE_SHADOW).x);
 
     // Compute the index into the culled lights list
     int data_offs = cell_index * LC_MAX_LIGHTS_PER_CELL;
@@ -167,6 +176,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         int source_index = get_shadow_source_index(light_data);
         SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
+        CHECK_SHADOW_OR_CONTINUE(shadow_factor);
         shading_result += process_spotlight(m, light_data, v, shadow_factor);
     }
 
@@ -185,10 +195,11 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         // Get shadow factor
         int source_index = get_shadow_source_index(light_data);
         vec3 v2l = normalize(m.position - get_light_position(light_data));
-        source_index += get_spherelight_shadow_source_offset(v2l);
+        source_index += get_cubemap_shadow_offset(v2l);
 
         SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
+        CHECK_SHADOW_OR_CONTINUE(shadow_factor);
         shading_result += process_spherelight(m, light_data, v, shadow_factor);
     }
 
@@ -206,10 +217,13 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         LightData light_data = read_light_data(AllLightsData, light_offs);
 
         // Get shadow factor
-        vec3 v2l = normalize(m.position - get_light_position(light_data));
         int source_index = get_shadow_source_index(light_data);
+        vec3 v2l = normalize(m.position - get_light_position(light_data));
+        source_index += get_cubemap_shadow_offset(v2l);
+
         SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
+        CHECK_SHADOW_OR_CONTINUE(shadow_factor);
         shading_result += process_rectanglelight(m, light_data, v, shadow_factor);
     }
 
@@ -230,6 +244,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
         int source_index = get_shadow_source_index(light_data);
         SourceData source_data = read_source_data(ShadowSourceData, source_index * SHADOW_SOURCE_STRIDE);
         float shadow_factor = filter_shadowmap(m, source_data, v2l);
+        CHECK_SHADOW_OR_CONTINUE(shadow_factor);
         shading_result += process_tubelight(m, light_data, v, shadow_factor);
     }
 
@@ -271,9 +286,7 @@ vec3 shade_material_from_tile_buffer(Material m, ivec3 tile, float linear_dist) 
                 }
 
                 shading_result += bg_color * 0.2;
-
                 shading_result += vec3(render_number(tile_start + ivec2(3, 3), num_total_lights));
-
             }
 
         #endif

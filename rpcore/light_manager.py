@@ -201,6 +201,7 @@ class LightManager(RPObject):  # pylint: disable=too-many-instance-attributes
         defines["LC_MAX_DISTANCE"] = self.pipeline.settings["lighting.culling_max_distance"]
         defines["LC_MAX_LIGHTS_PER_CELL"] = self.pipeline.settings["lighting.max_lights_per_cell"]
         defines["SHADOW_ATLAS_SIZE"] = self.pipeline.settings["shadows.atlas_size"]
+        defines["EMISSIVE_SCALE"] = MaterialAPI.EMISSIVE_SCALE
 
         # Register all light types as defines
         # Cant use RPLight class since its not exposed, so use

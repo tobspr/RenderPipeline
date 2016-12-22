@@ -114,7 +114,8 @@ void main() {
             case SHADING_MODEL_CLEARCOAT: result.xyz = vec3(0, 0, 1); break;
             case SHADING_MODEL_SKIN: result.xyz = vec3(1, 0, 0); break;
             case SHADING_MODEL_EMISSIVE: result.xyz = vec3(1, 0, 1); break;
-            case SHADING_MODEL_TRANSPARENT: result.xyz = vec3(0, 1, 1); break;
+            case SHADING_MODEL_TRANSPARENT_GLASS: result.xyz = vec3(0, 1, 1); break;
+            case SHADING_MODEL_TRANSPARENT_EMISSIVE: result.xyz = vec3(1, 1, 1); break;
         }
     #endif
 

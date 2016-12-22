@@ -62,11 +62,8 @@ class CollectUsedCellsStage(RenderStage):
         num_slices = self._pipeline.settings["lighting.culling_grid_slices"]
         max_cells = tile_amount.x * tile_amount.y * num_slices
 
-        self.cell_list_buffer.set_x_size(1 + max_cells)
-        self.cell_index_buffer.set_x_size(tile_amount.x)
-        self.cell_index_buffer.set_y_size(tile_amount.y)
-        self.cell_index_buffer.set_z_size(num_slices)
-
+        self.cell_list_buffer.resize(1 + max_cells)
+        self.cell_index_buffer.resize(tile_amount.x, tile_amount.y, num_slices)
         self.cell_list_buffer.clear_image()
         self.cell_index_buffer.clear_image()
 

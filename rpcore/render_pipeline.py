@@ -231,7 +231,7 @@ class RenderPipeline(RPObject):
         if effect is None:
             return self.error("Could not apply effect")
 
-        for i, stage in enumerate(("gbuffer", "shadow", "voxelize", "envmap", "forward")):
+        for i, stage in enumerate(Effect.PASSES):
             if not effect.get_option("render_" + stage):
                 nodepath.hide(self.tag_mgr.get_mask(stage))
             else:
@@ -247,6 +247,9 @@ class RenderPipeline(RPObject):
             self.error("You cannot render an object forward and deferred at the "
                        "same time! Either use render_gbuffer or use render_forward, "
                        "but not both.")
+
+        if effect.get_option("render_forward_prepass") and not effect.get_option("render_forward"):
+            self.error("render_forward_prepass specified, but not render_forward!")
 
     def set_effect(self, nodepath, effect_src, options=None, sort=30):
         """ See _internal_set_effect. """

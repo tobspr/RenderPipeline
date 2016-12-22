@@ -70,6 +70,9 @@ void main() {
     int num_culled_lights = imageLoad(PerCellLightCountsBuffer, idx).x;
     imageStore(PerCellLightCountsBuffer, idx, ivec4(0));
 
+    // Make sure we don't sample over the bounds, one would think that the
+    // previous pass already ensures this, however, since it runs in parallel,
+    // this is not always ensured
     num_culled_lights = min(LC_MAX_LIGHTS_PER_CELL, num_culled_lights);
     int num_processed_lights = 0;
 

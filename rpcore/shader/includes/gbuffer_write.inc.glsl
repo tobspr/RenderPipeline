@@ -26,9 +26,8 @@
 
 #pragma once
 
-#pragma include "includes/material.inc.glsl"
 #pragma include "includes/normal_packing.inc.glsl"
-#pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/approximations.inc.glsl"
 
 /*
 
@@ -81,7 +80,7 @@ void render_material(MaterialShaderOutput m) {
 
     if (m.shading_model == SHADING_MODEL_CLEARCOAT) {
         // Scale up roughness since the layer refracts the rays (this is an approximation)
-        // m.roughness *= 1.4;
+        m.roughness = approx_clearcoat_roughness_transform(m.roughness);
         metallic = 1;
         specular = 1.51;
     }

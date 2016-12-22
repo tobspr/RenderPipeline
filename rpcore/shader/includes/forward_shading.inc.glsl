@@ -30,11 +30,12 @@
 
 #pragma include "includes/shadows.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
-// #pragma include "includes/lights.inc.glsl"
+#pragma include "includes/approximations.inc.glsl"
 #pragma include "includes/light_data.inc.glsl"
 #pragma include "includes/poisson_disk.inc.glsl"
 
 uniform samplerCube DefaultEnvmapSpec;
+uniform samplerCube DefaultEnvmapDiff;
 uniform samplerBuffer AllLightsData;
 uniform int maxLightIndex;
 
@@ -75,6 +76,29 @@ uniform int maxLightIndex;
         float fresnel;
     };
 
+    vec3 get_envmap_specular(vec3 v, float mip) {
+        return textureLod(DefaultEnvmapSpec, v.xzy, mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+    }
+
+    vec3 get_envmap_diffuse(vec3 n) {
+        return textureLod(DefaultEnvmapDiff, n.xzy, 0).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+    }
+
+
+    vec3 get_forward_specular_abient(Material m, vec3 v) {
+        vec3 reflected_dir = get_reflection_vector(m, v);
+        float roughness = get_effective_roughness(m);
+
+        // Compute angle between normal and view vector
+        float NxV = clamp(-dot(m.normal, v), 1e-5, 1.0);
+        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmapSpec, roughness, NxV);
+
+        // Sample default environment map
+        vec3 ibl_specular = get_envmap_specular(reflected_dir, env_mipmap);
+
+        return ibl_specular;
+    }
+
     // Full forward ambient, expensive, and only available when shading in view-space
     AmbientResult get_full_forward_ambient(Material m, vec3 v) {
         vec3 reflected_dir = get_reflection_vector(m, v);
@@ -83,17 +107,11 @@ uniform int maxLightIndex;
         // Compute angle between normal and view vector
         float NxV = clamp(-dot(m.normal, v), 1e-5, 1.0);
 
-        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmap, roughness , NxV);
+        float env_mipmap = get_mipmap_for_roughness(DefaultEnvmapSpec, roughness, NxV);
 
         // Sample default environment map
-        vec3 ibl_specular = textureLod(DefaultEnvmapSpec, cubemap_yup_to_zup(reflected_dir),
-            env_mipmap).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
-
-        // Get cheap irradiance by sampling low levels of the environment map
-        // FIXME: Use DefaultEnvmapDiff here
-        float ibl_diffuse_mip = get_mipmap_count(DefaultEnvmap) - 3.0;
-        vec3 ibl_diffuse = textureLod(DefaultEnvmap, cubemap_yup_to_zup(m.normal),
-            ibl_diffuse_mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
+        vec3 ibl_specular = get_envmap_specular(reflected_dir, env_mipmap);
+        vec3 ibl_diffuse = get_envmap_diffuse(m.normal);
 
         // Scattering specific code
         #if HAVE_PLUGIN(scattering)
@@ -123,7 +141,7 @@ uniform int maxLightIndex;
         vec3 fresnel = env_brdf.ggg;
         diffuse_ambient *= env_brdf.r;
 
-        vec3 metallic_fresnel = get_metallic_fresnel_approx(m, NxV);
+        vec3 metallic_fresnel = approx_metallic_fresnel(m, NxV);
 
         // Mix between normal and metallic fresnel
         fresnel = mix(fresnel, metallic_fresnel, m.metallic);
@@ -167,8 +185,6 @@ uniform int maxLightIndex;
         #endif
         shading_result += (sky_ambient_factor + ambient_factor * sqrt(m.basecolor)) * sky_ao * diff_env;
 
-
-
         // Emission
         if (m.shading_model == SHADING_MODEL_EMISSIVE) {
             shading_result = m.basecolor * (0.005 + diff_env) * 30.0;
@@ -176,6 +192,7 @@ uniform int maxLightIndex;
 
         return shading_result;
     }
+
 
 #endif
 
@@ -276,49 +293,43 @@ float get_sun_shadow_factor(vec3 position, vec3 normal) {
 #endif
 
 
+#if VIEWSPACE_SHADING
+
+#pragma include "includes/lighting_pipeline.inc.glsl"
+
+
 
 vec3 get_forward_light_shading(Material m) {
 
     vec3 shading_result = vec3(0);
 
-    for (int i = 0; i <= maxLightIndex; ++i) {
-        LightData light_data = read_light_data(AllLightsData, i);
-        int light_type = get_light_type(light_data);
+    // float linear_dist = distance(m.position, MainSceneData.camera_pos);
+    float linear_dist = 1.0; // XXX
 
-        // Skip Null-Lights
-        if (light_type < 1) continue;
+    ivec3 tile = get_lc_cell_index(coord, linear_depth);
+    
 
-        vec3 light_pos = get_light_position(light_data);
-        vec3 l = light_pos - m.position;
-        float l_len = length(l);
-        vec3 light_color = get_light_color(light_data);
+// for (int i = 0; i <= maxLightIndex; ++i) {
+//         LightData light_data = read_light_data(AllLightsData, i);
+//         int light_type = get_light_type(light_data);
 
-        // Shade depending on light type
-        switch(light_type) {
-            case LT_SPHERE_LIGHT: {
-                /* FIXME */
-                float radius = get_spherelight_culldist(light_data);
-                float att = attenuation_curve(dot(l, l), radius);
-                float NxL = saturate(dot(m.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * (m.basecolor * light_color);
-                break;
-            }
+//         // Skip Null-Lights
+//         if (light_type < 1) continue;
 
-            case LT_SPOT_LIGHT: {
-                float radius = get_spotlight_radius(light_data);
-                float fov = get_spotlight_fov(light_data);
-                vec3 direction = get_spotlight_direction(light_data);
+//         vec3 light_pos = get_light_position(light_data);
+//         vec3 l = light_pos - m.position;
+//         float l_len = length(l);
+//         vec3 light_color = get_light_color(light_data);
 
-                float att = get_spotlight_attenuation(l / l_len, direction,
-                    fov, radius, dot(l, l), -1);
-                float NxL = saturate(dot(m.normal, l) / l_len);
-                shading_result += saturate(att) * NxL * (m.basecolor * light_color);
-                break;
-            }
+//         float linear_dist = l_len);
 
-        }
+//     }
 
-    }
-
-    return shading_result / M_PI;
+    return shading_result;
 }
+
+
+#else
+
+
+#endif

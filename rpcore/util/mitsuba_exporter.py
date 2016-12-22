@@ -38,15 +38,18 @@ from rpcore.native import SphereLight, SpotLight, RectangleLight
 from rpcore.native import TubeLight
 from rpcore.image import Image
 from rpcore.util.material_api import MaterialAPI
+from rpcore.util.light_geometry import LightGeometry
 
 
 def to_safe_name(name):
     """ Converts a string to a valid filename """
     return name.replace("\\", "").replace("/", "").replace(" ", "_").replace(":", "")
 
+
 def vec2xml(v):
     """ Converts a vector to a valid xml string """
     return "{:.8f}, {:.8f}, {:.8f}".format(*v)
+
 
 def color2xml(v):
     """ Converts a color to a valid xml string """
@@ -69,24 +72,20 @@ class MitsubaExporter(RPObject):
         """ Adds a new nodepath to export """
         self.debug("Adding", nodepath)
         geom_id = 0
-        for np in nodepath.find_all_matches("**/*"):
-            repr_name = np.get_name().lower()
-            if "skybox" in repr_name:
-                self.debug("Skipping skybox")
+        for geom_np in nodepath.find_all_matches("**/+GeomNode"):
+            geom_node = geom_np.node()
+            if LightGeometry.DEBUG_GEOMETRY_NAME in geom_node.get_name():
                 continue
-            elif "lightdebuggeometry" in repr_name:
-                # self.debug("Skipping light debug geometry")
+            if "SkyboxMesh" in geom_node.get_name():
                 continue
 
-            self.debug("Adding", np.get_name())
-            for geom_np in np.find_all_matches("**/+GeomNode"):
-                geom_node = geom_np.node()
-                transform = geom_np.get_transform(Globals.base.render)
-                for i in range(geom_node.get_num_geoms()):
-                    name = to_safe_name("obj-" + np.get_name() + "-GN" + geom_np.get_name() + "-" + str(geom_id) + "-Geom" + str(i) + ".obj")
-                    geom, state = geom_node.get_geom(i), geom_node.get_geom_state(i)
-                    self._add_geom(name, geom, state, transform)
-                geom_id += 1
+            transform = geom_np.get_transform(Globals.base.render)
+            for i in range(geom_node.get_num_geoms()):
+                name = to_safe_name("obj-" + geom_np.get_name() + "-" + str(geom_id) + "-Geom" + str(i) + ".obj")
+                self.debug("Exporting", name)
+                geom, state = geom_node.get_geom(i), geom_node.get_geom_state(i)
+                self._add_geom(name, geom, state, transform)
+            geom_id += 1
 
     def _add_geom(self, name, geom, state, transform):
         """ Adds a geom and state to the list of geoms to get exported """
@@ -115,7 +114,6 @@ class MitsubaExporter(RPObject):
 
         tc_reader = GeomVertexReader(vtx_data, "texcoord")
         tc_column = tc_reader.get_column()
-
 
         # Sanity checks
         if not vtx_column or vtx_column.get_num_values() != 3:
@@ -188,8 +186,7 @@ class MitsubaExporter(RPObject):
 
         add = output.append
 
-
-        add("<texture name='" +  name + "' type='scale'>")
+        add("<texture name='" + name + "' type='scale'>")
         add("  <texture name='" + name + "' type='bitmap'>")
         add("      <string name='filename' value='{}' />".format(relpath))
         add("      <string name='filterType' value='{}' />".format(texfilter))
@@ -199,7 +196,6 @@ class MitsubaExporter(RPObject):
         add("  <rgb name='scale' value='{}' />".format(color2xml(color_scale)))
         add("</texture>")
         return output
-
 
     def _generate_output(self, path):
         """ Generates the mitsuba xml file """
@@ -228,11 +224,14 @@ class MitsubaExporter(RPObject):
         add("      <string name='pixelFormat' value='rgb'/>")
         add("      <integer name='width' value='{}'/>".format(Globals.base.win.get_x_size()))
         add("      <integer name='height' value='{}'/>".format(Globals.base.win.get_y_size()))
-        add("      <rfilter type='box'/>")
+        add("      <rfilter type='lanczos'>")
+        add("        <integer name='lobes' value='2' />")
+        add("      </rfilter>")
+
         add("    </film>")
         add("  </sensor>")
         add("  <integrator type='path'>")
-        add("    <integer name='maxDepth' value='2' />")
+        add("    <integer name='maxDepth' value='5' />")
         add("  </integrator>")
 
         add("<emitter type='envmap'>")
@@ -309,7 +308,6 @@ class MitsubaExporter(RPObject):
                 add("  </emitter>")
                 add("</shape>")
 
-
         self.debug("Exporting materials ..")
         for obj_filename, (state, _) in self.export_states.items():
 
@@ -337,43 +335,55 @@ class MitsubaExporter(RPObject):
             add("<shape type='obj'>")
             add("  <string name='filename' value='{}' />".format(obj_filename))
 
-            if shading_model == MaterialAPI.SM_CLEARCOAT:
-                add("<bsdf type='roughcoating'>")
+            if shading_model == MaterialAPI.SM_TRANSPARENT_GLASS:
+                add("<bsdf type='thindielectric'>")
                 add("    <string name='distribution' value='ggx' />")
-                add("    <float name='alpha' value='0.0036' />")
-                add("    <float name='thickness' value='1.0' />")
-                add("    <float name='intIOR' value='1.51' />")
-                add("    ")
-
-            # Use a diffuse only bsdf for validation
-            use_diffuse_bsdf = False
-
-            if not use_diffuse_bsdf:
-                if metallic:
-                    add("  <bsdf type='roughconductor'>")
-                    add("    <string name='material' value='Ag' />")
-                    # add("    <boolean name='sampleVisible' value='false' />")
-                else:
-                    add("  <bsdf type='roughplastic'>")
-                    add("    <float name='intIOR' value='{}'/>".format(material.get_refractive_index()))
-
-                add("    <string name='distribution' value='ggx'/>")
-
-                reflectance = "specular" if metallic else "diffuse"
-
-                output += self._generate_xml_for_tex(reflectance + "Reflectance", diff_tex, path, material.get_base_color())
-                output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness() ** 2))
-
-                # add("    <float name='alpha' value='{}'/>".format(material.get_roughness() ** 2)) # uses disney roughness
-                add("  </bsdf>")
+                add("    <float name='intIOR' value='{}' />".format(material.get_refractive_index()))
+                # output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness() ** 2))
+                output += self._generate_xml_for_tex("specularReflectance", diff_tex, path, material.get_base_color())
+                add("</bsdf>")
 
             else:
-                add("  <bsdf type='diffuse'>")
-                output += self._generate_xml_for_tex("reflectance", diff_tex, path, material.get_base_color())
-                add("  </bsdf>")
 
-            if shading_model == MaterialAPI.SM_CLEARCOAT:
-                add("</bsdf>")
+                if shading_model == MaterialAPI.SM_CLEARCOAT:
+                    add("<bsdf type='roughcoating'>")
+                    add("    <string name='distribution' value='ggx' />")
+                    add("    <float name='alpha' value='0.0036' />")
+                    add("    <float name='thickness' value='1.0' />")
+                    add("    <float name='intIOR' value='1.51' />")
+
+                # Use a diffuse only bsdf for validation
+                use_diffuse_bsdf = False
+
+                if not use_diffuse_bsdf:
+                    if metallic:
+                        add("  <bsdf type='roughconductor'>")
+                        add("    <string name='material' value='Ag' />")
+                        # add("    <boolean name='sampleVisible' value='false' />")
+                    else:
+                        add("  <bsdf type='roughplastic'>")
+                        add("    <float name='intIOR' value='{}'/>".format(material.get_refractive_index()))
+
+                    add("    <string name='distribution' value='ggx'/>")
+
+                    reflectance = "specular" if metallic else "diffuse"
+
+                    output += self._generate_xml_for_tex(reflectance + "Reflectance",
+                                                         diff_tex, path, material.get_base_color())
+                    output += self._generate_xml_for_tex("alpha", rough_tex, path, Vec3(material.get_roughness() ** 2))
+
+                    # add("    <float name='alpha'
+                    # value='{}'/>".format(material.get_roughness() ** 2)) # uses disney
+                    # roughness
+                    add("  </bsdf>")
+
+                else:
+                    add("  <bsdf type='diffuse'>")
+                    output += self._generate_xml_for_tex("reflectance", diff_tex, path, material.get_base_color())
+                    add("  </bsdf>")
+
+                if shading_model == MaterialAPI.SM_CLEARCOAT:
+                    add("</bsdf>")
 
             add("</shape>")
         add("</scene>")
@@ -400,7 +410,6 @@ class MitsubaExporter(RPObject):
         self.debug("Writing environment map")
         target.write(path)
 
-        self.debug("Done.")
         del target
 
     def write(self, path):
@@ -423,7 +432,6 @@ class MitsubaExporter(RPObject):
             for line in output:
                 handle.write(line + "\n")
 
-
         # Write batch file to run Mitsuba
         with open(join(path, "run_mitsuba.bat"), "w") as handle:
             handle.write("@echo off\n")
@@ -431,6 +439,5 @@ class MitsubaExporter(RPObject):
             handle.write("C:/mitsuba/mtsutil tonemap scene.exr\n")
             handle.write("del mitsuba.*.log\n")
             handle.write("pause\n")
-
 
         self.debug("Done.")

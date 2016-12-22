@@ -65,7 +65,7 @@ class CullProbesStage(RenderStage):
     def set_dimensions(self):
         max_cells = self._pipeline.light_mgr.total_tiles
         num_rows = int(math.ceil(max_cells / float(self.slice_width)))
-        self.per_cell_probes.set_x_size(max_cells * self.max_probes_per_cell)
+        self.per_cell_probes.resize(max_cells * self.max_probes_per_cell)
         self.target.size = self.slice_width, num_rows
 
     def reload_shaders(self):

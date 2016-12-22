@@ -50,11 +50,12 @@ class Effect(RPObject):
         "alpha_testing": True,
         "normal_mapping": True,
         "parallax_mapping": False,
+        "render_forward_prepass": False,
     }
 
     # All supported render passes, should match the available passes in the
     # TagStateManager class.
-    _PASSES = ("gbuffer", "shadow", "voxelize", "envmap", "forward")
+    PASSES = ("gbuffer", "shadow", "voxelize", "envmap", "forward", "forward_prepass")
 
     # Effects are cached based on their source filename and options, this is
     # the cache where compiled are effects stored.
@@ -146,7 +147,7 @@ class Effect(RPObject):
         self._parse_content(parsed_yaml)
 
         # Construct a shader object for each pass
-        for pass_id in self._PASSES:
+        for pass_id in self.PASSES:
             vertex_src = self._generated_shader_paths["vertex-" + pass_id]
             fragment_src = self._generated_shader_paths["fragment-" + pass_id]
             self._shader_objs[pass_id] = RPLoader.load_shader(vertex_src, fragment_src)
@@ -165,7 +166,7 @@ class Effect(RPObject):
         vtx_data = parsed_yaml.get("vertex", None) or {}
         frag_data = parsed_yaml.get("fragment", None) or {}
 
-        for pass_id in self._PASSES:
+        for pass_id in self.PASSES:
             self._parse_shader_template(pass_id, "vertex", vtx_data)
             self._parse_shader_template(pass_id, "fragment", frag_data)
 
@@ -304,7 +305,7 @@ class Effect(RPObject):
         temp_path = "/$$rptemp/$$effect-" + cache_key + ".glsl"
 
         # Avoid writing the effect if nothing changed
-        old_content = None
+        old_content = ""
         try:
             with open(temp_path, "r") as handle:
                 old_content = handle.read()
@@ -316,5 +317,7 @@ class Effect(RPObject):
 
         with open(temp_path, "w") as handle:
             handle.write(shader_content)
+
+        self.debug("Writing", cache_key)
 
         return temp_path

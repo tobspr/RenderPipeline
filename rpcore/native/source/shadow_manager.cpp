@@ -130,6 +130,14 @@ void ShadowManager::update() {
     // Iterate over all queued updates
     for (size_t i = 0; i < _queued_updates.size(); ++i) {
         const ShadowSource* source = _queued_updates[i];
+        nassertv(source);
+
+        if (!source->has_region()) {
+            // Shadow atlas must be full. To avoid gl errors, we just skip this
+            // display region. Since we already disabled all display regions,
+            // we don't have to explicitely disable it here.
+            continue;
+        }
 
         // Enable the camera and display region, so they perform a render
         _cameras[i]->set_active(true);

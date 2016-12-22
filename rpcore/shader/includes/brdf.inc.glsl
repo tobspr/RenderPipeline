@@ -169,13 +169,6 @@ float brdf_visibility_smith_ggx(float NxL, float NxV, float roughness) {
 
 /* Fresnel functions */
 
-float ior_to_specular(float ior) {
-    float f0 = (ior - AIR_IOR) / (ior + AIR_IOR);
-    // Clamp between ior of 1 and 2.5
-    const float max_ior = 2.5;
-    return clamp(f0 * f0, 0.0, (max_ior - AIR_IOR) / (max_ior + AIR_IOR)); // should get optimized out
-}
-
 float brdf_fresnel_cook_torrance(float LxH, float roughness, float ior) {
     float g = sqrt(max(0, ior * ior + LxH * LxH - 1.0));
     float gpc = g + LxH;
@@ -317,14 +310,6 @@ float get_mipmap_for_roughness(samplerCube map, float roughness, float NxV) {
 }
 
 
-vec3 get_metallic_fresnel_approx(Material m, float NxV) {
-    vec3 metallic_energy_f0 = vec3(1.0 - 0.7 * m.roughness) * m.basecolor;
-    vec3 metallic_energy_f90 = mix(vec3(1), 0.5 * m.basecolor, m.linear_roughness);
-    vec3 metallic_fresnel = mix(metallic_energy_f0, metallic_energy_f90,
-        pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
-    return vec3(m.basecolor);
-    // return metallic_fresnel;
-}
 
 
 vec3 brdf_cook_torrance(float d, float vis, vec3 fresnel, float NxV, float NxL) {

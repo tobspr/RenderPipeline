@@ -77,9 +77,10 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         ("Default", 0, None),
         ("Emissive", 1, None),
         ("Clearcoat", 2, None),
-        ("Transparent", 3, "Transparency"),
+        ("Transparent Glass", 3, "Transparency"),
         ("Skin", 4, None),
         ("Foliage", 5, None),
+        ("Transparent Emissive", 6, "Transparency"),
     ]
 
     def __init__(self):

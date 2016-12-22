@@ -24,41 +24,30 @@ THE SOFTWARE.
 
 """
 
+from panda3d.core import Camera
+
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
-from rpcore.util.shader_input_blocks import SimpleInputBlock
 
 
-class GBufferStage(RenderStage):
+class ForwardPrepassStage(RenderStage):
 
-    """ This is the main pass stage, rendering the objects and creating the
-    GBuffer which is used in later stages """
+    """ Forward prepass stage, which allocates the light tiles so we can
+    use the lights in the shader later on """
 
     required_inputs = []
-    required_pipes = []
-
-    @property
-    def produced_pipes(self):
-        return {
-            "GBuffer": self.make_gbuffer_ubo(),
-            "SceneDepth": self.target.depth_tex
-        }
-
-    def make_gbuffer_ubo(self):
-        if not hasattr(self, "ubo"):
-            self.ubo = SimpleInputBlock("GBuffer")
-            self.ubo.add_input("Depth", self.target.depth_tex)
-            self.ubo.add_input("Data0", self.target.color_tex)
-            self.ubo.add_input("Data1", self.target.aux_tex[0])
-            self.ubo.add_input("Data2", self.target.aux_tex[1])
-        return self.ubo
+    required_pipes = ["FlaggedCells", "SceneDepth"]
 
     def create(self):
-        self.target = self.create_target("GBuffer")
-        self.target.add_depth_attachment(bits=32)
-        self.target.add_color_attachment(bits=16, alpha=True)
-        self.target.add_aux_attachments(bits=16, count=2)
-        self.target.prepare_render(Globals.base.cam)
+        self.forward_cam = Camera("ForwardPrepassCam")
+        self.forward_cam.set_lens(Globals.base.camLens)
+        self.forward_cam_np = Globals.base.camera.attach_new_node(self.forward_cam)
 
-    def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        self.target = self.create_target("ForwardPrepass")
+        self.target.prepare_render(self.forward_cam_np)
+        self._pipeline.tag_mgr.register_camera("forward_prepass", self.forward_cam)
+
+    def set_shader_input(self, name, value, *args):
+        Globals.base.render.set_shader_input(name, value, *args)
+        RenderStage.set_shader_input(self, name, value, *args)
+

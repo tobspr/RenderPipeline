@@ -26,6 +26,10 @@
 
 #version 430
 
+
+layout(early_fragment_tests) in;
+
+
 // Forward shading shader
 
 // Set DONT_FETCH_DEFAULT_TEXTURES to prevent any material textures to get sampled
@@ -39,6 +43,7 @@
 #pragma include "includes/transforms.inc.glsl"
 #pragma include "includes/vertex_output.struct.glsl"
 #pragma include "includes/material.inc.glsl"
+#pragma include "includes/approximations.inc.glsl"
 
 %includes%
 
@@ -47,7 +52,7 @@ layout(location = 0) in VertexOutput vOutput;
 uniform Panda3DMaterial p3d_Material;
 
 #pragma include "includes/normal_mapping.inc.glsl"
-#pragma include "includes/forward_shading.inc.glsl"
+#pragma include "includes/forward_viewspace.inc.glsl"
 
 #if DONT_FETCH_DEFAULT_TEXTURES
     // Don't bind any samplers in this case, so the user can do it on his own
@@ -64,13 +69,16 @@ uniform Panda3DMaterial p3d_Material;
 
 #endif
 
-uniform sampler2D ShadedScene;
-
 %inout%
 
-layout(location = 0) out vec4 color_result;
+uniform sampler2D SceneDepth;
 
 void main() {
+
+    // Manual depth testing
+    float gbuffer_depth = texelFetch(SceneDepth, ivec2(gl_FragCoord.xy), 0).x;
+    if (gbuffer_depth < gl_FragCoord.z)
+        discard;
 
     MaterialBaseInput mInput = get_input_from_p3d(p3d_Material);
 
@@ -154,51 +162,62 @@ void main() {
 
     %material%
 
+    vec4 color_result = vec4(0);
 
-    // Emulate gbuffer pass
-    Material m_out = emulate_gbuffer_pass(m, vOutput.position);
-    m_out.roughness = 0.0;
-    m_out.metallic = 1;
-    
+    if (m.shading_model == SHADING_MODEL_TRANSPARENT_EMISSIVE) {
+        // color_result = vec4(m.basecolor * EMISSIVE_SCALE, m.shading_model_param0);
 
+        // XXX: Using default emissive makes it way too bright
+        color_result = vec4(m.basecolor, 1) * m.shading_model_param0;
 
-    vec3 view_dir = normalize(m_out.position - MainSceneData.camera_pos);
-    vec3 color = vec3(0);
+    } else {
 
-    float alpha = m_out.shading_model_param0;
-    AmbientResult ambient = get_full_forward_ambient(m_out, view_dir);
+        // Emulate gbuffer pass
+        Material m_out = emulate_gbuffer_pass(m, vOutput.position);
+        m_out.metallic = 1.0;
+        m_out.specular_ior = 1.51;
+        m_out.normal = vOutput.normal;
+        m_out.basecolor = vec3(0.8);
+        // m_out.roughness = 0.0; // XXX
+        // m_out.linear_roughness = 0.0; // XXX
 
-    color += ambient.specular;
-    color += ambient.diffuse;
-    
+        vec3 view_dir = normalize(m_out.position - MainSceneData.camera_pos);
 
-    color += get_sun_shading(m_out, view_dir);
+        // Backface shading
+        if (dot(-m_out.normal, view_dir) < 0)
+            m_out.normal *= -1;
 
-    // Glass (experimental)
-    #if 1
+        vec3 color = vec3(0);
+
+        float alpha = m_out.shading_model_param0;
+
+        vec3 reflected = get_forward_specular_abient(m_out, view_dir) * M_PI;
+        vec3 lights = get_forward_lights(m_out, view_dir) / M_PI;
+
+        // color = reflected * m.basecolor; // XXX
+        color = reflected + lights;
+
         float NxV = 1 - saturate(dot(view_dir, -m_out.normal));
-        // XXX: Apply shading from lights too
-        NxV = pow(NxV, 5.0);
+        float fresnel = pow(NxV, 5.0);
 
-        alpha = 0.01;
-        alpha = mix(alpha, 0.2, NxV);
+        alpha = mix(0.4, 1.0, fresnel);
+
+        color = approx_glass_multiplier(color, fresnel, m_out.roughness);
+        // color = vec3(1);
+        color *= alpha;
+
+        // pack roughness
+        int roughness_i = int(saturate(m_out.roughness) * 255.0);
+
+        // color_result.w = saturate(color_result.w) + saturate(m_out.roughness) * 1000;
+        float packed_alpha = saturate(alpha) + roughness_i;
+    
+        color_result = vec4(color, packed_alpha);
         
+    }
 
-    #endif
+    // The effect can directly modify the color result and alpha here
+    %forward%
 
-    // Refraction (experimental)
-    #if 0
-        vec3 refracted_vector_view = refract(view_dir, m_out.normal, 1.04);
-        float refraction_dist = 0.5;
-        vec3 refraction_dest = m_out.position + refracted_vector_view * refraction_dist;
-        vec2 refraction_screen = saturate(world_to_screen(refraction_dest).xy);
-
-        vec2 scene_coord = get_texcoord();
-        vec3 back_color = textureLod(ShadedScene, refraction_screen, 0).xyz;
-
-        color_result.xyz = back_color * (1 - alpha) + color * alpha;
-        color_result.w = 1.0;
-    #else
-        color_result = vec4(color, alpha);
-    #endif
+    forward_submit_pixel(color_result);
 }

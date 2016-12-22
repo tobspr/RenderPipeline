@@ -52,6 +52,7 @@ TagStateManager::TagStateManager(NodePath main_cam_node) {
     _containers["voxelize"] = StateContainer("Voxelize", 3, false);
     _containers["envmap"]   = StateContainer("Envmap",   4, true);
     _containers["forward"]  = StateContainer("Forward",  5, true);
+    _containers["forward_prepass"]  = StateContainer("ForwardPrepass",  6, false);
 }
 
 /**
@@ -122,11 +123,9 @@ void TagStateManager::cleanup_states() {
     DCAST(Camera, _main_cam_node.node())->clear_tag_states();
 
     // Clear the containers
-    // XXX: Just iterate over the _container map
-    cleanup_container_states(_containers["shadow"]);
-    cleanup_container_states(_containers["voxelize"]);
-    cleanup_container_states(_containers["envmap"]);
-    cleanup_container_states(_containers["forward"]);
+    for (auto& entry : _containers) {
+        cleanup_container_states(entry.second);
+    }
 }
 
 /**

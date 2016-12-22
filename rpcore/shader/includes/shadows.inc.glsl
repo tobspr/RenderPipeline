@@ -64,9 +64,11 @@ vec2 find_filter_size(mat4 projection, vec3 light, float sample_radius) {
 // Returns the normal and light dependent bias
 vec2 get_shadow_bias(vec3 n, vec3 l) {
     float cos_alpha = saturate(dot(n, l));
-    float offset_scale_n = sqrt(1 - cos_alpha * cos_alpha); // sin(acos(L·N))
-    float offset_scale_l = offset_scale_n / cos_alpha;    // tan(acos(L·N))
-    return vec2(offset_scale_n, min(2, offset_scale_l));
+    // float offset_scale_n = sqrt(1 - cos_alpha * cos_alpha); // sin(acos(dot(L, N)))
+    // float offset_scale_l = offset_scale_n / cos_alpha;    // tan(acos(dot(L,N)))
+    float offset_scale_l = 1.0 / max(0.001, cos_alpha);
+    float offset_scale_n = 1.0;
+    return vec2(offset_scale_n, offset_scale_l);
 }
 
 // Offsets a position based on slope and normal

@@ -26,6 +26,9 @@ THE SOFTWARE.
 
 __all__ = ("Globals",)
 
+from panda3d.core import NodePath, ClockObject, LVecBase2i, DynamicTextFont  # pylint: disable=unused-import
+from direct.showbase.ShowBase import ShowBase  # pylint: disable=unused-import
+
 
 class Globals(object):  # pylint: disable=too-few-public-methods
 
@@ -35,6 +38,13 @@ class Globals(object):  # pylint: disable=too-few-public-methods
     where the variables come from and where they are defined. """
 
     __init__ = None
+
+    base = None  # type: ShowBase
+    render = None  # type: NodePath
+    clock = None  # type: ClockObject
+    font = None  # type: DynamicTextFont
+    resolution = None  # type: LVecBase2i
+    native_resolution = None  # type: LVecBase2i
 
     @staticmethod
     def load(showbase):

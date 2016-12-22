@@ -144,12 +144,12 @@ class CullLightsStage(RenderStage):
         num_rows = int(math.ceil(max_cells / float(self.culling_slice_width)))
 
         # Update the size of the buffer which keeps the per-cell lights, since the cell count might have changed
-        self.per_cell_lights.set_x_size(max_cells * self.max_lights_per_cell)
-        self.per_cell_light_counts.set_x_size(max_cells)
+        self.per_cell_lights.resize(max_cells * self.max_lights_per_cell)
+        self.per_cell_light_counts.resize(max_cells)
 
-        self.grouped_cell_lights.set_x_size(
+        self.grouped_cell_lights.resize(
             max_cells * (self.max_lights_per_cell + self.num_light_classes))
-        self.grouped_cell_lights_counts.set_x_size(max_cells * (1 + self.num_light_classes))
+        self.grouped_cell_lights_counts.resize(max_cells * (1 + self.num_light_classes))
 
         self.target_cull.size = self.culling_slice_width, num_rows_threaded
         self.target_group.size = self.culling_slice_width, num_rows

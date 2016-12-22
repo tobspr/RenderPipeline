@@ -140,7 +140,7 @@ class BufferViewer(DraggableWindow):
         self._content_node.set_z(self._scroll_height)
         self._chb_show_images = LabeledCheckbox(
             parent=self._node, x=10, y=43, chb_callback=self._set_show_images,
-            chb_checked=self._display_images, text="Display image resources",
+            chb_checked=self._display_images, text="Display textures",
             text_color=Vec3(0.4), expand_width=230)
         self._chb_show_empties = LabeledCheckbox(
             parent=self._node, x=240, y=43, chb_callback=self._set_show_empties,

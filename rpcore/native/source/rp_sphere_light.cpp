@@ -70,7 +70,7 @@ void RPSphereLight::init_shadow_sources() {
  * @see RPLight::update_shadow_sources
  */
 void RPSphereLight::update_shadow_sources() {
-    LVecBase3f directions[6] = {
+    static const LVecBase3f directions[6] = {
         LVecBase3f( 1,  0,  0),
         LVecBase3f(-1,  0,  0),
         LVecBase3f( 0,  1,  0),
@@ -81,9 +81,13 @@ void RPSphereLight::update_shadow_sources() {
 
     // Increase fov to prevent artifacts at the shadow map transitions
     const float fov = 90.0f + 3.0f;
+
+    // Prevent the near plane from being inside of the sphere
+    const float near_plane = max(_near_plane, _sphere_radius / sqrt(2.0f));
+
     for (size_t i = 0; i < _shadow_sources.size(); ++i) {
         _shadow_sources[i]->set_resolution(get_shadow_map_resolution());
-        _shadow_sources[i]->set_perspective_lens(fov, _near_plane, _max_cull_distance,
+        _shadow_sources[i]->set_perspective_lens(fov, near_plane, _max_cull_distance,
                                                 _position, directions[i]);
     }
 }

@@ -60,7 +60,11 @@ void RPRectangleLight::write_to_command(GPUCommand &cmd) {
  */
 void RPRectangleLight::init_shadow_sources() {
     nassertv(_shadow_sources.size() == 0);
-    _shadow_sources.push_back(new ShadowSource());
+    // Create 6 shadow sources, one for each direction
+    // XXX: This is pretty inefficient
+    for(size_t i = 0; i < 6; ++i) {
+        _shadow_sources.push_back(new ShadowSource());
+    }
 }
 
 /**
@@ -69,10 +73,31 @@ void RPRectangleLight::init_shadow_sources() {
  * @see RPLight::update_shadow_sources
  */
 void RPRectangleLight::update_shadow_sources() {
-    _shadow_sources[0]->set_resolution(get_shadow_map_resolution());
-    LVecBase3f direction = _up_vector.cross(_right_vector).normalized();
+    // _shadow_sources[0]->set_resolution(get_shadow_map_resolution());
+    // LVecBase3f direction = _up_vector.cross(_right_vector).normalized();
+    // _shadow_sources[0]->set_perspective_lens(90, 0.51, _max_cull_distance, _position - direction * 0.5, direction, _up_vector);
+    static const LVecBase3f directions[6] = {
+        LVecBase3f( 1,  0,  0),
+        LVecBase3f(-1,  0,  0),
+        LVecBase3f( 0,  1,  0),
+        LVecBase3f( 0, -1,  0),
+        LVecBase3f( 0,  0,  1),
+        LVecBase3f( 0,  0, -1)
+    };
 
-    _shadow_sources[0]->set_perspective_lens(170, 0.51, _max_cull_distance, _position - direction * 0.5, direction, _up_vector);
+    // Increase fov to prevent artifacts at the shadow map transitions
+    const float fov = 90.0f + 3.0f;
+
+    // Prevent the near plane from being inside of the sphere
+    // const float near_plane = max(_near_plane, _sphere_radius / sqrt(2.0f));
+    const float near_plane = 0.5;
+
+    for (size_t i = 0; i < _shadow_sources.size(); ++i) {
+        _shadow_sources[i]->set_resolution(get_shadow_map_resolution());
+        _shadow_sources[i]->set_perspective_lens(fov, near_plane, _max_cull_distance,
+                                                _position, directions[i]);
+    }
+
 }
 
 

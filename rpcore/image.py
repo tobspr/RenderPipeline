@@ -79,6 +79,7 @@ class Image(RPObject, Texture, ImageFormatTypes):
         "R16UI": (Texture.T_unsigned_short, Texture.F_r16i),
         "R32": (Texture.T_float, Texture.F_r32),
         "R32I": (Texture.T_int, Texture.F_r32i),
+        "R32UI": (Texture.T_unsigned_int, Texture.F_r32i),
     }
 
     @classmethod
@@ -177,3 +178,11 @@ class Image(RPObject, Texture, ImageFormatTypes):
         #     Texture.write(self, pth, 0, 0, True, False)
         # else:
         Texture.write(self, pth)
+
+    def resize(self, width, height=None, depth=None):
+        """ Resizes the image to the given dimension """
+        self.set_x_size(width)
+        if height:
+            self.set_y_size(height)
+        if depth:
+            self.set_z_size(depth)

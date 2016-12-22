@@ -33,6 +33,12 @@
 #pragma include "includes/LTC.inc.glsl"
 #pragma include "includes/approximations.inc.glsl"
 
+
+// Stop light processing if N dot L is below this value 
+#define LIGHT_CLIPOFF -0.1
+
+
+
 // Closest point on spherical area light
 vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphere_radius) {
     vec3 r = reflect(-v, n);
@@ -133,8 +139,10 @@ vec3 process_spotlight(Material m, LightData light, vec3 v, float shadow) {
     vec3 l_unscaled = light_pos - m.position;
     vec3 l = normalize(l_unscaled);
 
-    float light_scale = approx_spotlight_attenuation(l, direction, fov, ies_profile);
+    float linear_angle;
+    float light_scale = approx_spotlight_attenuation(l, direction, fov, linear_angle);
     light_scale *= (1 - fov) * M_PI;
+    light_scale *= get_ies_factor(ies_profile, linear_angle, 0);
 
 
     float NxV = saturate(dot(m.normal, v));
@@ -154,6 +162,8 @@ vec3 process_spotlight(Material m, LightData light, vec3 v, float shadow) {
 
         accum += brdf_cook_torrance(D, G, F, NxV, NxL) *
             approx_spot_light_specular_energy(m.roughness, fov);
+        
+        // XXX: Support clearcoat
     }
     {
         // Diffuse
@@ -202,6 +212,8 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
 
             accum += brdf_cook_torrance(D, G, F, NxV, NxL) *
                 approx_tube_light_specular_energy(m.roughness, tube_length, tube_radius, dot(l_unscaled_spec, l_unscaled_spec));
+
+            // XXX: Clearcoat
         }
 
         {
@@ -229,7 +241,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         // LTC for tube lights - good results, but slow
         vec3 l = normalize(light_pos - m.position);
 
-        if (dot(m.normal, l) < 0.0)
+        if (dot(m.normal, l) < LIGHT_CLIPOFF)
             return vec3(0);
 
         vec3 h = normalize(l + v);
@@ -271,6 +283,8 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         vec2 schlick = textureLod(LTCAmpTex, coords, 0).xy;
         specular *= f0 * schlick.x + (1.0 - f0) * schlick.y;
         diffuse *= get_material_diffuse(m);
+
+        // XXX: Clearcoat
 
         return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);
 
@@ -319,7 +333,11 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
 
             BRANCH_CLEARCOAT(m) {
                 vec3 specular_coat = spherelight_specular_shading(m.normal, CLEARCOAT_ROUGHNESS, vec3(CLEARCOAT_SPECULAR), l_unscaled, v, sphere_radius);
-                specular = approx_merge_clearcoat_specular(specular, specular_coat);
+
+                vec3 l = normalize(l_unscaled);
+                vec3 h = normalize(l + v);
+                float LxH = dot(l, h);
+                specular = approx_merge_clearcoat_specular(specular, specular_coat, LxH);
             }
 
         }
@@ -345,7 +363,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         // LTC for sphere lights - good results, but slow
         vec3 l = normalize(light_pos - m.position);
 
-        if (dot(m.normal, l) < 0.0)
+        if (dot(m.normal, l) < LIGHT_CLIPOFF)
             return vec3(0);
 
         vec3 h = normalize(l + v);
@@ -374,6 +392,8 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         vec3 specular = LTC_Evaluate(m.normal, v, m.position, minv, points, num_points);
         vec3 diffuse = LTC_Evaluate(m.normal, v, m.position, mat3(1), points, num_points);
 
+        // XXX: Clearcoat
+
         vec3 f0 = get_material_f0(m);
 
         vec2 schlick = textureLod(LTCAmpTex, coords, 0).xy;
@@ -399,7 +419,7 @@ vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
     points[2] = light_pos + right_vector + up_vector;
     points[3] = light_pos - right_vector + up_vector;
 
-    if (dot(m.normal, normalize(light_pos - m.position)) < 0.0)
+    if (dot(m.normal, normalize(light_pos - m.position)) < LIGHT_CLIPOFF)
         return vec3(0);
 
     vec2 coords = LTC_Coords(dot(m.normal, v), m.linear_roughness);
@@ -423,7 +443,11 @@ vec3 process_rectanglelight(Material m, LightData light, vec3 v, float shadow) {
         vec2 schlick_coat = textureLod(LTCAmpTex, coords_coat, 0).xy;
         specular_coat *= f0_coat * schlick_coat.x + (1.0 - f0_coat) * schlick_coat.y;
 
-        specular = approx_merge_clearcoat_specular(specular, specular_coat);
+        vec3 l = normalize(light_pos - m.position);
+        vec3 h = normalize(l + v);
+        float LxH = dot(l, h);
+        specular = approx_merge_clearcoat_specular(specular, specular_coat, LxH);
+
     };
 
     return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);

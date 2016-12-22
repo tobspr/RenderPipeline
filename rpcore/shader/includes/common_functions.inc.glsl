@@ -29,14 +29,6 @@
 // Not sure why GLSL does not define this
 #define saturate(v) clamp(v, 0, 1)
 
-#define M_PI 3.1415926535897932384626433
-#define HALF_PI 1.5707963267948966192313216
-#define TWO_PI 6.2831853071795864769252867
-#define FOUR_PI 12.566370614359172953850573
-#define ONE_BY_PI 0.3183098861837906715377675
-
-#define AIR_IOR 1.000277
-
 // Converts the cubemap direction, from Y-Up to Z-Up
 vec3 cubemap_yup_to_zup(vec3 coord) {
     return normalize(coord.yxz * vec3(-1, 1, 1));
@@ -261,13 +253,16 @@ float compute_screen_fade_factor(vec2 coords, float fade_range) {
     return fade;
 }
 
+// Converts from index of refraction to specular
+float ior_to_specular(float ior) {
+    float f0 = (ior - AIR_IOR) / (ior + AIR_IOR);
+    // Clamp between ior of 1 and 2.5
+    const float max_ior = 2.5;
+    return clamp(f0 * f0, 0.0, (max_ior - AIR_IOR) / (max_ior + AIR_IOR)); // should get optimized out
+}
+
+
 // Convenience functions for the scattering plugin - probably don't belong here
 #define get_sun_vector() sun_azimuth_to_angle(TimeOfDay.scattering.sun_azimuth, TimeOfDay.scattering.sun_altitude)
 #define get_sun_color() (TimeOfDay.scattering.sun_color * TimeOfDay.scattering.sun_intensity)
 #define get_sun_color_scale(_v) saturate(square((_v.z) / 0.15))
-
-#if REFERENCE_MODE
-    #define SKYBOX_DIST 1000.0
-#else
-    #define SKYBOX_DIST 20000.0
-#endif

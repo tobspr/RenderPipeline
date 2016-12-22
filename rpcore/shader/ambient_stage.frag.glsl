@@ -32,6 +32,7 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gbuffer2.inc.glsl"
 #pragma include "includes/brdf.inc.glsl"
+#pragma include "includes/approximations.inc.glsl"
 #pragma include "includes/color_spaces.inc.glsl"
 
 uniform sampler2D ShadedScene;
@@ -84,7 +85,6 @@ vec3 compute_bloom_luminance(vec3 bloom_color, float bloom_ec, float current_ev)
 vec3 get_envmap_specular(vec3 v, float mip) {
     return textureLod(DefaultEnvmapSpec, v.xzy, mip).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
 }
-
 
 vec3 get_envmap_diffuse(vec3 n) {
     return textureLod(DefaultEnvmapDiff, n.xzy, 0).xyz * DEFAULT_ENVMAP_BRIGHTNESS;
@@ -158,10 +158,10 @@ void main() {
     float NxV = clamp(-dot(m.normal, view_vector), 1e-5, 1.0);
 
     // Get mipmap offset for the material roughness
-    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmapSpec, roughness , NxV);
+    float env_mipmap = get_mipmap_for_roughness(DefaultEnvmapSpec, roughness, NxV);
 
     // Sample default environment map
-    vec3 ibl_specular = get_envmap_specular(reflected_dir, env_mipmap) * sky_ao_factor;;
+    vec3 ibl_specular = get_envmap_specular(reflected_dir, env_mipmap) * sky_ao_factor;
     vec3 ibl_diffuse = get_envmap_diffuse(m.normal) * sky_ao_factor;
 
     // Scattering specific code
@@ -218,7 +218,7 @@ void main() {
     diffuse_ambient *= env_brdf.r;
 
     // Approximate metallic fresnel
-    vec3 metallic_fresnel = get_metallic_fresnel_approx(m, NxV);
+    vec3 metallic_fresnel = approx_metallic_fresnel(m, NxV);
 
     // Mix between normal and metallic fresnel
     fresnel = mix(fresnel, metallic_fresnel, m.metallic);
@@ -258,7 +258,7 @@ void main() {
     #if !DEBUG_MODE
         if (m.shading_model == SHADING_MODEL_EMISSIVE) {
             // TODO: For emissive, use: compute_bloom_luminance() instead of a fixed value
-            ambient = m.basecolor * 5000.0;
+            ambient = m.basecolor * EMISSIVE_SCALE;
         }
     #endif
 

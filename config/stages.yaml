@@ -27,6 +27,7 @@ global_stage_order:
 
   # Light(-culling)
   - FlagUsedCellsStage
+  - ForwardPrepassStage
   - CollectUsedCellsStage
   - CullLightsStage
   - CullProbesStage

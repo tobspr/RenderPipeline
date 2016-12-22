@@ -53,8 +53,7 @@ class FlagUsedCellsStage(RenderStage):
 
     def set_dimensions(self):
         tile_amount = self._pipeline.light_mgr.num_tiles
-        self.cell_grid_flags.set_x_size(tile_amount.x)
-        self.cell_grid_flags.set_y_size(tile_amount.y)
+        self.cell_grid_flags.resize(tile_amount.x, tile_amount.y)
 
     def reload_shaders(self):
         self.target.shader = self.load_shader("flag_used_cells.frag.glsl")

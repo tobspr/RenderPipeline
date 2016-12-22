@@ -29,21 +29,100 @@
 #pragma include "render_pipeline_base.inc.glsl"
 
 uniform sampler2D ShadedScene;
+uniform sampler2D BlurredShadedScene;
 uniform sampler2D SceneDepth;
-uniform sampler2D ForwardDepth;
-uniform sampler2D ForwardColor;
+
+uniform samplerBuffer ForwardFragmentData;
+uniform samplerBuffer ForwardFragmentDepth;
+uniform usamplerBuffer ForwardFragmentNext;
+uniform usampler2D ForwardLinkedListHead;
 
 out vec3 result;
 
+struct Fragment {
+    float depth;
+    vec4 color;
+    float roughness;
+    uint next;
+};
+
+Fragment get_fragment(uint frag_index) {
+    int index = int(frag_index);
+    Fragment frag;
+    frag.depth = texelFetch(ForwardFragmentDepth, index).x;
+    frag.color = texelFetch(ForwardFragmentData, index);
+    frag.roughness = int(frag.color.w) / 255.0;
+    frag.color.w = mod(frag.color.w, 1.0);
+    frag.next = texelFetch(ForwardFragmentNext, index).x;
+    return frag;
+}
+
+#define MAX_FRAGMENTS 5
+
 void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_texcoord();
 
-    vec3 deferred_result = textureLod(ShadedScene, texcoord, 0).xyz;
-    vec4 forward_result = textureLod(ForwardColor, texcoord, 0);
+    vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
 
-    float deferred_depth = textureLod(ForwardDepth, texcoord, 0).x;
-    float forward_depth = textureLod(SceneDepth, texcoord, 0).x;
-    forward_result.xyz = forward_result.xyz * forward_result.w +
-                            deferred_result * (1 - forward_result.w);
-    result = deferred_depth > forward_depth ? deferred_result : forward_result.xyz;
+    uint list_head = texelFetch(ForwardLinkedListHead, coord, 0).x;
+
+    if (list_head == 0) {
+        result = scene_color;
+        return;
+    }
+
+    float pixel_depth = texelFetch(SceneDepth, coord, 0).x;
+
+    // Read in all fragments
+    Fragment fragments[MAX_FRAGMENTS];
+    uint fragment_array[MAX_FRAGMENTS];
+    int num_fragments = 0;
+    uint ptr = list_head;
+
+    // Iterate over linked list, but make sure we produce no endless loop
+    int max_iter = 50;
+    while(num_fragments < (MAX_FRAGMENTS - 1) && ptr != 0 && max_iter --> 0) {
+        Fragment frag = get_fragment(ptr);
+        ptr = frag.next;
+
+        // Already checked in the forward pass
+        // if (frag.depth < pixel_depth) {
+            fragments[num_fragments] = frag; 
+            fragment_array[num_fragments] = num_fragments;
+            ++num_fragments;
+        // }
+    }
+
+    // Insertion sort
+    for (uint i = 1; i <= num_fragments - 1; ++i) {
+        uint d = i;
+        while (d > 0 && fragments[fragment_array[d]].depth > fragments[fragment_array[d - 1]].depth) {
+            uint temp = fragment_array[d];
+            fragment_array[d] = fragment_array[d - 1];
+            fragment_array[d - 1] = temp;
+            d--;
+        }
+
+    }
+
+    // Apply fragments
+    float roughness = fragments[fragment_array[num_fragments - 1]].roughness;
+    vec3 curr_color = textureLod(BlurredShadedScene, texcoord, 0).xyz;
+
+    if (roughness < 0.01) {
+        curr_color = scene_color;
+    }
+
+
+    for (uint i = 0; i < num_fragments; ++i) {
+        Fragment f = fragments[fragment_array[i]];
+        // curr_color += f.data;
+        vec3 transmittance = vec3(1); // XXX: Allow specifying transmittance
+        curr_color = curr_color * transmittance * (1 - f.color.w) + f.color.xyz;
+    }
+
+    
+    result = curr_color;
+
 }

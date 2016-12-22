@@ -94,7 +94,7 @@ class RenderStage(RPObject):
             for target in itervalues(self._targets):
                 target.active = self._active
 
-    def create_target(self, name):
+    def create_target(self, name):  # type: (str) -> RenderTarget
         """ Creates a new render target and binds it to this stage """
         # Format the name like Plugin:Stage:Name, so it can be easily
         # found in pstats below the plugin cagetory

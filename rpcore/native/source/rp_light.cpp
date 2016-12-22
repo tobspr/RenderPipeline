@@ -41,7 +41,7 @@ RPLight::RPLight(LightType light_type) :
     _casts_shadows(false),
     _slot(-1),
     _position(0, 0, 0),
-    _color(0, 0, 0),
+    _color(1, 1, 1),
     _ies_profile(-1),
     _source_resolution(512),
     _near_plane(0.5),

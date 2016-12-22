@@ -103,6 +103,15 @@
     #define RESTRICT restrict
 #endif
 
+// Mathematical variables
+#define M_PI 3.1415926535897932384626433
+#define HALF_PI 1.5707963267948966192313216
+#define TWO_PI 6.2831853071795864769252867
+#define FOUR_PI 12.566370614359172953850573
+#define ONE_BY_PI 0.3183098861837906715377675
+
+#define AIR_IOR 1.000277
+
 // TODO:
 #define SUPPORT_PCF 1
 
@@ -118,10 +127,10 @@
 
 // Controls the brightness of the fallback cubemap
 #if REFERENCE_MODE
-    #define DEFAULT_ENVMAP_BRIGHTNESS 0.3
+    #define DEFAULT_ENVMAP_BRIGHTNESS 0.5
 #else
     #if HAVE_PLUGIN(color_correction)
-        #define DEFAULT_ENVMAP_BRIGHTNESS 1.0
+        #define DEFAULT_ENVMAP_BRIGHTNESS 0.3
     #else
         #define DEFAULT_ENVMAP_BRIGHTNESS 3.0
     #endif
@@ -140,5 +149,13 @@
 // Increases / Decreases the mipmap of the gbuffer textures
 // #define GBUFFER_LOD_BIAS -2.0
 #define GBUFFER_LOD_BIAS -0.5
+
+// Distance to skybox. All pixels more distant than this will be marked as skybox
+#if REFERENCE_MODE
+    #define SKYBOX_DIST 1000.0
+#else
+    #define SKYBOX_DIST 20000.0
+#endif
+
 
 #pragma include "includes/common_functions.inc.glsl"

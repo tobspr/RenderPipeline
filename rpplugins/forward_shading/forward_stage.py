@@ -24,8 +24,9 @@ THE SOFTWARE.
 
 """
 
-from panda3d.core import Camera
+from panda3d.core import Camera, LVecBase2i
 
+from rpcore.image import Image
 from rpcore.globals import Globals
 from rpcore.render_stage import RenderStage
 
@@ -35,8 +36,12 @@ class ForwardStage(RenderStage):
     """ Forward shading stage, which first renders all forward objects,
     and then merges them with the scene """
 
-    required_inputs = ["DefaultEnvmapSpec", "PrefilteredBRDF", "PrefilteredCoatBRDF"]
-    required_pipes = ["SceneDepth", "ShadedScene", "CellIndices"]
+    required_inputs = ["AllLightsData", "IESDatasetTex", "ShadowSourceData",
+                       "DebugFontAtlas", "LTCAmpTex", "LTCMatTex", "DefaultEnvmapSpec",
+                       "DefaultEnvmapDiff"]
+    required_pipes = ["GBuffer", "CellIndices", "PerCellLights", "ShadowAtlas",
+                      "ShadowAtlasPCF", "CombinedVelocity", "PerCellLightsCounts",
+                      "ShadedScene", "SceneDepth"]
 
     @property
     def produced_pipes(self):
@@ -47,19 +52,67 @@ class ForwardStage(RenderStage):
         self.forward_cam.set_lens(Globals.base.camLens)
         self.forward_cam_np = Globals.base.camera.attach_new_node(self.forward_cam)
 
+        # Stores the total amount of fragments allocated
+        self.fragment_counter = Image.create_counter("ForwardFragmentCounter")
+
+        # Stores the per fragment data, in the format (rgb-color, alpha)
+        self.fragment_data = Image.create_buffer("ForwardFragmentData", 0, "RGBA16")
+
+        # Stores the per fragment depth
+        self.fragment_depth = Image.create_buffer("ForwardFragmentDepth", 0, "R32")  # XXX: Examine R16
+
+        # Stores the pointer to the next fragment, or null if none exists
+        self.fragment_next = Image.create_buffer("ForwardFragmentNext", 0, "R32UI")
+
+        # For each pixel, stores the start of the linked list, or null if its empty
+        self.linked_list_head = Image.create_2d("ForwardLinkedListHead", 0, 0, "R32UI")
+
         self.target = self.create_target("ForwardShading")
-        self.target.add_color_attachment(bits=16, alpha=True)
-        self.target.add_depth_attachment(bits=32)
         self.target.prepare_render(self.forward_cam_np)
         self.target.set_clear_color(0, 0, 0, 0)
 
         self._pipeline.tag_mgr.register_camera("forward", self.forward_cam)
 
-        self.target_merge = self.create_target("MergeWithDeferred")
+        self.target_blur_x = self.create_target("ForwardBlurX")
+        self.target_blur_x.add_color_attachment(bits=16)
+        self.target_blur_x.prepare_buffer()
+        self.target_blur_x.set_shader_input("direction", LVecBase2i(1, 0))
+
+        self.target_blur_y = self.create_target("ForwardBlurY")
+        self.target_blur_y.add_color_attachment(bits=16)
+        self.target_blur_y.prepare_buffer()
+        self.target_blur_y.set_shader_input("direction", LVecBase2i(0, 1))
+
+        self.target_blur_y.set_shader_input("ShadedScene", self.target_blur_x.color_tex, override=True)
+
+        self.target_merge = self.create_target("MergeForwardWithDeferred")
         self.target_merge.add_color_attachment(bits=16)
         self.target_merge.prepare_buffer()
-        self.target_merge.set_shader_input("ForwardDepth", self.target.depth_tex)
-        self.target_merge.set_shader_input("ForwardColor", self.target.color_tex)
+        self.target_merge.set_shader_input("BlurredShadedScene", self.target_blur_y.color_tex)
+
+        self.set_shader_input("ForwardFragmentCounter", self.fragment_counter)
+        self.set_shader_input("ForwardFragmentData", self.fragment_data)
+        self.set_shader_input("ForwardFragmentDepth", self.fragment_depth)
+        self.set_shader_input("ForwardFragmentNext", self.fragment_next)
+        self.set_shader_input("ForwardLinkedListHead", self.linked_list_head)
+
+    def set_dimensions(self):
+        max_layers = 3  # XXX: Make configurable
+        pixels = Globals.resolution.x * Globals.resolution.y
+        max_fragments = pixels * max_layers
+        self.debug("Max fragments = ", max_fragments)
+        self.fragment_data.resize(max_fragments)
+        self.fragment_next.resize(max_fragments)
+        self.fragment_depth.resize(max_fragments)
+        self.linked_list_head.resize(Globals.resolution.x, Globals.resolution.y)
+
+    def update(self):
+        self.fragment_counter.clear_image()
+
+        # If this clear ever gets too slow, we can store even indexes in the one frame,
+        # and uneven in the next. Then we can just check if the index matches,
+        # instead of having to clear the whole texture
+        self.linked_list_head.clear_image()
 
     def set_shader_input(self, *args):
         Globals.base.render.set_shader_input(*args)
@@ -67,3 +120,6 @@ class ForwardStage(RenderStage):
 
     def reload_shaders(self):
         self.target_merge.shader = self.load_plugin_shader("merge_with_deferred.frag.glsl")
+        blur_shader = self.load_plugin_shader("pre_blur_forward.frag.glsl")
+        self.target_blur_x.shader = blur_shader
+        self.target_blur_y.shader = blur_shader

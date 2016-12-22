@@ -112,8 +112,6 @@ MaterialShaderOutput make_default_material_output() {
     return result;
 }
 
-// Required for ior_to_specular
-#pragma include "includes/brdf.inc.glsl"
 
 #ifdef IN_RENDERING_PASS
 

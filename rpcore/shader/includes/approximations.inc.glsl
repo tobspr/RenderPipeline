@@ -26,6 +26,8 @@
 
  #pragma once
 
+ #pragma include "includes/material.inc.glsl"
+
  /*
 Approximations
 
@@ -71,13 +73,21 @@ float approx_tube_light_diff_energy(float tube_radius, float tube_length) {
 }
 
 
-vec3 approx_merge_clearcoat_specular(vec3 specular, vec3 specular_coat) {
-    return mix(specular * 0.3, specular_coat, 0.07);
+vec3 approx_merge_clearcoat_specular(vec3 specular, vec3 specular_coat, float LxH) {
+    // http://www.cescg.org/CESCG-2010/papers/ElekOskar.pdf
+    float f0 = CLEARCOAT_SPECULAR;
+    float approx_fresnel = pow(saturate(LxH), 5.0);
+    float fresnel = f0 + (1 - f0) * approx_fresnel;
+
+    float transmittance = 1.0 - fresnel;
+    vec3 result = specular_coat * fresnel;
+    result += specular * transmittance;
+    return result;
 }
 
 
 // Computes the angle-based attenuation for a spot light
-float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, int ies_profile) {
+float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, out float linear_angle) {
 
     float cos_angle = dot(l, -spot_dir);
 
@@ -86,14 +96,32 @@ float approx_spotlight_attenuation(vec3 l, vec3 spot_dir, float fov, int ies_pro
     // This is NOT physically correct for spotlights without a FoV of 180deg.
     // However, IES profiles might look quite boring when not getting rescaled,
     // so the rescaling is performed.
-    float linear_angle = (cos_angle - fov) / (1 - fov);
+    linear_angle = (cos_angle - fov) / (1 - fov);
     float angle_att = saturate(linear_angle);
 
-    // XXX: Move ies factor out of this file - does not belong here
-    float ies_factor = get_ies_factor(ies_profile, linear_angle, 0);
 
     // XXX: Mitsuba computes attenuation differently. But this fits
     // much better, even if not entirely physically correct.
-    return ies_factor * angle_att * angle_att * 0.25;
+    return angle_att * angle_att * 0.25;
 }
 
+
+// Transforms the roughness for clearcoat layers, this is because rays are
+// scattered differently
+float approx_clearcoat_roughness_transform(float roughness) {
+    return roughness * 1.0;
+}
+
+vec3 approx_metallic_fresnel(Material m, float NxV) {
+    return vec3(m.basecolor);
+    vec3 metallic_energy_f0 = vec3(1.0 - 0.7 * m.roughness) * m.basecolor;
+    vec3 metallic_energy_f90 = mix(vec3(1), 0.5 * m.basecolor, m.linear_roughness);
+    vec3 metallic_fresnel = mix(metallic_energy_f0, metallic_energy_f90,
+        pow(1 - NxV, 3.6 - 2.6 * m.linear_roughness));
+    return vec3(metallic_fresnel);
+}
+
+
+vec3 approx_glass_multiplier(vec3 color, float fresnel, float roughness) {
+    return color * (1 + 2 * fresnel * (1 - roughness));
+}

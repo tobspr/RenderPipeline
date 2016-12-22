@@ -103,8 +103,7 @@ class BloomStage(RenderStage):
         self.target_apply.set_shader_input("BloomTex", self.scene_target_img)
 
     def set_dimensions(self):
-        self.scene_target_img.set_x_size(Globals.resolution.x)
-        self.scene_target_img.set_y_size(Globals.resolution.y)
+        self.scene_target_img.resize(Globals.resolution.x, Globals.resolution.y)
 
     def reload_shaders(self):
         self.target_extract.shader = self.load_plugin_shader("extract_bright_spots.frag.glsl")

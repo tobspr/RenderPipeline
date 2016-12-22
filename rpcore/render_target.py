@@ -29,7 +29,7 @@ from __future__ import print_function, division
 from panda3d.core import GraphicsOutput, Texture, AuxBitplaneAttrib, NodePath
 from panda3d.core import Vec4, TransparencyAttrib, ColorWriteAttrib, SamplerState
 from panda3d.core import WindowProperties, FrameBufferProperties, GraphicsPipe
-from panda3d.core import LVecBase2i
+from panda3d.core import LVecBase2i, DepthTestAttrib
 
 from rplibs.six.moves import range  # pylint: disable=import-error
 from rplibs.six import iterkeys, itervalues
@@ -182,9 +182,9 @@ class RenderTarget(RPObject):
             self.error("shader must not be None!")
             return
         if self._source_region.shader and shader_obj.this == self._source_region.shader.this:
-            # self.debug("Skipping cached shader")
+            self.debug("Skipping cached shader")
             return
-        # self.debug("Applying", str(shader_obj.get_filename(shader_obj.ST_fragment))[-30:])
+        self.debug("Applying", str(shader_obj.get_filename(shader_obj.ST_fragment))[-30:])
         self._source_region.set_shader(shader_obj)
 
     @property
@@ -215,7 +215,11 @@ class RenderTarget(RPObject):
 
             if self._aux_count:
                 initial_state.set_attrib(AuxBitplaneAttrib.make(self._aux_bits), 20)
-            initial_state.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_none), 20)
+
+            if not self.support_transparency:
+                initial_state.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_none), 20)
+            else:
+                initial_state.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_alpha), 20)
 
             if max(self._color_bits) == 0:
                 initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 20)

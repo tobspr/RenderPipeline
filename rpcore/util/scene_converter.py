@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import math
 
-from panda3d.core import MaterialAttrib, GeomTristrips
+from panda3d.core import MaterialAttrib, GeomTristrips, CullFaceAttrib, TransparencyAttrib
 from panda3d.core import SphereLight as PandaSphereLight
 
 from rpcore.globals import Globals
@@ -48,11 +48,11 @@ class SceneConverter(RPObject):
     # way too dark when imported from blender otherwise
     LUMENS_CONVERSION_FACTOR = 40.0
 
-
     class ConversionResult(object):
         """ Class which returns the result of a scene conversion, reason is that
         the original lights are deleted during conversion, and so the user has no
         handle to the newly generated RP lights otherwise."""
+
         def __init__(self):
             self.lights = {}
             self.environment_probes = {}
@@ -92,14 +92,13 @@ class SceneConverter(RPObject):
         ))
         return self.result
 
-
     def _convert_lights(self):
         """ Converts all lights """
         for light in self.scene.find_all_matches("**/+PointLight"):
             if not isinstance(light.node(), PandaSphereLight):
                 self.error("Found PointLight '" + light.get_name() + "' in your scene. "
-                        "Please re-export your geometry using the newest BAM Exporter "
-                        "version to convert them to SphereLights")
+                           "Please re-export your geometry using the newest BAM Exporter "
+                           "version to convert them to SphereLights")
         self._convert_sphere_lights()
         self._convert_spot_lights()
         self._convert_rectangle_lights()
@@ -207,8 +206,8 @@ class SceneConverter(RPObject):
                 # Warning about unassigned materials
                 if not state.has_attrib(MaterialAttrib):
                     self.error("Geom '" + str(geom_node.get_name()) + "' on node path "
-                              "'" + geom_np.get_name() + "' has no material! Please "
-                              "assign a material.")
+                               "'" + geom_np.get_name() + "' has no material! Please "
+                               "assign a material.")
 
     def _convert_transparent_objects(self):
         """ Sets the appropriate effect on all models with the transparent shading
@@ -228,7 +227,7 @@ class SceneConverter(RPObject):
                 material = material_attrib.get_material()
                 shading_model = MaterialAPI.get_shading_model(material)
 
-                if shading_model == MaterialAPI.SM_TRANSPARENT:
+                if shading_model in MaterialAPI.TRANSPARENT_MODELS:
                     if geom_count > 1:
                         self.error("Transparent materials must be on their own geom! "
                                    "If you are exporting from blender, split them into "
@@ -240,6 +239,13 @@ class SceneConverter(RPObject):
                         geom_np, "effects/default.yaml",
                         {
                             "render_forward": True,
+                            "render_forward_prepass": shading_model == MaterialAPI.SM_TRANSPARENT_GLASS,
                             "render_gbuffer": False,
-                            "render_shadow": False
+                            "render_shadow": True
                         }, 100)
+
+                    if shading_model == MaterialAPI.SM_TRANSPARENT_GLASS:
+                        geom_np.set_attrib(CullFaceAttrib.make(CullFaceAttrib.M_cull_none), 1000)
+                    
+                    geom_np.set_attrib(TransparencyAttrib.make(TransparencyAttrib.M_alpha), 1000)
+                    geom_np.set_bin("transparent", 0)

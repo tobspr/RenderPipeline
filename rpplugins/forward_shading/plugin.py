@@ -27,6 +27,7 @@ THE SOFTWARE.
 from rpcore.pluginbase.base_plugin import BasePlugin
 
 from .forward_stage import ForwardStage
+from .forward_prepass_stage import ForwardPrepassStage
 
 
 class Plugin(BasePlugin):
@@ -51,5 +52,7 @@ class Plugin(BasePlugin):
             self.stage.required_pipes += ["PerCellProbes"]
             self.stage.required_inputs += ["EnvProbes"]
 
+        self.prepass_stage = self.create_stage(ForwardPrepassStage)
+        
     def on_pipeline_created(self):
         pass
