@@ -34,10 +34,8 @@
 #pragma include "includes/approximations.inc.glsl"
 
 
-// Stop light processing if N dot L is below this value 
+// Stop light processing if N dot L is below this value
 #define LIGHT_CLIPOFF -0.1
-
-
 
 
 // Closest point on spherical area light
@@ -54,14 +52,10 @@ vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphe
 vec3 get_tube_area_light_vector(vec3 n, vec3 light_pos, vec3 pos, vec3 v, float tube_radius,
                                 float tube_length, vec3 tube_direction) {
     vec3 R = reflect(-v, n);
-    // vec3 center_to_ray = dot(l_unscaled, r) * r - l_unscaled;
     vec3 P0 = light_pos + tube_direction * (0.5 * -tube_length + tube_radius);
     vec3 P1 = light_pos + tube_direction * (0.5 * tube_length - tube_radius);
     vec3 L0 = P0 - pos;
     vec3 L1 = P1 - pos;
-
-    float distL0 = length(L0);
-    float distL1 = length(L1);
 
     vec3 Ld = L1 - L0;
     float RdotL0 = dot(R, L0);
@@ -70,16 +64,10 @@ vec3 get_tube_area_light_vector(vec3 n, vec3 light_pos, vec3 pos, vec3 v, float 
     float distLd = length(Ld);
     float t = (RdotL0 * RdotLd - L0dotLd) / (distLd * distLd - RdotLd * RdotLd);
 
-    vec3 closestPoint = L0 + Ld * saturate(t);
-    vec3 centerToRay = dot(closestPoint, R) * R - closestPoint;
-
-    // This is where I made the change
-    // This is the original line of code from Epic's notes:
-    closestPoint = closestPoint + centerToRay * clamp(tube_radius / length(centerToRay), 0.0f, 1.0f);
-    // The following line is my version:
-    // closestPoint = closestPoint + centerToRay * halfHeight;
-
-    return closestPoint;
+    vec3 closest_point = L0 + Ld * saturate(t);
+    vec3 center_to_ray = dot(closest_point, R) * R - closest_point;
+    closest_point = closest_point + center_to_ray * clamp(tube_radius / length(center_to_ray), 0.0f, 1.0f);
+    return closest_point;
 }
 
 vec3 get_tube_area_light_diff_vector(vec3 pos, vec3 light_pos, float tube_radius, float tube_length, vec3 tube_direction) {
@@ -97,11 +85,12 @@ vec3 get_tube_area_light_diff_vector(vec3 pos, vec3 light_pos, float tube_radius
 
     vec3 l = (light_pos + d * tube_direction) - pos;
 
-    // Take radius into account by shortening the light vector
+    // Take tube radius into account by shortening the light vector.
+    // XXX: This actually makes it *worse* compared to mitsuba. Not sure why.
     #if 0
-    float l_len = length(l);
-    l /= l_len;
-    l *= l_len - tube_radius;
+        float l_len = length(l);
+        l /= l_len;
+        l *= l_len - tube_radius;
     #endif
 
     return l;
@@ -119,12 +108,14 @@ float light_clip_falloff(LightData light, vec3 pos) {
         return step(d, max_d);
     #endif
 
-    // Falloff has the following characteristics
-    // f(0.8)  = 1
-    // f(1)    = 0
-    // f'(0.8) = 1
-    // f'(1)   = 0
-    // f(x) := (1 - max(0.0, min(1.0, (x - 0.8) / 0.2)) ^ 5) ^ 5;
+    // Falloff has the following characteristics:
+    //   f(0.8)  = 1.0
+    //   f(1)    = 0.0
+    //   f'(0.8) = 1.0
+    //   f'(1)   = 0.0
+    //
+    // Defined in maxima as:
+    //   f(x) := (1 - max(0.0, min(1.0, (x - 0.8) / 0.2)) ^ 5) ^ 5;
     float falloff = pow(1.0 - pow(saturate((d / max_d - 0.8) / 0.2), 5.0), 5.0);
     return falloff;
 }
@@ -164,7 +155,7 @@ vec3 process_spotlight(Material m, LightData light, vec3 v, float shadow) {
         accum += brdf_cook_torrance(D, G, F, NxV, NxL) *
             approx_spot_light_specular_energy(m.roughness, fov);
         
-        // XXX: Support clearcoat
+        // XXX: Clearcoat
     }
     {
         // Diffuse
@@ -196,7 +187,6 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
         vec3 accum = vec3(0);
         vec3 f0 = get_material_f0(m);
         {
-
             // Specular
             vec3 l_unscaled_spec = get_tube_area_light_vector(m.normal, light_pos, m.position, v, tube_radius, tube_length, tube_direction);
 
@@ -216,9 +206,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
 
             // XXX: Clearcoat
         }
-
         {
-
             // Diffuse
             vec3 l_unscaled_diff = get_tube_area_light_diff_vector(m.position, light_pos, tube_radius, tube_length, tube_direction);
             vec3 l = normalize(l_unscaled_diff);
@@ -226,7 +214,7 @@ vec3 process_tubelight(Material m, LightData light, vec3 v, float shadow) {
             float NxL = saturate(dot(m.normal, l));
 
             // Luminous power -> luminance
-            // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba well. hm.
+            // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba pretty well
             float scale_factor = M_PI * (2.0 * M_PI * tube_radius * tube_length + 4.0 * M_PI * tube_radius * tube_radius);
             scale_factor *= approx_tube_light_diff_energy(tube_radius, tube_length);
             accum += att * NxL * get_material_diffuse(m) * scale_factor;
@@ -340,9 +328,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
                 float LxH = dot(l, h);
                 specular = approx_merge_clearcoat_specular(specular, specular_coat, LxH);
             }
-
         }
-
         {
             // Diffuse
             vec3 l = normalize(l_unscaled);
@@ -350,7 +336,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
             float NxL = saturate(dot(m.normal, l));
 
             // Luminous power -> luminance
-            // XXX: Missing division by 4 * pi^2 here though. But matches mitsuba well. hm.
+            // XXX: Missing division by 4 * pi^2 here though, see tube lights
             float scale_factor = sphere_radius * sphere_radius;
             diffuse = att * NxL * get_material_diffuse(m) * scale_factor;
         }
@@ -380,10 +366,6 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
 
         for (int i = 0; i < num_points; ++i) {
             float phi = i / float(num_points) * TWO_PI;
-            // Star
-            // float radius = i % 2 == 0 ? 1.0 : 0.5;
-
-            // Circle
             float radius = 1.0;
             points[i] = light_pos + sin(phi) * up_vector * radius + cos(phi) * right_vector * radius;
         }

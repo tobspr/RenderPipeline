@@ -280,7 +280,6 @@ vec3 process_spherelight_reference(Material m, LightData light, vec3 v, float sh
         ray.l = l;
 
         if (ray_sphere_intersection(ray, sphere)) {
-            // XXX: missing divide by pdf?!
             diff_accum += diff_color * fr_cos_theta(l) / pdf;
         }
     }
