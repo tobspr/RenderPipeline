@@ -686,25 +686,25 @@ class RenderPipeline(RPObject):
         the render pipeline wiki or the LightGeometry class for more information. """
         return LightGeometry.make(light)
 
-    def enter_menu(self):
-        """ Tells the render pipeline that a menu is currently open, so the render
-        pipeline can pause the rendering to achive a better menu performance.
-        Also applies a blur filter. """
+    def pause_rendering(self, enable_blur=False):
+        """ Tells the render pipeline that the rendering can pause, to achive a
+        better menu performance for example. Also applies a blur filter if
+        enable_blur is True."""
         if not self._rendering_enabled:
             self.error("Already in menu, cannot call enter_menu again!")
             return
-        self.debug("Entering menu")
+        self.debug("Pausing rendering")
         self._rendering_enabled = False
         self.stage_mgr.pause_rendering()
-        self._stage_instances[MenuBlurStage].enable_blur()
+        self._stage_instances[MenuBlurStage].activate(enable_blur=enable_blur)
 
-    def exit_menu(self):
+    def resume_rendering(self):
         """ Tells the render pipeline that the rendering can be resumed, after
-        a call to enter_menu() was made """
+        a call to pause_rendering() was made """
         if self._rendering_enabled:
             self.error("Not in menu, cannot call exit_menu!")
             return
-        self.debug("Leaving menu")
+        self.debug("Resume rendering")
         self.stage_mgr.resume_rendering()
-        self._stage_instances[MenuBlurStage].disable_blur()
+        self._stage_instances[MenuBlurStage].disable()
         self._rendering_enabled = True

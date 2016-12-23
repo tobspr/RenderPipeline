@@ -268,12 +268,12 @@ class StageManager(RPObject):
     def pause_rendering(self):
         """ Pauses all stages """
         for stage in self.stages:
-            stage.on_menu_entered()
+            stage.pause_rendering()
 
     def resume_rendering(self):
         """ Reenables all stages """
         for stage in self.stages:
-            stage.on_menu_exit()
+            stage.resume_rendering()
 
     @property
     def autoconfig_path(self):

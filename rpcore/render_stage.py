@@ -42,15 +42,28 @@ class RenderStage(RPObject):
     Using a pipe system ensures that new techniques can be inserted easily,
     without the other techniques even being aware of them """
 
+    # All inputs which are required for this pipe
     required_inputs = []
+
+    # All pipes which are required for this pipe
     required_pipes = []
 
+    # All inputs which are provided by this pipe
     produced_inputs = {}
+
+    # All pipes which are provided by this pipe
     produced_pipes = {}
+
+    # All shader defines which are provided by this pipe
     produced_defines = {}
 
+    # Whether the stage is enabled or disabled by default, controls whether
+    # the stage will be created and activated by the stage manager or not
     disabled = False
-    enable_during_menu = False
+
+    # Whether the stage should stay active, even when the rendering was paused.
+    always_active = False
+
 
     def __init__(self, pipeline):
         """ Creates a new render stage """
@@ -95,9 +108,9 @@ class RenderStage(RPObject):
             for target in itervalues(self._targets):
                 target.active = self._active
 
-    def on_menu_entered(self):
-        """ Gets called when the menu is entered, and disables all stages """
-        if self.enable_during_menu:
+    def pause_rendering(self):
+        """ Gets called when the rendering was paused, and disables all stages """
+        if self.always_active:
             return
         self._target_states = {}
         # Save all target states, so we can recover it on menu exit
@@ -105,9 +118,9 @@ class RenderStage(RPObject):
             self._target_states[name] = target.active
             target.active = False
 
-    def on_menu_exit(self):
-        """ Gets called when the menu is closed, and restores all stages """
-        if self.enable_during_menu:
+    def resume_rendering(self):
+        """ Gets called when the rendering is resumed, and restores all stages """
+        if self.always_active:
             return
         assert hasattr(self, "_target_states")
         for name, target in iteritems(self._targets):

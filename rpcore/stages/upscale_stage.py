@@ -34,7 +34,7 @@ class UpscaleStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["ShadedScene"]
-    enable_during_menu = True
+    always_active = True
 
     @property
     def produced_pipes(self):

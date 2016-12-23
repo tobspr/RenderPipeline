@@ -233,8 +233,8 @@ class Debugger(RPObject):
         Globals.base.accept("p", self.start_plugin_editor)
         Globals.base.accept("t", self.start_daytime_editor)
         Globals.base.accept("k", self.export_scene)
-        Globals.base.accept("8", self.pipeline.enter_menu)
-        Globals.base.accept("9", self.pipeline.exit_menu)
+        Globals.base.accept("8", self.pipeline.pause_rendering)
+        Globals.base.accept("9", self.pipeline.resume_rendering)
 
         if self.reference_mode:
             Globals.base.accept("f7", self._toggle_display_mode)

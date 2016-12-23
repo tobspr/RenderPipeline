@@ -36,7 +36,7 @@ class MenuBlurStage(RenderStage):
 
     required_inputs = []
     required_pipes = ["ShadedScene"]
-    enable_during_menu = True
+    always_active = True
 
     @property
     def produced_pipes(self):
@@ -48,7 +48,7 @@ class MenuBlurStage(RenderStage):
         RenderStage.__init__(self, *args)
         self.pta_blur_scale = PTAFloat.empty_array(1)
         self.blur_scale_velocity = 0
-        self.blur_enabled = False
+        self.activated = False
         self.stale_size = False
 
     def create(self):
@@ -77,18 +77,23 @@ class MenuBlurStage(RenderStage):
         self.target_combine.add_color_attachment(bits=8)
         self.target_combine.prepare_buffer()
         self.target_combine.set_shader_input("BlurTex", self.blur_targets[-1].color_tex)
-        self.disable_blur()
+        self.disable()
 
-    def enable_blur(self):
+    def activate(self, enable_blur=True):
         self.target_combine.set_shader_input("useBlur", True)
-        for target in self.blur_targets:
-            target.active = True
+        if not enable_blur:
+            self.target_combine.set_shader_input("BlurTex", self.target_cache_scene.color_tex)
+        else:
+            self.target_combine.set_shader_input("BlurTex", self.blur_targets[-1].color_tex)
+            for target in self.blur_targets:
+                target.active = True
+
         self.pta_blur_scale[0] = 0.0
         self.blur_scale_velocity = 4.0
         self.target_cache_scene.active = False
-        self.blur_enabled = True
+        self.activated = True
 
-    def disable_blur(self):
+    def disable(self):
         # XXX: Because all targets are disabled instantly, the blur does not fade
         # out. Need to first fade out, then disable targets
         self.target_combine.set_shader_input("useBlur", False)
@@ -97,7 +102,7 @@ class MenuBlurStage(RenderStage):
         self.pta_blur_scale[0] = 1.0
         self.blur_scale_velocity = -1.5
         self.target_cache_scene.active = True
-        self.blur_enabled = False
+        self.activated = False
 
     def set_dimensions(self):
         self.stale_size = True
@@ -108,7 +113,7 @@ class MenuBlurStage(RenderStage):
         # self.blur_scale_velocity *= max(0.0, 1.0 - Globals.clock.get_dt())
         self.blur_scale_velocity *= 0.94
 
-        if self.stale_size and not self.blur_enabled:
+        if self.stale_size and not self.activated:
             # During the blur, the window was resized, but to preserve the scene
             # data, we only resize or cache target *after* the blur is no longer
             # visible
