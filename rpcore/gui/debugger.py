@@ -39,7 +39,6 @@ from direct.interval.IntervalGlobal import Sequence
 
 from rpcore.gui.sprite import Sprite
 from rpcore.gui.buffer_viewer import BufferViewer
-from rpcore.gui.pipe_viewer import PipeViewer
 from rpcore.gui.render_mode_selector import RenderModeSelector
 
 from rpcore.gui.text_node import TextNode
@@ -112,7 +111,6 @@ class Debugger(RPObject):
         self.fps_node.set_pos(Vec3(21, 1, -140))
         self.fps_widget = FPSChart(self.pipeline, self.fps_node)
 
-        self.pipe_viewer = PipeViewer(self.pipeline, self.window_node)
         self.rm_selector = RenderModeSelector(self.pipeline, self.window_node)
         self.buffer_viewer = BufferViewer(self.pipeline, self.window_node)
         self.error_msg_handler = ErrorMessageDisplay()
@@ -222,13 +220,11 @@ class Debugger(RPObject):
             text.set_pixel_size(7 * max(1, self.gui_scale) * Globals.base.get_aspect_ratio())
 
         self.buffer_viewer.center_on_screen()
-        self.pipe_viewer.center_on_screen()
         self.rm_selector.center_on_screen()
 
     def init_keybindings(self):
         """ Inits the debugger keybindings """
         Globals.base.accept("v", partial(self._show_then_execute, self.buffer_viewer.toggle))
-        Globals.base.accept("c", partial(self._show_then_execute, self.pipe_viewer.toggle))
         Globals.base.accept("z", partial(self._show_then_execute, self.rm_selector.toggle))
         Globals.base.accept("f5", self.toggle_gui_visible)
         Globals.base.accept("f6", partial(self._show_then_execute, self.toggle_keybindings_visible))
@@ -237,6 +233,8 @@ class Debugger(RPObject):
         Globals.base.accept("p", self.start_plugin_editor)
         Globals.base.accept("t", self.start_daytime_editor)
         Globals.base.accept("k", self.export_scene)
+        Globals.base.accept("8", self.pipeline.enter_menu)
+        Globals.base.accept("9", self.pipeline.exit_menu)
 
         if self.reference_mode:
             Globals.base.accept("f7", self._toggle_display_mode)

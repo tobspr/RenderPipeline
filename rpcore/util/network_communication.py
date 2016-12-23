@@ -44,9 +44,9 @@ class NetworkCommunication(RPObject):
     UPDATE_THREAD = None
 
     @classmethod
-    def send_async(cls, port, message):
+    def send_async(cls, port, message, resend=True):
         """ Starts a new thread which sends a given message to a port """
-        cls.__send_message_async(port, message)
+        cls.__send_message_async(port, message, resend)
 
     @classmethod
     def listen_threaded(cls, port, callback):
@@ -58,10 +58,11 @@ class NetworkCommunication(RPObject):
         return thread
 
     @classmethod
-    def __send_message_async(cls, port, message=""):
+    def __send_message_async(cls, port, message="", resend=True):
         """ Sends a given message to a given port and immediately returns. """
-        cls.__init_update_thread()
-        cls.NEXT_UPDATE = (time.time(), port, message)
+        if resend:
+            cls.__init_update_thread()
+            cls.NEXT_UPDATE = (time.time(), port, message)
         cls.__internal_send_message(port, message)
 
     @classmethod

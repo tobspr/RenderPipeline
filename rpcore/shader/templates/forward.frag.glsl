@@ -191,7 +191,7 @@ void main() {
 
         float alpha = m_out.shading_model_param0;
 
-        vec3 reflected = get_forward_specular_abient(m_out, view_dir) * M_PI;
+        vec3 reflected = get_forward_specular_abient(m_out, view_dir);
         vec3 lights = get_forward_lights(m_out, view_dir) / M_PI;
 
         // color = reflected * m.basecolor; // XXX

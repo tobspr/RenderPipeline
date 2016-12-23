@@ -30,7 +30,6 @@ from rplibs.yaml import load_yaml_file
 from direct.stdpy.file import open
 
 from rpcore.rpobject import RPObject
-from rpcore.gui.pipe_viewer import PipeViewer
 from rpcore.image import Image
 from rpcore.util.shader_input_blocks import SimpleInputBlock, GroupedInputBlock
 from rpcore.stages.update_previous_pipes_stage import UpdatePreviousPipesStage
@@ -55,9 +54,6 @@ class StageManager(RPObject):
         self.created = False
 
         self._load_stage_order()
-
-        # Register the manager so the pipe viewer can read our data
-        PipeViewer.register_stage_mgr(self)
 
     def _load_stage_order(self):
         """ Loads the order of all stages from the stages.yaml configuration
@@ -268,6 +264,16 @@ class StageManager(RPObject):
         resize event to all registered stages """
         for stage in self.stages:
             stage.handle_window_resize()
+
+    def pause_rendering(self):
+        """ Pauses all stages """
+        for stage in self.stages:
+            stage.on_menu_entered()
+
+    def resume_rendering(self):
+        """ Reenables all stages """
+        for stage in self.stages:
+            stage.on_menu_exit()
 
     @property
     def autoconfig_path(self):

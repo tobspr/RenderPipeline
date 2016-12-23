@@ -38,13 +38,15 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
     """ Utility class to generate shaders on the fly to display texture previews
     and also buffers """
 
+    SHADER_CACHE = {}
+
     @classmethod
     def build(cls, texture, view_width, view_height):
         """ Builds a shader to display <texture> in a view port with the size
         <view_width> * <view_height> """
         view_width, view_height = int(view_width), int(view_height)
 
-        cache_key = "/$$rptemp/$$TEXDISPLAY-X{}-Y{}-Z{}-TT{}-CT{}-VW{}-VH{}.frag.glsl".format(
+        fragment_path = "/$$rptemp/$$TEXDISPLAY-X{}-Y{}-Z{}-TT{}-CT{}-VW{}-VH{}.frag.glsl".format(
             texture.get_x_size(),
             texture.get_y_size(),
             texture.get_z_size(),
@@ -53,14 +55,16 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
             view_width,
             view_height)
 
-        # Only regenerate the file when there is no cache entry for it
-        if not isfile(cache_key) or True:
-            fragment_shader = cls._build_fragment_shader(texture, view_width, view_height)
+        if fragment_path in cls.SHADER_CACHE:
+            return cls.SHADER_CACHE[fragment_path]
 
-            with open(cache_key, "w") as handle:
-                handle.write(fragment_shader)
+        fragment_shader = cls._build_fragment_shader(texture, view_width, view_height)
+        with open(fragment_path, "w") as handle:
+            handle.write(fragment_shader)
 
-        return RPLoader.load_shader("/$$rp/shader/default_gui_shader.vert.glsl", cache_key)
+        shader = RPLoader.load_shader("/$$rp/shader/default_gui_shader.vert.glsl", fragment_path)
+        cls.SHADER_CACHE[fragment_path] = shader
+        return shader
 
     @classmethod
     def _build_fragment_shader(cls, texture, view_width, view_height):

@@ -33,6 +33,7 @@ class FinalStage(RenderStage):
     screen """
 
     required_pipes = ["ShadedScene"]
+    enable_during_menu = True
 
     def create(self):
         self.present_target = self.create_target("FinalPresentStage")

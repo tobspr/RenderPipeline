@@ -36,15 +36,14 @@ uniform int index;
 uniform float maxMs;
 uniform ivec2 widgetSize;
 
-bool line_y(int y, int a, int b) {
+bool line_y(int y, int a, int b, float h) {
     int start = min(a, b);
     int end = max(a, b);
-    return y > start && y <= end;
+    return y > start && (y - h) <= end;
 }
 
 void main() {
 
-    const ivec2 widgetSize = ivec2(250, 120);
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 
     // Store the current pixels color
@@ -60,21 +59,23 @@ void main() {
     vec4 prev_ms_value = texelFetch(
         FPSValues, (buffer_offset - 1 + widgetSize.x) % widgetSize.x);
 
-    ivec4 ms_pixel = clamp(ivec4(ms_value / maxMs * widgetSize.y), ivec4(1), ivec4(widgetSize.y));
-    ivec4 prev_ms_pixel = clamp(ivec4(prev_ms_value / maxMs * widgetSize.y), ivec4(1), ivec4(widgetSize.y));
+    int max_height = widgetSize.y - 3;
+
+    ivec4 ms_pixel = clamp(ivec4(ms_value / maxMs * widgetSize.y), ivec4(1), ivec4(max_height));
+    ivec4 prev_ms_pixel = clamp(ivec4(prev_ms_value / maxMs * widgetSize.y), ivec4(1), ivec4(max_height));
 
     // Actual frame time
-    if (line_y(coord.y,  ms_pixel.x, prev_ms_pixel.x)) {
+    if (line_y(coord.y,  ms_pixel.x, prev_ms_pixel.x, 1)) {
         color = vec4(0, 1, 0, 1);
     }
 
     // Average frame time
-    if (line_y(coord.y,  ms_pixel.y, prev_ms_pixel.y)) {
+    if (line_y(coord.y,  ms_pixel.y, prev_ms_pixel.y, 2)) {
         color = vec4(0, 0, 1, 1);
     }
 
     // Maximum frame time (to detect spikes)
-    if (line_y(coord.y,  ms_pixel.z, prev_ms_pixel.z)) {
+    if (line_y(coord.y,  ms_pixel.z, prev_ms_pixel.z, 2)) {
         color = vec4(1, 0, 0, 1);
     }
 

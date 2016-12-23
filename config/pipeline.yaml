@@ -71,7 +71,7 @@ lighting:
     # and tube lights, and makes them about twice as expensive as the regular
     # lighting model. However, with this enabled, the lighting is much closer to
     # the ground truth.
-    high_quality_lighting: True
+    high_quality_lighting: False
 
 shadows:
 

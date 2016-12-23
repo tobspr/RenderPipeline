@@ -39,6 +39,7 @@
 
 
 
+
 // Closest point on spherical area light
 vec3 get_spherical_area_light_vector(vec3 n, vec3 l_unscaled, vec3 v, float sphere_radius) {
     vec3 r = reflect(-v, n);

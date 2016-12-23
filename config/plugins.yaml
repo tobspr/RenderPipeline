@@ -4,9 +4,9 @@
 # Any formatting and comments will be lost
 
 enabled:
-    - smaa
-    - temporal_aa
-    - ao
+    # - smaa
+    # - temporal_aa
+    # - ao
     # - bloom
     # - clouds
     # - color_correction

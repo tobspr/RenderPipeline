@@ -69,6 +69,7 @@ from rpcore.stages.upscale_stage import UpscaleStage
 from rpcore.stages.compute_low_precision_normals_stage import ComputeLowPrecisionNormalsStage
 from rpcore.stages.srgb_correction_stage import SRGBCorrectionStage
 from rpcore.stages.reference_stage import ReferenceStage
+from rpcore.stages.menu_blur_stage import MenuBlurStage
 
 
 __all__ = ("RenderPipeline")
@@ -89,7 +90,9 @@ class RenderPipeline(RPObject):
         self.mount_mgr = MountManager(self)
         self.settings = {}
         self._applied_effects = []
+        self._stage_instances = {}
         self._pre_showbase_initialized = False
+        self._rendering_enabled = True
         self._first_frame = None
         self.set_loading_screen_image("/$$rp/data/gui/loading_screen_bg.txo")
 
@@ -602,7 +605,8 @@ class RenderPipeline(RPObject):
         but yet are necessary and widely used. """
         builtin_stages = [
             AmbientStage, GBufferStage, FinalStage, ConvertDepthStage,
-            CombineVelocityStage, ComputeLowPrecisionNormalsStage
+            CombineVelocityStage, ComputeLowPrecisionNormalsStage,
+            MenuBlurStage
         ]
 
         # Add an upscale/downscale stage in case we render at a different resolution
@@ -617,7 +621,8 @@ class RenderPipeline(RPObject):
             builtin_stages.append(ReferenceStage)
 
         for stage in builtin_stages:
-            self.stage_mgr.add_stage(stage(self))
+            self._stage_instances[stage] = stage(self)
+            self.stage_mgr.add_stage(self._stage_instances[stage])
 
     def _get_serialized_material_name(self, material, index=0):
         """ Returns a serializable material name """
@@ -681,3 +686,25 @@ class RenderPipeline(RPObject):
         the render pipeline wiki or the LightGeometry class for more information. """
         return LightGeometry.make(light)
 
+    def enter_menu(self):
+        """ Tells the render pipeline that a menu is currently open, so the render
+        pipeline can pause the rendering to achive a better menu performance.
+        Also applies a blur filter. """
+        if not self._rendering_enabled:
+            self.error("Already in menu, cannot call enter_menu again!")
+            return
+        self.debug("Entering menu")
+        self._rendering_enabled = False
+        self.stage_mgr.pause_rendering()
+        self._stage_instances[MenuBlurStage].enable_blur()
+
+    def exit_menu(self):
+        """ Tells the render pipeline that the rendering can be resumed, after
+        a call to enter_menu() was made """
+        if self._rendering_enabled:
+            self.error("Not in menu, cannot call exit_menu!")
+            return
+        self.debug("Leaving menu")
+        self.stage_mgr.resume_rendering()
+        self._stage_instances[MenuBlurStage].disable_blur()
+        self._rendering_enabled = True

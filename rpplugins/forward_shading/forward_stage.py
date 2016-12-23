@@ -100,7 +100,7 @@ class ForwardStage(RenderStage):
         max_layers = 3  # XXX: Make configurable
         pixels = Globals.resolution.x * Globals.resolution.y
         max_fragments = pixels * max_layers
-        self.debug("Max fragments = ", max_fragments)
+        self.debug("Max fragments =", max_fragments)
         self.fragment_data.resize(max_fragments)
         self.fragment_next.resize(max_fragments)
         self.fragment_depth.resize(max_fragments)

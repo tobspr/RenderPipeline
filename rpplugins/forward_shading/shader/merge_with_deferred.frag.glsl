@@ -57,14 +57,13 @@ Fragment get_fragment(uint frag_index) {
     return frag;
 }
 
-#define MAX_FRAGMENTS 5
+#define MAX_FRAGMENTS 4
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_texcoord();
 
     vec3 scene_color = textureLod(ShadedScene, texcoord, 0).xyz;
-
     uint list_head = texelFetch(ForwardLinkedListHead, coord, 0).x;
 
     if (list_head == 0) {
@@ -82,19 +81,23 @@ void main() {
 
     // Iterate over linked list, but make sure we produce no endless loop
     int max_iter = 50;
+    
+    // Also store max roughness to detect texture filtering level
+    float max_roughness = 0.0;
+
     while(num_fragments < (MAX_FRAGMENTS - 1) && ptr != 0 && max_iter --> 0) {
         Fragment frag = get_fragment(ptr);
         ptr = frag.next;
 
-        // Already checked in the forward pass
-        // if (frag.depth < pixel_depth) {
-            fragments[num_fragments] = frag; 
-            fragment_array[num_fragments] = num_fragments;
-            ++num_fragments;
-        // }
+        fragments[num_fragments] = frag; 
+        fragment_array[num_fragments] = num_fragments;
+        ++num_fragments;
+        max_roughness = max(max_roughness, frag.roughness);
     }
 
+
     // Insertion sort
+    // XXX: Use more performant solution like backwards memory allocation
     for (uint i = 1; i <= num_fragments - 1; ++i) {
         uint d = i;
         while (d > 0 && fragments[fragment_array[d]].depth > fragments[fragment_array[d - 1]].depth) {
@@ -107,22 +110,18 @@ void main() {
     }
 
     // Apply fragments
-    float roughness = fragments[fragment_array[num_fragments - 1]].roughness;
     vec3 curr_color = textureLod(BlurredShadedScene, texcoord, 0).xyz;
 
-    if (roughness < 0.01) {
+    if (max_roughness < 0.01) {
         curr_color = scene_color;
     }
 
-
     for (uint i = 0; i < num_fragments; ++i) {
         Fragment f = fragments[fragment_array[i]];
-        // curr_color += f.data;
         vec3 transmittance = vec3(1); // XXX: Allow specifying transmittance
         curr_color = curr_color * transmittance * (1 - f.color.w) + f.color.xyz;
     }
 
-    
     result = curr_color;
 
 }

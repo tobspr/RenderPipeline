@@ -50,6 +50,7 @@ class RenderStage(RPObject):
     produced_defines = {}
 
     disabled = False
+    enable_during_menu = False
 
     def __init__(self, pipeline):
         """ Creates a new render stage """
@@ -93,6 +94,25 @@ class RenderStage(RPObject):
             self._active = state
             for target in itervalues(self._targets):
                 target.active = self._active
+
+    def on_menu_entered(self):
+        """ Gets called when the menu is entered, and disables all stages """
+        if self.enable_during_menu:
+            return
+        self._target_states = {}
+        # Save all target states, so we can recover it on menu exit
+        for name, target in iteritems(self._targets):
+            self._target_states[name] = target.active
+            target.active = False
+
+    def on_menu_exit(self):
+        """ Gets called when the menu is closed, and restores all stages """
+        if self.enable_during_menu:
+            return
+        assert hasattr(self, "_target_states")
+        for name, target in iteritems(self._targets):
+            target.active = self._target_states.get(name, True)
+        self._target_states = {}
 
     def create_target(self, name):  # type: (str) -> RenderTarget
         """ Creates a new render target and binds it to this stage """

@@ -31,29 +31,23 @@
 #pragma include "render_pipeline_base.inc.glsl"
 #pragma include "includes/gaussian_weights.inc.glsl"
 
-uniform sampler2D ShadedScene;
+uniform sampler2D SourceTex;
 uniform ivec2 direction;
-
+uniform float blurScale;
 out vec3 result;
 
-#define BLUR_SEQUENCE opt_gaussian_weights_25
-
-vec3 clamp_color(vec3 color) {
-    return clamp(color, vec3(0), vec3(1000));
-}
+#define BLUR_SEQUENCE opt_gaussian_weights_15
 
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     vec2 texcoord = get_texcoord();
-
-    vec2 pixel_offset = 1.0 / SCREEN_SIZE;
+    vec2 pixel_offset = blurScale / SCREEN_SIZE;
 
     vec3 accum = vec3(0);
     for (int i = 0; i < BLUR_SEQUENCE.length(); ++i) {
         vec2 weight_and_offset = BLUR_SEQUENCE [i];
         vec2 offcoord = texcoord + weight_and_offset.y * direction * pixel_offset;
-        accum += clamp_color(textureLod(ShadedScene, offcoord, 0).xyz) * weight_and_offset.x;
+        accum += textureLod(SourceTex, offcoord, 0).xyz * weight_and_offset.x;
     }
-
     result = accum;
 }

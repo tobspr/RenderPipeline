@@ -212,7 +212,7 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
                 os.remove(temp_path)
             except:
                 pass
-        NetworkCommunication.send_async(NetworkCommunication.MATERIAL_PORT, "dump_materials " + temp_path)
+        NetworkCommunication.send_async(NetworkCommunication.MATERIAL_PORT, "dump_materials " + temp_path, resend=False)
         start_time = time.time()
         while not os.path.isfile(temp_path) and time.time() - start_time < 5.0:
             time.sleep(0.5)

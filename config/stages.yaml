@@ -73,6 +73,7 @@ global_stage_order:
 
   # Finishing stages, do not insert anything below
   - ReferenceStage
+  - MenuBlurStage
   - UpscaleStage
   - FinalStage
   - UpdatePreviousPipesStage

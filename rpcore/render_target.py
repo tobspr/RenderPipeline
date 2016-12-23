@@ -141,6 +141,7 @@ class RenderTarget(RPObject):
 
         self._size_constraint = LVecBase2i(
             percent_to_number(params[0]), percent_to_number(params[1]))
+        self.consider_resize()
 
     @property
     def active(self):
@@ -153,6 +154,7 @@ class RenderTarget(RPObject):
         flag to all display regions """
         for region in self._internal_buffer.get_display_regions():
             region.set_active(flag)
+        self._active = flag
 
     @property
     def color_tex(self):
@@ -413,6 +415,8 @@ class RenderTarget(RPObject):
         """ Checks if the target has to get resized, and if this is the case,
         performs the resize. This should be called when the window resolution
         changed. """
+        if not self._internal_buffer:
+            return
         current_size = LVecBase2i(self._size)
         self._compute_size_from_constraint()
         if current_size != self._size:
