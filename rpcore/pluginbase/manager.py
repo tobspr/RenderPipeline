@@ -33,7 +33,6 @@ from rplibs.yaml import load_yaml_file
 from direct.stdpy.file import listdir, isdir, join, open
 
 from rpcore.rpobject import RPObject
-from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.pluginbase.setting_types import make_setting_from_data
 from rpcore.pluginbase.day_setting_types import make_daysetting_from_data
 
@@ -200,10 +199,6 @@ class PluginManager(RPObject):
         module = importlib.import_module(plugin_class)
         instance = module.Plugin(self._pipeline)
         if not self.load_anyways:
-            if instance.native_only and not NATIVE_CXX_LOADED:
-                if plugin_id in self.enabled_plugins:
-                    self.warn("Cannot load", plugin_id, "since it requires the C++ modules.")
-                    return False
             for required_plugin in instance.required_plugins:
                 if required_plugin not in self.enabled_plugins:
                     if plugin_id in self.enabled_plugins:

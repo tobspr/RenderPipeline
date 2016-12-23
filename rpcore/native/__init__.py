@@ -24,72 +24,30 @@ THE SOFTWARE.
 
 """
 
+# This file includes all modules from the native module.
 # pylint: disable=invalid-name
 
-# This file includes all modules from the native module.
-
-from __future__ import print_function
-import sys
-from os.path import dirname, realpath
-
-from direct.stdpy.file import join, isfile
 from rpcore.rpobject import RPObject
-
-# Store a global flag, indicating whether the C++ modules were loaded or the python
-# implemetation of them
-NATIVE_CXX_LOADED = False
-
-# Read the configuration from the flag-file
-current_path = dirname(realpath(__file__))
-cxx_flag_path = join(current_path, "use_cxx.flag")
-if not isfile(cxx_flag_path):
-    RPObject.global_error("CORE", "Could not find cxx flag, please run the setup.py!")
-    sys.exit(1)
-else:
-    with open(join(current_path, "use_cxx.flag"), "r") as handle:
-        NATIVE_CXX_LOADED = handle.read().strip() == "1"
 
 # The native module should only be imported once, and that by the internal pipeline code
 # The proper way is: from rpcore import ABC
-assert __package__ == "rpcore.native", "You have included the pipeline in the wrong way!"
+assert __package__ == "rpcore.native", "Bad pipeline import! Use from rpcore import X"
 
-# Classes which should get imported
-classes_to_import = [
-    "GPUCommand",
-    "GPUCommandList",
-    "ShadowManager",
-    "InternalLightManager",
-    "PSSMCameraRig",
-    "IESDataset",
-    "TagStateManager",
-]
 
-# Classes which should get imported and renamed
-classes_to_import_and_rename = {
-    "RPSphereLight": "SphereLight",
-    "RPSpotLight": "SpotLight",
-    "RPRectangleLight": "RectangleLight",
-    "RPTubeLight": "TubeLight"
-}
+from .rpnative import (
+    GPUCommand,
+    GPUCommandList,
+    ShadowManager,
+    InternalLightManager,
+    PSSMCameraRig,
+    IESDataset,
+    TagStateManager
+)
 
-native_module = None
+# Import light classes under a different name
+from .rpnative import RPSphereLight as SphereLight
+from .rpnative import RPSpotLight as SpotLight
+from .rpnative import RPRectangleLight as RectangleLight
+from .rpnative import RPTubeLight as TubeLight
 
-# If the module was built, use it, otherwise use the python wrappers
-if NATIVE_CXX_LOADED:
-    RPObject.global_debug("CORE", "Loading native core module")
-    from rpcore.native import native_ as _native_module  # pylint: disable=wrong-import-position
-    RPObject.global_debug("CORE", "Sucessfully imported", len(dir(_native_module)), "symbols")
-else:
-    from rpcore import pynative as _native_module  # pylint: disable=wrong-import-position
-    RPObject.global_debug("CORE", "Using simulated python-wrapper module")
-
-# Import all classes
-for v in classes_to_import + list(classes_to_import_and_rename.keys()):
-    if hasattr(_native_module, v):
-        name = classes_to_import_and_rename.get(v, v)
-        globals()[name] = getattr(_native_module, v)
-    else:
-        print("ERROR: could not import class", v, "from", _native_module.__name__)
-
-# Don't export all variables, only the required ones
-__all__ = classes_to_import + list(classes_to_import_and_rename.values()) + ["NATIVE_CXX_LOADED"]
+RPObject.global_debug("RPCORE", "RenderPipeline core modules loaded")

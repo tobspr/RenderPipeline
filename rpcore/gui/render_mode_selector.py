@@ -31,7 +31,6 @@ from panda3d.core import Vec3
 
 from rplibs.yaml import load_yaml_file
 
-from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.gui.draggable_window import DraggableWindow
 from rpcore.gui.labeled_checkbox import LabeledCheckbox
 from rpcore.gui.checkbox_collection import CheckboxCollection
@@ -67,27 +66,20 @@ class RenderModeSelector(DraggableWindow):
         debugger_content.set_z(-20)
         debugger_content.set_x(20)
 
-        render_modes = [("Default", "", False, "", False, False)]
-
-        # Read modes from configuration
-        for mode in config["render_modes"]:
-            data = [mode["name"], mode["key"]]
-            data.append(mode.get("cxx_only", False))
-            data.append(mode.get("requires", ""))
-            data.append(mode.get("special", False))
-            data.append(mode.get("reference_only", False))
-            render_modes.append(data)
-
         collection = CheckboxCollection()
-
         max_column_height = 9
 
-        for idx, (mode, mode_id, requires_cxx, requires_plugin, special, reference_only) in enumerate(render_modes):
+        # Read modes from configuration
+        for idx, mode in enumerate(config["render_modes"]):
+            requires_plugin = mode.get("requires", "")
+            reference_only = mode.get("reference_only", False)
+            special = mode.get("special", False)
+            mode_id = mode.get("key")
+            mode_name = mode.get("name", "<Unnamed>")
+
             offs_y = (idx % max_column_height) * 24 + 35
             offs_x = (idx // max_column_height) * 220
             enabled = True
-            if requires_cxx and not NATIVE_CXX_LOADED:
-                enabled = False
 
             if requires_plugin:
                 if not self._pipeline.plugin_mgr.is_plugin_enabled(requires_plugin):
@@ -97,7 +89,7 @@ class RenderModeSelector(DraggableWindow):
                 enabled = False
 
             box = LabeledCheckbox(
-                parent=debugger_content, x=offs_x, y=offs_y, text=mode.upper(),
+                parent=debugger_content, x=offs_x, y=offs_y, text=mode_name.upper(),
                 text_color=Vec3(0.4), radio=True, chb_checked=(mode_id == self._selected_mode),
                 chb_callback=partial(self._set_render_mode, mode_id, special),
                 text_size=14, expand_width=230, enabled=enabled)

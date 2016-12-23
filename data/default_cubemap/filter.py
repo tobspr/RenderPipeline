@@ -135,7 +135,7 @@ class Application(ShowBase):
 
             size = size // 2
 
-        widgets = ['Filtering: ', Bar(), Percentage(), '   ', ETA()]
+        widgets = ['\tFiltering: ', Bar(), Percentage(), '   ', ETA()]
         progressbar = ProgressBar(widgets=widgets, maxval=len(workload) - 1).start()
         for i, (wg_size, attr) in enumerate(workload):
             self.graphicsEngine.dispatch_compute(wg_size, attr, self.win.gsg)

@@ -10,6 +10,7 @@
 # new plugins or adding new features.
 
 render_modes:
+  - { name: "Default" }
   - { name: "Shading Model", key: "SHADING_MODEL" }
   - { name: "Base Color", key: "DIFFUSE" }
   - { name: "Roughness", key: "ROUGHNESS" }
@@ -17,7 +18,7 @@ render_modes:
   - { name: "Normal", key: "NORMAL" }
   - { name: "Metallic", key: "METALLIC" }
   - { name: "Translucency", key: "TRANSLUCENCY" }
-  - { name: "PSSM Splits",  key: "PSSM_SPLITS", requires: "pssm", cxx_only: true }
+  - { name: "PSSM Splits",  key: "PSSM_SPLITS", requires: "pssm" }
   - { name: "Ambient Occlusion", key: "OCCLUSION", requires: "ao" }
   - { name: "Small Scale AO", key: "SC_OCCLUSION", requires: "ao" }
   - { name: "Combined AO", key: "CMB_OCCLUSION", requires: "ao" }

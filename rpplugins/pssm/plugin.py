@@ -30,7 +30,7 @@ from panda3d.core import PTAVecBase3f
 
 from rpcore.globals import Globals
 from rpcore.pluginbase.base_plugin import BasePlugin
-from rpcore.native import PSSMCameraRig, NATIVE_CXX_LOADED
+from rpcore.native import PSSMCameraRig
 
 from .pssm_stage import PSSMStage
 from .pssm_shadow_stage import PSSMShadowStage
@@ -48,11 +48,6 @@ class Plugin(BasePlugin):
     required_plugins = ("scattering",)
 
     def on_stage_setup(self):
-
-        if not NATIVE_CXX_LOADED:
-            self.debug("Setting max splits to 1 since python is used")
-            self._pipeline.plugin_mgr.settings["pssm"]["split_count"].set_value(1)
-
         self.update_enabled = True
         self.pta_sun_vector = PTAVecBase3f.empty_array(1)
         self.last_cache_reset = 0

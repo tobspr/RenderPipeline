@@ -50,7 +50,6 @@ from rpcore.gui.pixel_inspector import PixelInspector
 from rpcore.globals import Globals
 from rpcore.rpobject import RPObject
 
-from rpcore.native import NATIVE_CXX_LOADED
 from rpcore.render_target import RenderTarget
 from rpcore.image import Image
 
@@ -150,18 +149,7 @@ class Debugger(RPObject):
         self.set_reload_hint_visible(False)
 
         self.python_warning = None
-        if not NATIVE_CXX_LOADED:
-            # Warning when using the python version
-            self.python_warning = Sprite(
-                image="/$$rp/data/gui/python_warning.png",
-                parent=self.fullscreen_node)
-            Sequence(
-                self.python_warning.color_scale_interval(
-                    0.7, Vec4(0.3, 1, 1, 0.7), blendType="easeOut"),
-                self.python_warning.color_scale_interval(
-                    0.7, Vec4(1, 1, 1, 1.0), blendType="easeOut"),
-            ).loop()
-
+        
         # Keybinding hints
         self.keybinding_instructions = Sprite(
             image="/$$rp/data/gui/keybindings.png",

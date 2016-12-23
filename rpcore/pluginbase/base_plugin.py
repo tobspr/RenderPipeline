@@ -35,10 +35,6 @@ class BasePlugin(RPObject):
     this class. Additionally there are a lot of helpful functions provided,
     such as creating render stages. """
 
-    # Plugins can set this to indicate they have some C++ code, so they cannot
-    # be used with the python version.
-    native_only = False
-
     # Plugins can set this to require other plugins
     required_plugins = tuple()
 

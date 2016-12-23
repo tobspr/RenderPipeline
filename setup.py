@@ -197,7 +197,7 @@ def check_cmake():
 
 def check_panda_version():
     """ Checks whether the Panda3D version used is up to date. This is important
-    when using the C++ modules """
+    for the C++ modules """
 
     from panda3d.core import Texture
 
@@ -239,28 +239,16 @@ def setup():
 
 
     if not CMD_ARGS.skip_native:
-        query = ("The C++ modules of the pipeline are faster and produce better \n"
-                 "results, but we will have to compile them. As alternative, \n"
-                 "a Python fallback is used, which is slower and produces worse \n"
-                 "results. Also some plugins only partially work with the python \n"
-                 "fallback (e.g. PSSM). Do you want to compile the C++ modules? (y/n):")
+        check_cmake()
 
-        # Dont install the c++ modules when using travis
-        if CMD_ARGS.ci_build or get_user_choice(query):
-            check_cmake()
-            write_flag("rpcore/native/use_cxx.flag", True)
+        if not CMD_ARGS.skip_update:
+            print_step("Downloading the module builder ...")
+            exec_python_file("rpcore/native/update_module_builder.py",
+                troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#downloading-module-builder")
 
-            if not CMD_ARGS.skip_update:
-                print_step("Downloading the module builder ...")
-                exec_python_file("rpcore/native/update_module_builder.py",
-                    troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#downloading-module-builder")
-
-            print_step("Building the native code .. (This might take a while!)")
-            exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [],
-                troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#building-the-native-code")
-
-        else:
-            write_flag("rpcore/native/use_cxx.flag", False)
+        print_step("Building the native code .. (This might take a while!)")
+        exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [],
+            troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#building-the-native-code")
 
     print_step("Generating .txo files ...")
     exec_python_file("data/generate_txo_files.py",
