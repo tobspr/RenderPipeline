@@ -133,4 +133,4 @@ class PSSMDistShadowStage(RenderStage):
         self.target_blur_h.shader = self.load_plugin_shader("blur_esm.frag.glsl")
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)

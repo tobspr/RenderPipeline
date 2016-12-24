@@ -77,7 +77,7 @@ class IESProfileLoader(RPObject):
 
     def _create_storage(self):
         """ Internal method to create the storage for the profile dataset textures """
-        self._storage_tex = Image.create_3d("IESDatasets", 512, 512, self._max_entries, "R16")
+        self._storage_tex = Image.create_3d("IESDatasets", 512, 512, self._max_entries, "R8")
         self._storage_tex.set_minfilter(SamplerState.FT_linear)
         self._storage_tex.set_magfilter(SamplerState.FT_linear)
         self._storage_tex.set_wrap_u(SamplerState.WM_clamp)

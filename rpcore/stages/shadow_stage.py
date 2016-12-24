@@ -75,4 +75,4 @@ class ShadowStage(RenderStage):
         self.target.region.set_clear_depth_active(False)
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)

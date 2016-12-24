@@ -114,10 +114,9 @@ class MenuBlurStage(RenderStage):
         self.blur_scale_velocity *= 0.94
 
         if self.stale_size and not self.activated:
-            # During the blur, the window was resized, but to preserve the scene
-            # data, we only resize or cache target *after* the blur is no longer
+            # During the blur the window was resized, but to preserve the scene
+            # data we only resize or cache target *after* the blur is no longer
             # visible
-            self.debug("Resize blur target to", Globals.resolution)
             self.target_cache_scene.size = Globals.resolution.x, Globals.resolution.y
             self.stale_size = False
 

@@ -115,4 +115,4 @@ class PSSMSceneShadowStage(RenderStage):
         self._pipeline.tag_mgr.register_camera("shadow", self.camera)
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)

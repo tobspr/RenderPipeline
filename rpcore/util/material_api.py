@@ -89,9 +89,10 @@ class MaterialAPI(RPObject):
         return material
 
     @classmethod
-    def make_transparent(cls, name="GeneratedMaterial", roughness=0.3, alpha=0.3):
-        material = cls.make_regular(roughness=roughness)
-        material.set_emission(Vec4(cls.SM_TRANSPARENT_GLASS, 0, alpha, 0))
+    def make_transparent(cls, name="GeneratedMaterial", roughness=0.3, transparency=0.3):
+        """ Makes a new transparent material with the given parameters. """
+        material = cls.make_regular(name=name, roughness=roughness)
+        material.set_emission(Vec4(cls.SM_TRANSPARENT_GLASS, 0, transparency, 0))
         return material
 
     @classmethod

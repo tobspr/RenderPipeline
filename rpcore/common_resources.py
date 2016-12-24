@@ -85,7 +85,7 @@ class CommonResources(RPObject):
         update = self._input_ubo.update_input
 
         # Get the current transform matrix of the camera
-        view_mat = Globals.render.get_transform(self._showbase.cam).get_mat()
+        view_mat = Globals.base.render.get_transform(self._showbase.cam).get_mat()
 
         # Compute the view matrix, but with a z-up coordinate system
         zup_conversion = Mat4.convert_mat(CS_zup_right, CS_yup_right)
@@ -98,7 +98,7 @@ class CommonResources(RPObject):
         view_mat_billboard.set_row(2, Vec3(0, 0, 1))
         update("view_mat_billboard", view_mat_billboard)
 
-        update("camera_pos", self._showbase.camera.get_pos(Globals.render))
+        update("camera_pos", self._showbase.camera.get_pos(Globals.base.render))
 
         # Compute last view projection mat
         last_vp = self._input_ubo.get_input("view_proj_mat_no_jitter")

@@ -111,6 +111,15 @@ class SceneConverter(RPObject):
         self.result.lights[light.get_name()] = rp_light
         light.remove_node()
 
+    def _assign_ies_profile(self, rp_light, panda_light):
+        """ Checks if the panda light has an ies profile assigned (stored as
+        Tags by the bam exporter), and if so loads and assigns it """
+        if panda_light.has_tag("ies_profile"):
+            profile_src = panda_light.get_tag("ies_profile")
+            profile = self.pipeline.load_ies_profile(profile_src)
+            rp_light.ies_profile = profile
+        
+
     def _convert_sphere_lights(self):
         """ Finds and converts all sphere lights """
         for light in self.scene.find_all_matches("**/+SphereLight"):
@@ -123,6 +132,7 @@ class SceneConverter(RPObject):
             rp_light.casts_shadows = light_node.shadow_caster
             rp_light.shadow_map_resolution = light_node.shadow_buffer_size.x
             rp_light.sphere_radius = light_node.radius
+            self._assign_ies_profile(rp_light, light)
             self._register_light(light, rp_light)
 
     def _convert_spot_lights(self):
@@ -139,6 +149,7 @@ class SceneConverter(RPObject):
             rp_light.fov = light_node.exponent / math.pi * 180.0
             direction = light.get_mat(Globals.base.render).xform_vec((0, 0, -1))
             rp_light.direction = direction
+            self._assign_ies_profile(rp_light, light)
             self._register_light(light, rp_light)
 
     def _convert_rectangle_lights(self):

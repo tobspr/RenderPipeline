@@ -359,7 +359,7 @@ class RenderPipeline(RPObject):
         just calls set_effect with the default effect and options as parameters.
         This uses a very low sort, to make sure that overriding the default
         effect does not require a custom sort parameter to be passed. """
-        self.set_effect(Globals.render, "effects/default.yaml", {}, -10)
+        self.set_effect(Globals.base.render, "effects/default.yaml", {}, -10)
 
     def _adjust_camera_settings(self):
         """ Sets the default camera settings, this includes the cameras
@@ -579,7 +579,7 @@ class RenderPipeline(RPObject):
         parented to render as well. """
         skybox = self.common_resources.load_default_skybox()
         skybox.set_scale(size)
-        skybox.reparent_to(Globals.render)
+        skybox.reparent_to(Globals.base.render)
         skybox.set_bin("unsorted", 10000)
         skybox.set_name("skybox")
         self.set_effect(skybox, "effects/skybox.yaml", {
@@ -633,7 +633,7 @@ class RenderPipeline(RPObject):
         serialized format to the given path """
 
         with open(pth, "w") as handle:
-            for i, material in enumerate(Globals.render.find_all_materials()):
+            for i, material in enumerate(Globals.base.render.find_all_materials()):
                 if not material.has_base_color() or not material.has_roughness() or not material.has_refractive_index():
                     self.warn("Skipping non-pbr material '" + material.name + "'")
                     continue
@@ -651,7 +651,7 @@ class RenderPipeline(RPObject):
     def update_serialized_material(self, data):
         """ Internal method to update a material from a given serialized material """
         name = data[0]
-        for i, material in enumerate(Globals.render.find_all_materials()):
+        for i, material in enumerate(Globals.base.render.find_all_materials()):
             if self._get_serialized_material_name(material, i) == name:
                 material.set_base_color(Vec4(float(data[1]), float(data[2]), float(data[3]), 1.0))
                 material.set_roughness(float(data[4]))
@@ -686,7 +686,7 @@ class RenderPipeline(RPObject):
         the render pipeline wiki or the LightGeometry class for more information. """
         return LightGeometry.make(light)
 
-    def pause_rendering(self, enable_blur=False):
+    def pause_rendering(self, enable_blur=True):
         """ Tells the render pipeline that the rendering can pause, to achive a
         better menu performance for example. Also applies a blur filter if
         enable_blur is True."""

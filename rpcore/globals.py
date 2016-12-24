@@ -26,9 +26,10 @@ THE SOFTWARE.
 
 __all__ = ("Globals",)
 
-from panda3d.core import NodePath, ClockObject, LVecBase2i, DynamicTextFont  # pylint: disable=unused-import
+from panda3d.core import ( # pylint: disable=unused-import
+    NodePath, ClockObject, LVecBase2i, DynamicTextFont
+)
 from direct.showbase.ShowBase import ShowBase  # pylint: disable=unused-import
-
 
 class Globals(object):  # pylint: disable=too-few-public-methods
 
@@ -40,18 +41,16 @@ class Globals(object):  # pylint: disable=too-few-public-methods
     __init__ = None
 
     base = None  # type: ShowBase
-    render = None  # type: NodePath
     clock = None  # type: ClockObject
     font = None  # type: DynamicTextFont
     resolution = None  # type: LVecBase2i
     native_resolution = None  # type: LVecBase2i
 
-    @staticmethod
-    def load(showbase):
+    @classmethod
+    def load(cls, showbase):
         """ Loads the globals from a given showbase """
-        Globals.base = showbase
-        Globals.render = showbase.render
-        Globals.clock = showbase.taskMgr.globalClock
-        Globals.font = None
-        Globals.resolution = None
-        Globals.native_resolution = None
+        cls.base = showbase
+        cls.clock = showbase.taskMgr.globalClock
+        cls.font = None
+        cls.resolution = None
+        cls.native_resolution = None

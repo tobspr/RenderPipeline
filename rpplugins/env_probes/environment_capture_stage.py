@@ -48,7 +48,7 @@ class EnvironmentCaptureStage(RenderStage):
         self.diffuse_resolution = 4
         self.regions = []
         self.cameras = []
-        self.rig_node = Globals.render.attach_new_node("EnvmapCamRig")
+        self.rig_node = Globals.base.render.attach_new_node("EnvmapCamRig")
         self.pta_index = PTAInt.empty_array(1)
         self.storage_tex = None
         self.storage_tex_diffuse = None
@@ -173,7 +173,7 @@ class EnvironmentCaptureStage(RenderStage):
                 target.active = True
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)
 
     def reload_shaders(self):
         self.target_store.shader = self.load_plugin_shader(

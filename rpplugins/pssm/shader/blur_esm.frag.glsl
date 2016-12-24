@@ -49,8 +49,8 @@ void main() {
     const int num_steps = 2;
 
     for (int i = 0; i < num_steps; ++i) {
-            vec2 offcoord = texcoord + vec2(opt_gaussian_offsets_2[i]) * direction / texsize;
-            accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_2[i];
+        vec2 offcoord = texcoord + opt_gaussian_offsets_2[i] * direction / texsize;
+        accum += textureLod(SourceTex, offcoord, 0).x * opt_gaussian_weights_2[i];
     }
 
     result = accum;

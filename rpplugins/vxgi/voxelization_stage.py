@@ -194,4 +194,4 @@ class VoxelizationStage(RenderStage):
             target.shader = mip_shader
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)

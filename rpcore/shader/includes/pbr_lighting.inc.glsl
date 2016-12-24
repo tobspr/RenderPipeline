@@ -309,6 +309,11 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
     vec3 light_pos = get_light_position(light);
     float sphere_radius = get_spherelight_sphere_radius(light);
 
+    int ies_profile = get_ies_profile(light);
+
+    vec3 v2l = normalize(m.position - light_pos);
+    float ies_factor = get_ies_factor(v2l, ies_profile);
+
     #if !SPECIAL_MODE_ACTIVE(GROUND_TRUTH) && !HIGH_QUALITY_LIGHTING
         vec3 l_unscaled = light_pos - m.position;
 
@@ -342,7 +347,7 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         }
 
         vec3 accum = (diffuse + specular) * (shadow * light_clip_falloff(light, m.position));
-        accum *= get_light_color(light);
+        accum *= get_light_color(light) * ies_factor;
         return accum;
 
     #else
@@ -383,7 +388,8 @@ vec3 process_spherelight(Material m, LightData light, vec3 v, float shadow) {
         specular *= f0 * schlick.x + (1.0 - f0) * schlick.y;
         diffuse *= get_material_diffuse(m);
 
-        return (diffuse + specular) * get_light_color(light) * (light_clip_falloff(light, m.position) * shadow / TWO_PI);
+        return (diffuse + specular) * get_light_color(light) *
+               (ies_factor * light_clip_falloff(light, m.position) * shadow / TWO_PI);
 
     #endif
 }

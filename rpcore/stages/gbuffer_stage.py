@@ -61,4 +61,4 @@ class GBufferStage(RenderStage):
         self.target.prepare_render(Globals.base.cam)
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)

@@ -172,3 +172,5 @@ allow-incomplete-render #t
 
 no-singular-invert #f
 assert-abort #f
+
+want-fog #f

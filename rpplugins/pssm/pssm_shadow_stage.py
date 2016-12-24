@@ -87,4 +87,4 @@ class PSSMShadowStage(RenderStage):
             self.split_regions.append(region)
 
     def set_shader_input(self, *args):
-        Globals.render.set_shader_input(*args)
+        Globals.base.render.set_shader_input(*args)

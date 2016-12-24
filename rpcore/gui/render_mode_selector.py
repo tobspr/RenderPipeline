@@ -74,7 +74,7 @@ class RenderModeSelector(DraggableWindow):
             requires_plugin = mode.get("requires", "")
             reference_only = mode.get("reference_only", False)
             special = mode.get("special", False)
-            mode_id = mode.get("key")
+            mode_id = mode.get("key") or ""
             mode_name = mode.get("name", "<Unnamed>")
 
             offs_y = (idx % max_column_height) * 24 + 35

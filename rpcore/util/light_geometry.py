@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 """
 
+import math
+
 from panda3d.core import Vec3
 
 from direct.stdpy.file import join
@@ -51,7 +53,7 @@ class LightGeometry(RPObject):
     @classmethod
     def make(cls, light):
         """ Creates the appropriate geometry for the given light, and
-        returns it. The geometry will already be parented to Globals.render.
+        returns it. The geometry will already be parented to Globals.base.render.
         Notice that the geometry does not react to changes to the light.
         If you want it to change dynamically, remove the node whenever the
         light changes, and call this method again """
@@ -128,8 +130,15 @@ class LightGeometry(RPObject):
     @classmethod
     def _make_spot_light(cls, light):  # pylint: disable=unused-argument
         """ Internal method to create the geometry for a spot light """
-        RPObject.global_warn("LightGeometry", "TODO: Implement spot lights in light geometry")
-        return Globals.base.render.attach_new_node(cls.DEBUG_GEOMETRY_NAME)
+        model = RPLoader.load_model(join(cls.MODEL_PATH, "spot.bam"))
+        MaterialAPI.force_apply_material(model, cls._make_light_material(light))
+        model.reparent_to(Globals.base.render)
+        model.set_pos(light.pos)
+        scale = math.tan(math.radians(0.5 * light.fov))
+        model.set_scale(scale, 1, scale)
+        model.look_at(light.pos + light.direction)
+        model.set_name(cls.DEBUG_GEOMETRY_NAME)
+        return model
 
     @classmethod
     def _make_light_material(cls, light):

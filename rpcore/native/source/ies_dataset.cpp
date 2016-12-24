@@ -211,12 +211,12 @@ float IESDataset::get_vertical_candela_value(size_t horizontal_angle_idx, float 
  */
 void IESDataset::generate_dataset_texture_into(Texture* dest_tex, size_t z) const {
 
-    size_t resolution_vertical = dest_tex->get_y_size();
-    size_t resolution_horizontal = dest_tex->get_x_size();
+    size_t resolution_vertical = dest_tex->get_x_size();
+    size_t resolution_horizontal = dest_tex->get_y_size();
 
     // Candla values are stored flippped - vertical angles in the x - Axis
     // and horizontal angles in the y - Axis
-    PNMImage dest = PNMImage(resolution_vertical, resolution_horizontal, 1, 65535);
+    PNMImage dest = PNMImage(resolution_vertical, resolution_horizontal, 1, 255);
 
     for (size_t vert = 0; vert < resolution_vertical; ++vert) {
         for (size_t horiz = 0; horiz < resolution_horizontal; ++horiz) {
@@ -228,6 +228,9 @@ void IESDataset::generate_dataset_texture_into(Texture* dest_tex, size_t z) cons
         }
     }
 
-
     dest_tex->load(dest, z, 0);
+
+    // Keep format, panda reverts it to F_luminance
+    dest_tex->set_format(Texture::F_red);
+    dest_tex->set_component_type(Texture::T_unsigned_byte);
 }
