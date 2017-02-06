@@ -48,8 +48,9 @@ class AOStage(RenderStage):
         self.target_upscale.add_color_attachment(bits=(8, 0, 0, 0))
         self.target_upscale.prepare_buffer()
 
-        self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_upscale.set_shader_input("upscaleWeights", Vec2(0.001, 0.001))
+        self.target_upscale.set_shader_inputs(
+            SourceTex=self.target.color_tex,
+            upscaleWeights=Vec2(0.001, 0.001))
 
         self.tarrget_detail_ao = self.create_target("DetailAO")
         self.tarrget_detail_ao.add_color_attachment(bits=(8, 0, 0, 0))
@@ -85,14 +86,15 @@ class AOStage(RenderStage):
             target_blur_h.add_color_attachment(bits=(8, 0, 0, 0))
             target_blur_h.prepare_buffer()
 
-            target_blur_v.set_shader_input("SourceTex", current_tex)
-            target_blur_h.set_shader_input("SourceTex", target_blur_v.color_tex)
+            target_blur_v.set_shader_inputs(
+                SourceTex=current_tex,
+                blur_direction=LVecBase2i(0, 1),
+                pixel_stretch=pixel_stretch)
 
-            target_blur_v.set_shader_input("blur_direction", LVecBase2i(0, 1))
-            target_blur_h.set_shader_input("blur_direction", LVecBase2i(1, 0))
-
-            target_blur_v.set_shader_input("pixel_stretch", pixel_stretch)
-            target_blur_h.set_shader_input("pixel_stretch", pixel_stretch)
+            target_blur_h.set_shader_inputs(
+                SourceTex=target_blur_v.color_tex,
+                blur_direction=LVecBase2i(1, 0),
+                pixel_stretch=pixel_stretch)
 
             current_tex = target_blur_h.color_tex
             self.blur_targets += [target_blur_v, target_blur_h]

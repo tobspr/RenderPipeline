@@ -70,9 +70,10 @@ class Application(ShowBase):
         shader = Shader.load(Shader.SL_GLSL, "resources/display.vert.glsl",  "resources/display.frag.glsl")
         render.set_shader(shader)
 
-        render.set_shader_input("ShadowMap", sun_shadow_target.depth_tex)
-        render.set_shader_input("shadowMVP", shadow_mvp)
-        render.set_shader_input("sunVector", sun_vector)
+        render.set_shader_inputs(
+            ShadowMap=sun_shadow_target.depth_tex,
+            shadowMVP=shadow_mvp,
+            sunVector=sun_vector)
 
         # Render spheres distributed over the mesh
         mesh_size = BAKE_MESH_END - BAKE_MESH_START

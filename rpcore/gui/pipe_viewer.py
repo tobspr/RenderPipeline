@@ -146,10 +146,11 @@ class PipeViewer(DraggableWindow):
                     preview_shader = DisplayShaderBuilder.build(pipe_tex, int(w), int(h))
                     preview.set_shader(preview_shader)
 
-                    preview.set_shader_input("mipmap", 0)
-                    preview.set_shader_input("slice", 0)
-                    preview.set_shader_input("brightness", 1)
-                    preview.set_shader_input("tonemap", False)
+                    preview.set_shader_inputs(
+                        mipmap=0,
+                        slice=0,
+                        brightness=1,
+                        tonemap=False)
 
                 if icon_file:
                     Sprite(image=icon_file, parent=node,

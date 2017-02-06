@@ -158,6 +158,11 @@ class RenderTarget(RPObject):
         if self.create_default_region:
             self._source_region.set_shader_input(*args, **kwargs)
 
+    def set_shader_inputs(self, **kwargs):
+        """ Sets shader inputs available to the target """
+        if self.create_default_region:
+            self._source_region.set_shader_inputs(**kwargs)
+
     @setter
     def shader(self, shader_obj):
         """ Sets a shader on the target """

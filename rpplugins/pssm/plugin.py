@@ -110,13 +110,15 @@ class Plugin(BasePlugin):
         Globals.base.accept("u", self.toggle_update_enabled)
 
         # Set inputs
-        self.pssm_stage.set_shader_input("pssm_mvps", self.camera_rig.get_mvp_array())
-        self.pssm_stage.set_shader_input("pssm_nearfar", self.camera_rig.get_nearfar_array())
+        self.pssm_stage.set_shader_inputs(
+            pssm_mvps=self.camera_rig.get_mvp_array(),
+            pssm_nearfar=self.camera_rig.get_nearfar_array())
 
         if self.is_plugin_enabled("volumetrics"):
             handle = self.get_plugin_instance("volumetrics")
-            handle.stage.set_shader_input("pssm_mvps", self.camera_rig.get_mvp_array())
-            handle.stage.set_shader_input("pssm_nearfar", self.camera_rig.get_nearfar_array())
+            handle.stage.set_shader_inputs(
+                pssm_mvps=self.camera_rig.get_mvp_array(),
+                pssm_nearfar=self.camera_rig.get_nearfar_array())
 
 
     def on_pre_render_update(self):

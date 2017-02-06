@@ -134,8 +134,9 @@ class CubemapFilter(RPObject):
             target_filter = self._stage.create_target("CF:SpecIBL-PostFilter-" + str(mipsize))
             target_filter.size = mipsize * 6, mipsize
             target_filter.prepare_buffer()
-            target_filter.set_shader_input("currentMip", mip)
-            target_filter.set_shader_input("SourceTex", self._spec_pref_map)
+            target_filter.set_shader_inputs(
+                currentMip=mip,
+                SourceTex=self._spec_pref_map)
             target_filter.set_shader_input(
                 "DestMipmap", self._specular_map, False, True, -1, mip, 0)
 
@@ -152,9 +153,10 @@ class CubemapFilter(RPObject):
             CubemapFilter.PREFILTER_CUBEMAP_SIZE)
         self._diffuse_target.prepare_buffer()
 
-        self._diffuse_target.set_shader_input("SourceCubemap", self._specular_map)
-        self._diffuse_target.set_shader_input("DestCubemap", self._prefilter_map)
-        self._diffuse_target.set_shader_input("cubeSize", CubemapFilter.PREFILTER_CUBEMAP_SIZE)
+        self._diffuse_target.set_shader_inputs(
+            SourceCubemap=self._specular_map,
+            DestCubemap=self._prefilter_map,
+            cubeSize=CubemapFilter.PREFILTER_CUBEMAP_SIZE)
 
         # Create the target which removes the noise from the previous target,
         # which is introduced with importance sampling
@@ -164,9 +166,10 @@ class CubemapFilter(RPObject):
             CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
         self._diff_filter_target.prepare_buffer()
 
-        self._diff_filter_target.set_shader_input("SourceCubemap", self._prefilter_map)
-        self._diff_filter_target.set_shader_input("DestCubemap", self._diffuse_map)
-        self._diff_filter_target.set_shader_input("cubeSize", CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
+        self._diff_filter_target.set_shader_inputs(
+            SourceCubemap=self._prefilter_map,
+            DestCubemap=self._diffuse_map,
+            cubeSize=CubemapFilter.DIFFUSE_CUBEMAP_SIZE)
 
     def reload_shaders(self):
         """ Sets all required shaders on the filter. """

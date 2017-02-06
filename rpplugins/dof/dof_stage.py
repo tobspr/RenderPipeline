@@ -68,16 +68,18 @@ class DoFStage(RenderStage):
         self.presort_target = self.create_target("DoFPresort")
         self.presort_target.add_color_attachment(bits=(11, 11, 10))
         self.presort_target.prepare_buffer()
-        self.presort_target.set_shader_input("TileMinMax", self.minmax_target.color_tex)
-        self.presort_target.set_shader_input("PrecomputedCoC", self.target_prefilter.color_tex)
+        self.presort_target.set_shader_inputs(
+            TileMinMax=self.minmax_target.color_tex,
+            PrecomputedCoC=self.target_prefilter.color_tex)
 
         self.target = self.create_target("ComputeDoF")
         # self.target.size = -2
         self.target.add_color_attachment(bits=16, alpha=True)
         self.target.prepare_buffer()
-        self.target.set_shader_input("PresortResult", self.presort_target.color_tex)
-        self.target.set_shader_input("PrecomputedCoC", self.target_prefilter.color_tex)
-        self.target.set_shader_input("TileMinMax", self.minmax_target.color_tex)
+        self.target.set_shader_inputs(
+            PresortResult=self.presort_target.color_tex,
+            PrecomputedCoC=self.target_prefilter.color_tex,
+            TileMinMax=self.minmax_target.color_tex)
 
         self.target_merge = self.create_target("MergeDoF")
         self.target_merge.add_color_attachment(bits=16)

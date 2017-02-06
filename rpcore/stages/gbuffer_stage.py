@@ -61,3 +61,6 @@ class GBufferStage(RenderStage):
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
+
+    def set_shader_inputs(self, **kwargs):
+        Globals.render.set_shader_inputs(**kwargs)

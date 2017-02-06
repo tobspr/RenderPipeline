@@ -94,6 +94,9 @@ class PostProcessRegion(RPObject):
         else:
             self._tri.set_shader_input(*args)
 
+    def set_shader_inputs(self, **kwargs):
+        self._tri.set_shader_inputs(**kwargs)
+
     def _make_fullscreen_cam(self):
         """ Creates an orthographic camera for the buffer """
         buffer_cam = Camera("BufferCamera")

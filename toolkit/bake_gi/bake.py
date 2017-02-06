@@ -163,8 +163,9 @@ class Application(ShowBase):
             target_store_cubemap = RenderTarget()
             target_store_cubemap.size = capture_resolution * 6, capture_resolution
             target_store_cubemap.prepare_buffer()
-            target_store_cubemap.set_shader_input("SourceTex", capture_target.color_tex)
-            target_store_cubemap.set_shader_input("DestTex", destination_cubemap)
+            target_store_cubemap.set_shader_inputs(
+                SourceTex=capture_target.color_tex,
+                DestTex=destination_cubemap)
 
             target_store_cubemap.shader = store_shader
 
@@ -174,18 +175,20 @@ class Application(ShowBase):
             target_convolute.size = 6, 1
             # target_convolute.add_color_attachment(bits=16)
             target_convolute.prepare_buffer()
-            target_convolute.set_shader_input("SourceTex", destination_cubemap)
-            target_convolute.set_shader_input("DestTex", final_data)
-            target_convolute.set_shader_input("storeCoord", store_pta)
+            target_convolute.set_shader_inputs(
+                SourceTex=destination_cubemap,
+                DestTex=final_data,
+                storeCoord=store_pta)
             target_convolute.shader = convolute_shader
 
             # Set initial shader
             shader = Shader.load(Shader.SL_GLSL,
                 "resources/first-bounce.vert.glsl", "resources/first-bounce.frag.glsl")
             render.set_shader(shader)
-            render.set_shader_input("ShadowMap", sun_shadow_target.depth_tex)
-            render.set_shader_input("shadowMVP", shadow_mvp)
-            render.set_shader_input("sunVector", sun_vector)
+            render.set_shader_inputs(
+                ShadowMap=sun_shadow_target.depth_tex,
+                shadowMVP=shadow_mvp,
+                sunVector=sun_vector)
 
             worker_handles.append((capture_rig, store_pta))
 

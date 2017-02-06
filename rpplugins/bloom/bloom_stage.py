@@ -78,8 +78,9 @@ class BloomStage(RenderStage):
             target = self.create_target("Downsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
             target.prepare_buffer()
-            target.set_shader_input("sourceMip", i)
-            target.set_shader_input("SourceTex", self.scene_target_img)
+            target.set_shader_inputs(
+                sourceMip=i,
+                SourceTex=self.scene_target_img)
             target.set_shader_input("DestTex", self.scene_target_img, False, True, -1, i + 1)
             self.downsample_targets.append(target)
 
@@ -89,10 +90,10 @@ class BloomStage(RenderStage):
             target = self.create_target("Upsample:Step-" + str(i))
             target.size = -scale_multiplier, -scale_multiplier
             target.prepare_buffer()
-            target.set_shader_input("FirstUpsamplePass", i == 0)
-
-            target.set_shader_input("sourceMip", self.num_mips - i)
-            target.set_shader_input("SourceTex", self.scene_target_img)
+            target.set_shader_inputs(
+                FirstUpsamplePass=(i==0),
+                sourceMip=(self.num_mips - i),
+                SourceTex=self.scene_target_img)
             target.set_shader_input("DestTex", self.scene_target_img,
                                     False, True, -1, self.num_mips - i - 1)
             self.upsample_targets.append(target)

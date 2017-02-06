@@ -150,8 +150,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
 
         nodepath = NodePath("shader")
         nodepath.set_shader(shader_obj)
-        for key, val in iteritems(shader_inputs):
-            nodepath.set_shader_input(key, val)
+        nodepath.set_shader_inputs(**shader_inputs)
 
         attr = nodepath.get_attrib(ShaderAttrib)
         Globals.base.graphicsEngine.dispatch_compute(
@@ -249,6 +248,7 @@ class ScatteringMethodEricBruneton(ScatteringMethod):
 
         # Make stages available
         for stage in [self.handle.display_stage, self.handle.envmap_stage]:
-            stage.set_shader_input("InscatterSampler", self.textures["inscatter"])
-            stage.set_shader_input("transmittanceSampler", self.textures["transmittance"])
-            stage.set_shader_input("IrradianceSampler", self.textures["irradiance"])
+            stage.set_shader_inputs(
+                InscatterSampler=self.textures["inscatter"],
+                transmittanceSampler=self.textures["transmittance"],
+                IrradianceSampler=self.textures["irradiance"])

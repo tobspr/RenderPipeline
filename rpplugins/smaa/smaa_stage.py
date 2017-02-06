@@ -76,10 +76,11 @@ class SMAAStage(RenderStage):
         self.blend_target.add_color_attachment(alpha=True)
         self.blend_target.prepare_buffer()
 
-        self.blend_target.set_shader_input("EdgeTex", self.edge_target.color_tex)
-        self.blend_target.set_shader_input("AreaTex", self.area_tex)
-        self.blend_target.set_shader_input("SearchTex", self.search_tex)
-        self.blend_target.set_shader_input("jitterIndex", self._jitter_index)
+        self.blend_target.set_shader_inputs(
+            EdgeTex=self.edge_target.color_tex,
+            AreaTex=self.area_tex,
+            SearchTex=self.search_tex,
+            jitterIndex=self._jitter_index)
 
         # Neighbor blending
         self.neighbor_target = self.create_target("NeighborBlending")
@@ -92,10 +93,10 @@ class SMAAStage(RenderStage):
             self.resolve_target = self.create_target("Resolve")
             self.resolve_target.add_color_attachment(bits=16)
             self.resolve_target.prepare_buffer()
-            self.resolve_target.set_shader_input("jitterIndex", self._jitter_index)
-
-            # Set initial textures
-            self.resolve_target.set_shader_input("CurrentTex", self.neighbor_target.color_tex)
+            self.resolve_target.set_shader_inputs(
+                jitterIndex=self._jitter_index,
+                # Set initial textures
+                CurrentTex=self.neighbor_target.color_tex)
 
     def reload_shaders(self):
         self.edge_target.shader = self.load_plugin_shader("edge_detection.frag.glsl")

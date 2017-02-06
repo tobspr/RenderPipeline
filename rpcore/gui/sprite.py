@@ -132,6 +132,10 @@ class Sprite(RPObject):
         """ Sets a shader input on the image """
         self.node.set_shader_input(*args)
 
+    def set_shader_inputs(self, **kwargs):
+        """ Sets multiple shader inputs on the image """
+        self.node.set_shader_inputs(**kwargs)
+
     def remove(self):
         """ Removes the image """
         self.node.remove()

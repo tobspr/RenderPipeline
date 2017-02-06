@@ -40,17 +40,16 @@ class SimpleInputBlock(RPObject):
     def __init__(self, name):
         """ Creates the ubo with the given name """
         RPObject.__init__(self)
-        self.inputs = {}
+        self._inputs = {}
         self.name = name
 
     def add_input(self, name, value):
         """ Adds a new input to the UBO """
-        self.inputs[name] = value
+        self._inputs[self.name + "." + name] = value
 
     def bind_to(self, target):
         """ Binds the UBO to a target """
-        for key, val in iteritems(self.inputs):
-            target.set_shader_input(self.name + "." + key, val)
+        target.set_shader_inputs(**self._inputs)
 
 
 class GroupedInputBlock(RPObject):
@@ -79,6 +78,7 @@ class GroupedInputBlock(RPObject):
         """ Constructs the input block with a given name """
         RPObject.__init__(self)
         self.ptas = {}
+        self._inputs = {}
         self.name = name
         self.use_ubo = bool(TypeRegistry.ptr().find_type("GLUniformBufferContext"))
 
@@ -92,7 +92,12 @@ class GroupedInputBlock(RPObject):
 
     def register_pta(self, name, input_type):
         """ Registers a new input, type should be a glsl type """
-        self.ptas[name] = self.glsl_type_to_pta(input_type).empty_array(1)
+        pta = self.glsl_type_to_pta(input_type).empty_array(1)
+        self.ptas[name] = pta
+        if self.use_ubo:
+            self._inputs[self.name + "_UBO." + name] = pta
+        else:
+            self._inputs[self.name + "." + name] = pta
 
     def pta_to_glsl_type(self, pta_handle):
         """ Converts a PtaXXX to a glsl type """
@@ -112,11 +117,7 @@ class GroupedInputBlock(RPObject):
         """ Binds all inputs of this UBO to the given target, which may be
         either a RenderTarget or a NodePath """
 
-        for pta_name, pta_handle in iteritems(self.ptas):
-            if self.use_ubo:
-                target.set_shader_input(self.name + "_UBO." + pta_name, pta_handle)
-            else:
-                target.set_shader_input(self.name + "." + pta_name, pta_handle)
+        target.set_shader_inputs(**self._inputs)
 
     def update_input(self, name, value):
         """ Updates an existing input """

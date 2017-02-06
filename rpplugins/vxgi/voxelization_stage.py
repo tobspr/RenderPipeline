@@ -112,8 +112,9 @@ class VoxelizationStage(RenderStage):
         # TODO! Does not work with the new render target yet - maybe add option
         # to post process region for instances?
         self.copy_target.instance_count = self.voxel_resolution
-        self.copy_target.set_shader_input("SourceTex", self.voxel_temp_grid)
-        self.copy_target.set_shader_input("DestTex", self.voxel_grid)
+        self.copy_target.set_shader_inputs(
+            SourceTex=self.voxel_temp_grid,
+            DestTex=self.voxel_grid)
 
         # Create the target which generates the mipmaps
         self.mip_targets = []
@@ -124,8 +125,9 @@ class VoxelizationStage(RenderStage):
             mip_target.size = mip_size
             mip_target.prepare_buffer()
             mip_target.instance_count = mip_size
-            mip_target.set_shader_input("SourceTex", self.voxel_grid)
-            mip_target.set_shader_input("sourceMip", mip - 1)
+            mip_target.set_shader_inputs(
+                SourceTex=self.voxel_grid,
+                sourceMip=(mip - 1))
             mip_target.set_shader_input("DestTex", self.voxel_grid, False, True, -1, mip, 0)
             self.mip_targets.append(mip_target)
 
@@ -136,8 +138,9 @@ class VoxelizationStage(RenderStage):
         initial_state.set_attrib(ColorWriteAttrib.make(ColorWriteAttrib.C_off), 100000)
         self.voxel_cam.set_initial_state(initial_state.get_state())
 
-        Globals.base.render.set_shader_input("voxelGridPosition", self.pta_next_grid_pos)
-        Globals.base.render.set_shader_input("VoxelGridDest", self.voxel_temp_grid)
+        Globals.base.render.set_shader_inputs(
+            voxelGridPosition=self.pta_next_grid_pos,
+            VoxelGridDest=self.voxel_temp_grid)
 
     def update(self):
         self.voxel_cam_np.show()
@@ -195,3 +198,6 @@ class VoxelizationStage(RenderStage):
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
+
+    def set_shader_inputs(self, **kwargs):
+        Globals.render.set_shader_inputs(**kwargs)
