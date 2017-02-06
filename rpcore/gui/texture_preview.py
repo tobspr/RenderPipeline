@@ -145,10 +145,11 @@ class TexturePreview(DraggableWindow):
             text_size=18, expand_width=90)
         x_pos += 90 + 30
 
-        image.set_shader_input("slice", 0)
-        image.set_shader_input("mipmap", 0)
-        image.set_shader_input("brightness", 1)
-        image.set_shader_input("tonemap", False)
+        image.set_shader_inputs(
+            slice=0,
+            mipmap=0,
+            brightness=1,
+            tonemap=False)
 
         preview_shader = DisplayShaderBuilder.build(tex, display_w, display_h)
         image.set_shader(preview_shader)

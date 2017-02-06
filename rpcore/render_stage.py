@@ -75,6 +75,12 @@ class RenderStage(RPObject):
         for target in itervalues(self._targets):
             target.set_shader_input(*args)
 
+    def set_shader_inputs(self, **kwargs):
+        """ This method sets shader inputs on all stages, which is mainly used
+        by the stage manager """
+        for target in itervalues(self._targets):
+            target.set_shader_inputs(**kwargs)
+
     def update(self):
         """ This method gets called every frame, and can be overridden by render
         stages to perform custom updates """

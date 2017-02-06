@@ -75,11 +75,12 @@ class Application(ShowBase):
 
             for i in range(6):
                 node.set_shader(cshader)
-                node.set_shader_input("SourceTex", cubemap)
-                node.set_shader_input("DestTex", dest_cubemap)
-                node.set_shader_input("currentSize", size)
-                node.set_shader_input("currentMip", mipmap)
-                node.set_shader_input("currentFace", i)
+                node.set_shader_inputs(
+                    SourceTex=cubemap,
+                    DestTex=dest_cubemap,
+                    currentSize=size,
+                    currentMip=mipmap,
+                    currentFace=i)
                 attr = node.get_attrib(ShaderAttrib)
                 self.graphicsEngine.dispatch_compute(
                     ( (size + 15) // 16, (size+15) // 16, 1), attr, self.win.gsg)

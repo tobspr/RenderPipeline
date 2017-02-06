@@ -74,8 +74,9 @@ class SkyAOCaptureStage(RenderStage):
         self.target_convert.add_color_attachment(bits=(16, 0, 0, 0))
         self.target_convert.prepare_buffer()
 
-        self.target_convert.set_shader_input("DepthTex", self.target.depth_tex)
-        self.target_convert.set_shader_input("position", self.pta_position)
+        self.target_convert.set_shader_inputs(
+            DepthTex=self.target.depth_tex,
+            position=self.pta_position)
 
         # Register camera
         self._pipeline.tag_mgr.register_camera("shadow", self.camera)

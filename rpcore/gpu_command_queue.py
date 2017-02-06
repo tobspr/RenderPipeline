@@ -112,5 +112,6 @@ class GPUCommandQueue(RPObject):
         self._command_target = RenderTarget("ExecCommandTarget")
         self._command_target.size = 1, 1
         self._command_target.prepare_buffer()
-        self._command_target.set_shader_input("CommandQueue", self._data_texture)
-        self._command_target.set_shader_input("commandCount", self._pta_num_commands)
+        self._command_target.set_shader_inputs(
+            CommandQueue=self._data_texture,
+            commandCount=self._pta_num_commands)

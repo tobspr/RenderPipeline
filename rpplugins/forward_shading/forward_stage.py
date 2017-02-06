@@ -58,12 +58,17 @@ class ForwardStage(RenderStage):
         self.target_merge = self.create_target("MergeWithDeferred")
         self.target_merge.add_color_attachment(bits=16)
         self.target_merge.prepare_buffer()
-        self.target_merge.set_shader_input("ForwardDepth", self.target.depth_tex)
-        self.target_merge.set_shader_input("ForwardColor", self.target.color_tex)
+        self.target_merge.set_shader_inputs(
+            ForwardDepth=self.target.depth_tex,
+            ForwardColor=self.target.color_tex)
 
     def set_shader_input(self, *args):
         Globals.base.render.set_shader_input(*args)
         RenderStage.set_shader_input(self, *args)
+
+    def set_shader_inputs(self, **kwargs):
+        Globals.base.render.set_shader_inputs(**kwargs)
+        RenderStage.set_shader_inputs(self, **kwargs)
 
     def reload_shaders(self):
         self.target_merge.shader = self.load_plugin_shader("merge_with_deferred.frag.glsl")

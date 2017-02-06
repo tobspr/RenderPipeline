@@ -91,19 +91,21 @@ class FPSChart(RPObject):
 
         self._cshader = RPLoader.load_shader("/$$rp/shader/fps_chart.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
-        self._cshader_np.set_shader_input("DestTex", self._display_tex)
-        self._cshader_np.set_shader_input("FPSValues", self._storage_buffer)
-        self._cshader_np.set_shader_input("index", self._store_index)
-        self._cshader_np.set_shader_input("maxMs", self._chart_ms_max)
+        self._cshader_np.set_shader_inputs(
+            DestTex=self._display_tex,
+            FPSValues=self._storage_buffer,
+            index=self._store_index,
+            maxMs=self._chart_ms_max)
 
         self._update_shader_node = ComputeNode("FPSChartUpdateValues")
         self._update_shader_node.add_dispatch(1, 1, 1)
         self._update_shader_np = self._node.attach_new_node(self._update_shader_node)
         self._ushader = RPLoader.load_shader("/$$rp/shader/fps_chart_update.compute.glsl")
         self._update_shader_np.set_shader(self._ushader)
-        self._update_shader_np.set_shader_input("DestTex", self._storage_buffer)
-        self._update_shader_np.set_shader_input("index", self._store_index)
-        self._update_shader_np.set_shader_input("currentData", self._current_ftime)
+        self._update_shader_np.set_shader_inputs(
+            DestTex=self._storage_buffer,
+            index=self._store_index,
+            currentData=self._current_ftime)
 
         Globals.base.addTask(self._update, "UpdateFPSChart", sort=-50)
 

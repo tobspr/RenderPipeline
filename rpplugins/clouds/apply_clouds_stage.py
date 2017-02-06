@@ -51,8 +51,9 @@ class ApplyCloudsStage(RenderStage):
         self.upscale_target = self.create_target("UpscaleTarget")
         self.upscale_target.add_color_attachment(bits=16, alpha=True)
         self.upscale_target.prepare_buffer()
-        self.upscale_target.set_shader_input("upscaleWeights", Vec2(0.05, 0.2))
-        self.upscale_target.set_shader_input("SourceTex", self.render_target.color_tex)
+        self.upscale_target.set_shader_inputs(
+            upscaleWeights=Vec2(0.05, 0.2),
+            SourceTex=self.render_target.color_tex)
 
         self.target_apply_clouds = self.create_target("MergeWithScene")
         self.target_apply_clouds.add_color_attachment(bits=16)

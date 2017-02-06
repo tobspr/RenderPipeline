@@ -94,7 +94,8 @@ class ExposureWidget(RPObject):
         exposure_tex = stage_mgr.pipes["Exposure"]
         self._cshader = RPLoader.load_shader("/$$rp/shader/visualize_exposure.compute.glsl")
         self._cshader_np.set_shader(self._cshader)
-        self._cshader_np.set_shader_input("DestTex", self._storage_tex)
-        self._cshader_np.set_shader_input("ExposureTex", exposure_tex)
+        self._cshader_np.set_shader_inputs(
+            DestTex=self._storage_tex,
+            ExposureTex=exposure_tex)
 
         return task.done

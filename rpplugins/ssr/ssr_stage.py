@@ -64,15 +64,16 @@ class SSRStage(RenderStage):
         self.target_upscale = self.create_target("UpscaleSSR")
         self.target_upscale.add_color_attachment(bits=16, alpha=True)
         self.target_upscale.prepare_buffer()
-        self.target_upscale.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_upscale.set_shader_input(
-            "LastFrameColor", self.target_reproject_lighting.color_tex)
+        self.target_upscale.set_shader_inputs(
+            SourceTex=self.target.color_tex,
+            LastFrameColor=self.target_reproject_lighting.color_tex)
 
         self.target_resolve = self.create_target("ResolveSSR")
         self.target_resolve.add_color_attachment(bits=16, alpha=True)
         self.target_resolve.prepare_buffer()
-        self.target_resolve.set_shader_input("CurrentTex", self.target_upscale.color_tex)
-        self.target_resolve.set_shader_input("VelocityTex", self.target_velocity.color_tex)
+        self.target_resolve.set_shader_inputs(
+            CurrentTex=self.target_upscale.color_tex,
+            VelocityTex=self.target_velocity.color_tex)
 
         AmbientStage.required_pipes.append("SSRSpecular")
 

@@ -81,8 +81,9 @@ class VXGIStage(RenderStage):
         self.target_upscale_diff = self.create_target("UpscaleDiffuse")
         self.target_upscale_diff.add_color_attachment(bits=16)
         self.target_upscale_diff.prepare_buffer()
-        self.target_upscale_diff.set_shader_input("SourceTex", self.target_blur_h.color_tex)
-        self.target_upscale_diff.set_shader_input("upscaleWeights", Vec2(0.0001, 0.001))
+        self.target_upscale_diff.set_shader_inputs(
+            SourceTex=self.target_blur_h.color_tex,
+            upscaleWeights=Vec2(0.0001, 0.001))
 
         self.target_resolve = self.create_target("ResolveVXGI")
         self.target_resolve.add_color_attachment(bits=16)

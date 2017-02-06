@@ -113,17 +113,19 @@ class EnvironmentCaptureStage(RenderStage):
         self.target_store = self.create_target("StoreCubemap")
         self.target_store.size = self.resolution * 6, self.resolution
         self.target_store.prepare_buffer()
-        self.target_store.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_store.set_shader_input("DestTex", self.storage_tex)
-        self.target_store.set_shader_input("currentIndex", self.pta_index)
+        self.target_store.set_shader_inputs(
+            SourceTex=self.target.color_tex,
+            DestTex=self.storage_tex,
+            currentIndex=self.pta_index)
 
         self.temporary_diffuse_map = Image.create_cube("DiffuseTemp", self.resolution, "RGBA16")
         self.target_store_diff = self.create_target("StoreCubemapDiffuse")
         self.target_store_diff.size = self.resolution * 6, self.resolution
         self.target_store_diff.prepare_buffer()
-        self.target_store_diff.set_shader_input("SourceTex", self.target.color_tex)
-        self.target_store_diff.set_shader_input("DestTex", self.temporary_diffuse_map)
-        self.target_store_diff.set_shader_input("currentIndex", self.pta_index)
+        self.target_store_diff.set_shader_inputs(
+            SourceTex=self.target.color_tex,
+            DestTex=self.temporary_diffuse_map,
+            currentIndex=self.pta_index)
 
     def _create_filter_targets(self):
         """ Generates the targets which filter the specular cubemap """
@@ -136,9 +138,10 @@ class EnvironmentCaptureStage(RenderStage):
             target = self.create_target("FilterCubemap:{0}-{1}x{1}".format(mip, size))
             target.size = size * 6, size
             target.prepare_buffer()
-            target.set_shader_input("currentIndex", self.pta_index)
-            target.set_shader_input("currentMip", mip)
-            target.set_shader_input("SourceTex", self.storage_tex)
+            target.set_shader_inputs(
+                currentIndex=self.pta_index,
+                currentMip=mip,
+                SourceTex=self.storage_tex)
             target.set_shader_input("DestTex", self.storage_tex, False, True, -1, mip, 0)
             self.filter_targets.append(target)
 
@@ -146,9 +149,10 @@ class EnvironmentCaptureStage(RenderStage):
         self.filter_diffuse_target = self.create_target("FilterCubemapDiffuse")
         self.filter_diffuse_target.size = self.diffuse_resolution * 6, self.diffuse_resolution
         self.filter_diffuse_target.prepare_buffer()
-        self.filter_diffuse_target.set_shader_input("SourceTex", self.temporary_diffuse_map)
-        self.filter_diffuse_target.set_shader_input("DestTex", self.storage_tex_diffuse)
-        self.filter_diffuse_target.set_shader_input("currentIndex", self.pta_index)
+        self.filter_diffuse_target.set_shader_inputs(
+            SourceTex=self.temporary_diffuse_map,
+            DestTex=self.storage_tex_diffuse,
+            currentIndex=self.pta_index)
 
     def set_probe(self, probe):
         self.rig_node.set_mat(probe.matrix)
@@ -174,6 +178,9 @@ class EnvironmentCaptureStage(RenderStage):
 
     def set_shader_input(self, *args):
         Globals.render.set_shader_input(*args)
+
+    def set_shader_inputs(self, **kwargs):
+        Globals.render.set_shader_inputs(**kwargs)
 
     def reload_shaders(self):
         self.target_store.shader = self.load_plugin_shader(

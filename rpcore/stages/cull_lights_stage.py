@@ -93,19 +93,23 @@ class CullLightsStage(RenderStage):
         self.grouped_cell_lights_counts = Image.create_buffer(
             "GroupedPerCellLightsCount", 0, "R16UI")
 
-        self.target_visible.set_shader_input("FrustumLights", self.frustum_lights)
-        self.target_visible.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
-        self.target_cull.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
-        self.target_cull.set_shader_input("PerCellLightCountsBuffer", self.per_cell_light_counts)
-        self.target_cull.set_shader_input("FrustumLights", self.frustum_lights)
-        self.target_cull.set_shader_input("FrustumLightsCount", self.frustum_lights_ctr)
-        self.target_group.set_shader_input("PerCellLightsBuffer", self.per_cell_lights)
-        self.target_group.set_shader_input("PerCellLightCountsBuffer", self.per_cell_light_counts)
-        self.target_group.set_shader_input("GroupedCellLightsBuffer", self.grouped_cell_lights)
-        self.target_group.set_shader_input("GroupedPerCellLightsCountBuffer", self.grouped_cell_lights_counts)
+        self.target_visible.set_shader_inputs(
+            FrustumLights=self.frustum_lights,
+            FrustumLightsCount=self.frustum_lights_ctr)
 
-        self.target_cull.set_shader_input("threadCount", self.cull_threads)
-        self.target_group.set_shader_input("threadCount", 1)
+        self.target_cull.set_shader_inputs(
+            PerCellLightsBuffer=self.per_cell_lights,
+            PerCellLightCountsBuffer=self.per_cell_light_counts,
+            FrustumLights=self.frustum_lights,
+            FrustumLightsCount=self.frustum_lights_ctr,
+            threadCount=self.cull_threads)
+
+        self.target_group.set_shader_inputs(
+            PerCellLightsBuffer=self.per_cell_lights,
+            PerCellLightCountsBuffer=self.per_cell_light_counts,
+            GroupedCellLightsBuffer=self.grouped_cell_lights,
+            GroupedPerCellLightsCountBuffer=self.grouped_cell_lights_counts,
+            threadCount=1)
 
     def reload_shaders(self):
         self.target_cull.shader = self.load_shader(
