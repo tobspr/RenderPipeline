@@ -80,7 +80,7 @@ def error(msg):
     print("\n" + color("Setup failed:\t", Fore.RED + Style.BRIGHT), msg)
     print(color("\nPlease fix the above errors and then restart the setup.\n",
                 Fore.RED + Style.BRIGHT))
-    sys.exit(0)
+    sys.exit(-1)
 
 def print_step(title):
     """ Prints a new section """
