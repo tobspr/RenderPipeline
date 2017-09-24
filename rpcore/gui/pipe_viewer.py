@@ -68,7 +68,7 @@ class PipeViewer(DraggableWindow):
     def toggle(self):
         """ Toggles the pipe viewer """
         if self._visible:
-            Globals.base.taskMgr.remove("UpdatePipeViewer")
+            Globals.base.taskMgr.remove("RP_GUI_UpdatePipeViewer")
             self.hide()
         else:
             Globals.base.taskMgr.add(self._update_task, "RP_GUI_UpdatePipeViewer")
