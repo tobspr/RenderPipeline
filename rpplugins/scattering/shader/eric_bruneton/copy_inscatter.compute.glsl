@@ -39,6 +39,6 @@ void main() {
     int layer = int(gl_GlobalInvocationID.z);
 
     vec3 ray = texelFetch(deltaSRSampler, ivec3(coord, layer), 0).xyz;
-    vec3 mie = texelFetch(deltaSRSampler, ivec3(coord, layer), 0).xyz;
+    vec3 mie = texelFetch(deltaSMSampler, ivec3(coord, layer), 0).xyz;
     imageStore(dest, ivec3(coord, layer), vec4(ray.xyz, mie.x));
 }
