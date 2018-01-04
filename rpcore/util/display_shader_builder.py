@@ -71,6 +71,7 @@ class DisplayShaderBuilder(object):  # pylint: disable=too-few-public-methods
         # Build actual shader
         built = """
             #version 400
+            #extension GL_ARB_shading_language_420pack : enable
             #pragma include "render_pipeline_base.inc.glsl"
             in vec2 texcoord;
             out vec3 result;
