@@ -208,6 +208,17 @@ def check_panda_version():
               "(you can also build from source).")
         error("Panda3D version outdated")
 
+def check_panda_rplight():
+    """ Checks whether Panda3D provides the rpcore native module. """
+
+    try:
+        from panda3d import _rplight
+        return True
+    except ImportError:
+        pass
+
+    return False
+
 def setup():
     """ Main setup routine """
 
@@ -237,8 +248,10 @@ def setup():
         exec_python_file("data/setup/check_requirements.py",
             troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#requirements-check")
 
+    if check_panda_rplight():
+        write_flag("rpcore/native/use_cxx.flag", True)
 
-    if not CMD_ARGS.skip_native:
+    elif not CMD_ARGS.skip_native:
         query = ("The C++ modules of the pipeline are faster and produce better \n"
                  "results, but we will have to compile them. As alternative, \n"
                  "a Python fallback is used, which is slower and produces worse \n"

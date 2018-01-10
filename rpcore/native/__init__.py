@@ -73,8 +73,12 @@ native_module = None
 
 # If the module was built, use it, otherwise use the python wrappers
 if NATIVE_CXX_LOADED:
-    RPObject.global_debug("CORE", "Using native core module")
-    from rpcore.native import native_ as _native_module  # pylint: disable=wrong-import-position
+    try:
+        from panda3d import _rplight as _native_module  # pylint: disable=wrong-import-position
+        RPObject.global_debug("CORE", "Using panda3d-supplied core module")
+    except ImportError:
+        RPObject.global_debug("CORE", "Using native core module")
+        from rpcore.native import native_ as _native_module  # pylint: disable=wrong-import-position
 else:
     from rpcore import pynative as _native_module  # pylint: disable=wrong-import-position
     RPObject.global_debug("CORE", "Using simulated python-wrapper module")
