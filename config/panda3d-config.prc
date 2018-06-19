@@ -103,6 +103,9 @@ gl-force-fbo-color #f
 
 # ----------- OpenGL / Performance Settings ------------
 
+# Require OpenGL 4.3 at least, necessary for Intel drivers on Linux
+gl-version 4 3
+
 # Animations on the gpu. The default shader has to get adjusted to support this
 # feature before this option can be turned on.
 # hardware-animated-vertices #t
