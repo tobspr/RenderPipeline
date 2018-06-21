@@ -42,6 +42,7 @@ class Application(ShowBase):
             gl-coordinate-system default
             notify-level-display error
             print-pipe-types #f
+            gl-version 4 3
         """)
 
         ShowBase.__init__(self)
