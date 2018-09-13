@@ -587,7 +587,7 @@ class RenderPipeline(RPObject):
         # Provide driver vendor as a define
         vendor = self._showbase.win.gsg.get_driver_vendor().lower()
         defines["IS_NVIDIA"] = "nvidia" in vendor
-        defines["IS_AMD"] = "ati" in vendor
+        defines["IS_AMD"] = vendor.startswith("ati")
         defines["IS_INTEL"] = "intel" in vendor
 
         defines["REFERENCE_MODE"] = self.settings["pipeline.reference_mode"]
