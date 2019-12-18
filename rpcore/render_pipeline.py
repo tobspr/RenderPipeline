@@ -189,7 +189,7 @@ class RenderPipeline(RPObject):
         # when we finished, so we can measure how long it took to render the
         # first frame (where the shaders are actually compiled)
         init_duration = (time.time() - start_time)
-        self._first_frame = time.clock()
+        self._first_frame = time.process_time()
         self.debug("Finished initialization in {:3.3f} s, first frame: {}".format(
             init_duration, Globals.clock.get_frame_count()))
 
@@ -567,7 +567,7 @@ class RenderPipeline(RPObject):
         update hook. """
         self.plugin_mgr.trigger_hook("post_render_update")
         if self._first_frame is not None:
-            duration = time.clock() - self._first_frame
+            duration = time.process_time() - self._first_frame
             self.debug("Took", round(duration, 3), "s until first frame")
             self._first_frame = None
         return task.cont

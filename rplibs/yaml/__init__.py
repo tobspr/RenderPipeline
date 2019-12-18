@@ -25,7 +25,7 @@ def load_yaml_file(filename):
     """ This method is a wrapper arround yaml_load, and provides error checking """
 
     import time
-    start = time.clock()
+    start = time.process_time()
 
     try:
         with open(filename, "r") as handle:
@@ -39,7 +39,7 @@ def load_yaml_file(filename):
         RPObject.global_error("YAMLLoader", msg)
         raise Exception("Failed to load YAML file: Invalid syntax")
 
-    duration = (time.clock() - start) * 1000.0
+    duration = (time.process_time() - start) * 1000.0
 
     # Optionally print out profiling information
     # print("Took", round(duration, 2), "ms to load", filename)

@@ -90,10 +90,10 @@ class profile_cpu(object):  # noqa # pylint: disable=invalid-name,too-few-public
         self.name = name
 
     def __enter__(self):
-        self.start_time = time.clock()
+        self.start_time = time.process_time()
 
     def __exit__(self, *args):
-        duration = (time.clock() - self.start_time) * 1000.0
+        duration = (time.process_time() - self.start_time) * 1000.0
         print(self.name, "took", round(duration, 2), "ms ")
 
 
