@@ -51,10 +51,10 @@ class timed_loading_operation(object):  # noqa # pylint: disable=invalid-name,to
             self.resource = ', '.join(self.resource)
 
     def __enter__(self):
-        self.start_time = time.clock()
+        self.start_time = time.process_time()
 
     def __exit__(self, *args):
-        duration = (time.clock() - self.start_time) * 1000.0
+        duration = (time.process_time() - self.start_time) * 1000.0
         if duration > 80.0 and timed_loading_operation.WARNING_COUNT < 5:
             RPObject.global_warn(
                 "RPLoader", "Loading '" + self.resource + "' took", round(duration, 2), "ms")
