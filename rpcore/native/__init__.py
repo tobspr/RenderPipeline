@@ -30,24 +30,22 @@ THE SOFTWARE.
 
 from __future__ import print_function
 import sys
-from os.path import dirname, realpath
+import pkgutil
 
-from direct.stdpy.file import join, isfile
 from rpcore.rpobject import RPObject
 
 # Store a global flag, indicating whether the C++ modules were loaded or the python
 # implemetation of them
 NATIVE_CXX_LOADED = False
 
+
 # Read the configuration from the flag-file
-current_path = dirname(realpath(__file__))
-cxx_flag_path = join(current_path, "use_cxx.flag")
-if not isfile(cxx_flag_path):
+cxx_flag = pkgutil.get_data('rpcore.native', 'use_cxx.flag')
+if cxx_flag is None:
     RPObject.global_error("CORE", "Could not find cxx flag, please run the setup.py!")
     sys.exit(1)
 else:
-    with open(join(current_path, "use_cxx.flag"), "r") as handle:
-        NATIVE_CXX_LOADED = handle.read().strip() == "1"
+    NATIVE_CXX_LOADED = cxx_flag.strip() == b'1'
 
 # The native module should only be imported once, and that by the internal pipeline code
 assert __package__ == "rpcore.native", "You have included the pipeline in the wrong way!"

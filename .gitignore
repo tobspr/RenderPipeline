@@ -58,3 +58,7 @@ toolkit/bake_gi/resources/*.blend
 toolkit/bake_gi/scene
 
 .vscode
+
+build/
+dist/
+render_pipeline.egg-info/

@@ -45,7 +45,7 @@ sys.path.insert(0, "../../")
 from rplibs.six import iteritems  # noqa
 from rplibs.pyqt_imports import *  # noqa
 
-from ui.main_window_generated import Ui_MainWindow  # noqa
+from .ui.main_window_generated import Ui_MainWindow  # noqa
 from rpcore.util.network_communication import NetworkCommunication  # noqa
 
 # Allow working with an older version of the material DB.
@@ -321,9 +321,15 @@ class MaterialEditor(QMainWindow, Ui_MainWindow):
         for name, val, optional_param in self.SHADING_MODELS:
             self.cb_shading_model.addItem(name)
 
-# Start application
-app = QApplication(sys.argv)
-qt_register_fonts()
-editor = MaterialEditor()
-editor.show()
-app.exec_()
+
+def main():
+    # Start application
+    app = QApplication(sys.argv)
+    qt_register_fonts()
+    editor = MaterialEditor()
+    editor.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    main()

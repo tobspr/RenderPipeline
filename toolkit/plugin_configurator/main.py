@@ -47,7 +47,7 @@ from rplibs.six import iteritems  # noqa
 from rplibs.pyqt_imports import * #noqa
 
 # Load the generated UI Layout
-from ui.main_window_generated import Ui_MainWindow  # noqa
+from .ui.main_window_generated import Ui_MainWindow  # noqa
 
 from rpcore.pluginbase.manager import PluginManager  # noqa
 from rpcore.util.network_communication import NetworkCommunication  # noqa
@@ -486,9 +486,15 @@ class PluginConfigurator(QMainWindow, Ui_MainWindow):
 
         self.lst_plugins.setCurrentRow(0)
 
-# Start application
-app = QApplication(sys.argv)
-qt_register_fonts()
-configurator = PluginConfigurator()
-configurator.show()
-app.exec_()
+
+def main():
+    # Start application
+    app = QApplication(sys.argv)
+    qt_register_fonts()
+    configurator = PluginConfigurator()
+    configurator.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    main()

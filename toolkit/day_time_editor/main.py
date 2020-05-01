@@ -43,14 +43,14 @@ sys.path.insert(0, "../../")
 from rplibs.six import iteritems  # noqa
 from rplibs.pyqt_imports import * # noqa
 
-from curve_widget import CurveWidget  # noqa
+from .curve_widget import CurveWidget  # noqa
 
 from rpcore.pluginbase.manager import PluginManager  # noqa
 from rpcore.mount_manager import MountManager  # noqa
 from rpcore.util.network_communication import NetworkCommunication  # noqa
 
-from ui.main_window_generated import Ui_MainWindow  # noqa
-from ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog  # noqa
+from .ui.main_window_generated import Ui_MainWindow  # noqa
+from .ui.point_insert_dialog_generated import Ui_Dialog as Ui_PointDialog  # noqa
 
 class PointDialog(QDialog, Ui_PointDialog):
 
@@ -156,7 +156,11 @@ class DayTimeEditor(QMainWindow, Ui_MainWindow):
 
             QMessageBox.information(self, "Success", "Control points have been reset!")
             default = self._selected_setting_handle.default
-            self._selected_setting_handle.curves[0].set_single_value(default)
+            if type(default) == tuple:
+                for curve, value in zip(self._selected_setting_handle.curves, default):
+                    curve.set_single_value(value)
+            else:
+                self._selected_setting_handle.curves[0].set_single_value(default)
             self._update_settings_list()
             self._cmd_queue.add("write_settings")
 
@@ -285,9 +289,15 @@ class DayTimeEditor(QMainWindow, Ui_MainWindow):
         if first_item:
             self.settings_tree.setCurrentItem(first_item)
 
-# Start application
-app = QApplication(sys.argv)
-qt_register_fonts()
-editor = DayTimeEditor()
-editor.show()
-app.exec_()
+
+def main():
+    # Start application
+    app = QApplication(sys.argv)
+    qt_register_fonts()
+    editor = DayTimeEditor()
+    editor.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    main()

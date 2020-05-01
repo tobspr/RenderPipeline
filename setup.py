@@ -66,10 +66,11 @@ def parse_cmd_args():
     parser.add_argument(
         "--skip-native", help="Skip native module compilation", action="store_true")
     parser.add_argument(
+        "--skip-samples", help="Skip samples download", action="store_true")
+    parser.add_argument(
         "--ci-build", help="Skip setup steps requiring gpu drivers, only for travis ci", action="store_true")
     return parser.parse_args()
 
-CMD_ARGS = parse_cmd_args()
 
 def color(string, col):
     """ Colors a string """
@@ -88,7 +89,7 @@ def print_step(title):
     CURRENT_STEP += 1
     print("\n\n[", str(CURRENT_STEP).zfill(2), "] ", color(title, Fore.CYAN + Style.BRIGHT))
 
-def ask_for_troubleshoot(url):
+def ask_for_troubleshoot(CMD_ARGS, url):
     if CMD_ARGS.ci_build:
         print("\nSETUP FAILED!")
         return
@@ -102,7 +103,7 @@ def ask_for_troubleshoot(url):
         print("OK, opening", url,"\n")
         webbrowser.open(url, new=2)
 
-def exec_python_file(pth, args=None, troubleshoot=None):
+def exec_python_file(CMD_ARGS, pth, args=None, troubleshoot=None):
     """ Executes a python file and checks the return value """
     basedir = os.path.dirname(os.path.abspath(os.path.join(SETUP_DIR, pth))) + "/"
     print("\tRunning script:", Fore.YELLOW + Style.BRIGHT + pth + Style.RESET_ALL)
@@ -117,11 +118,11 @@ def exec_python_file(pth, args=None, troubleshoot=None):
     except subprocess.CalledProcessError as msg:
         print(color("Failed to execute '" + pth + "'", Fore.YELLOW + Style.BRIGHT))
         print("Output:", msg, "\n", msg.output.decode("utf-8", errors="ignore"))
-        ask_for_troubleshoot(troubleshoot)
+        ask_for_troubleshoot(CMD_ARGS, troubleshoot)
         error("Python script didn't return properly!")
     except IOError as msg:
         print("Python script error:", msg)
-        ask_for_troubleshoot(troubleshoot)
+        ask_for_troubleshoot(CMD_ARGS, troubleshoot)
         error("Error during script execution")
     if CMD_ARGS.verbose:
         print(output.decode("utf-8", errors="ignore"))
@@ -146,14 +147,14 @@ def check_file_exists(fpath):
     """ Checks if the given file exists """
     return os.path.isfile(os.path.join(SETUP_DIR, fpath))
 
-def ask_download_samples():
+def ask_download_samples(CMD_ARGS):
     """ Asks the user if he wants to download the samples """
     query = "\nDo you want to download the Render Pipeline samples (~450MB)? (y/n):"
 
     if get_user_choice(query):
         print_step("Downloading samples (Might take a while, depending on your "
                    "internet connection) ...")
-        exec_python_file("samples/download_samples.py")
+        exec_python_file(CMD_ARGS, "samples/download_samples.py")
 
 def get_user_choice(query):
     """ Asks the user a boolean question """
@@ -219,11 +220,11 @@ def check_panda_rplight():
 
     return False
 
-def setup():
+def setup(CMD_ARGS):
     """ Main setup routine """
 
     print("-" * 79)
-    print("\nRender Pipeline Setup 1.3\n")
+    print("\nRender Pipeline Setup\n")
     print("-" * 79)
 
 
@@ -245,7 +246,7 @@ def setup():
 
     if not CMD_ARGS.ci_build:
         print_step("Checking requirements ..")
-        exec_python_file("data/setup/check_requirements.py",
+        exec_python_file(CMD_ARGS, "data/setup/check_requirements.py",
             troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#requirements-check")
 
     if check_panda_rplight():
@@ -265,48 +266,49 @@ def setup():
 
             if not CMD_ARGS.skip_update:
                 print_step("Downloading the module builder ...")
-                exec_python_file("rpcore/native/update_module_builder.py",
+                exec_python_file(CMD_ARGS, "rpcore/native/update_module_builder.py",
                     troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#downloading-module-builder")
 
             print_step("Building the native code .. (This might take a while!)")
-            exec_python_file("rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [],
+            exec_python_file(CMD_ARGS, "rpcore/native/build.py", ["--clean"] if CMD_ARGS.clean else [],
                 troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#building-the-native-code")
 
         else:
             write_flag("rpcore/native/use_cxx.flag", False)
 
     print_step("Generating .txo files ...")
-    exec_python_file("data/generate_txo_files.py",
+    exec_python_file(CMD_ARGS, "data/generate_txo_files.py",
         troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#extracting-txo-files")
 
     if not CMD_ARGS.ci_build:
         print_step("Filtering default cubemap ..")
-        exec_python_file("data/default_cubemap/filter.py",
+        exec_python_file(CMD_ARGS, "data/default_cubemap/filter.py",
             troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#filtering-default-cubemap")
 
         print_step("Precomputing film grain .. ")
-        exec_python_file("data/film_grain/generate.py",
+        exec_python_file(CMD_ARGS, "data/film_grain/generate.py",
             troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-film-grain")
 
     print_step("Running shader scripts .. ")
-    exec_python_file("rpplugins/env_probes/shader/generate_mip_shaders.py",
+    exec_python_file(CMD_ARGS, "rpplugins/env_probes/shader/generate_mip_shaders.py",
         troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#running-shader-scripts")
 
 
     if not CMD_ARGS.ci_build:
         print_step("Precomputing clouds ..")
-        exec_python_file("rpplugins/clouds/resources/precompute.py",
+        exec_python_file(CMD_ARGS, "rpplugins/clouds/resources/precompute.py",
             troubleshoot="https://github.com/tobspr/RenderPipeline/wiki/Setup-Troubleshooting#precomputing-clouds")
 
-    write_flag("data/install.flag", True)
+    write_flag("rpcore/install.flag", True)
 
     # -- Further setup code follows here --
 
     print(color("\n\n-- Setup finished sucessfully! --", Fore.GREEN + Style.BRIGHT))
 
-    if not CMD_ARGS.ci_build:
-        ask_download_samples()
+    if not CMD_ARGS.ci_build and not CMD_ARGS.skip_samples:
+        ask_download_samples(CMD_ARGS)
 
 
 if __name__ == "__main__":
-    setup()
+    CMD_ARGS = parse_cmd_args()
+    setup(CMD_ARGS)

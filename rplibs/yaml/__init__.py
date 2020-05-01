@@ -11,21 +11,16 @@ import collections
 from direct.stdpy.file import open
 from rpcore.rpobject import RPObject
 
-# Import different PyYaml versions depending on the used python version
-if sys.version_info < (3, 0):
-    from .yaml_py2 import load as yaml_load
-    from .yaml_py2 import YAMLError, SafeLoader
-else:
-    from .yaml_py3 import load as yaml_load
-    from .yaml_py3 import YAMLError, SafeLoader
+from .yaml_py3 import load as yaml_load
+from .yaml_py3 import YAMLError, SafeLoader
 
 __all__ = ["load_yaml_file", "load_yaml_file_flat"]
 
 def load_yaml_file(filename):
     """ This method is a wrapper arround yaml_load, and provides error checking """
 
-    import time
-    start = time.process_time()
+    # import time
+    # start = time.process_time()
 
     try:
         with open(filename, "r") as handle:
@@ -39,7 +34,7 @@ def load_yaml_file(filename):
         RPObject.global_error("YAMLLoader", msg)
         raise Exception("Failed to load YAML file: Invalid syntax")
 
-    duration = (time.process_time() - start) * 1000.0
+    # duration = (time.process_time() - start) * 1000.0
 
     # Optionally print out profiling information
     # print("Took", round(duration, 2), "ms to load", filename)

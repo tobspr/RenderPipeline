@@ -29,6 +29,7 @@ from __future__ import division
 import sys
 import math
 import time
+import pkgutil
 
 from panda3d.core import LVecBase2i, TransformState, RenderState, load_prc_file
 from panda3d.core import PandaSystem, MaterialAttrib, WindowProperties
@@ -138,7 +139,7 @@ class RenderPipeline(RPObject):
             self.debug("No settings loaded, loading from default location")
             self.load_settings("/$$rpconfig/pipeline.yaml")
 
-        if not isfile("/$$rp/data/install.flag"):
+        if pkgutil.get_data('rpcore', 'install.flag') is None:
             self.fatal("You didn't setup the pipeline yet! Please run setup.py.")
 
         load_prc_file("/$$rpconfig/panda3d-config.prc")
