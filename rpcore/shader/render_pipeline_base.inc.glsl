@@ -29,11 +29,6 @@
 // Main configuration file, included by all shaders, provides generic defines
 // and functions.
 
-// Leads to some compilation issues
-#ifndef NO_FAST_PRECISION
-#pragma optionNV (fastprecision on)
-#endif
-
 #pragma include "/$$rptemp/$$pipeline_shader_config.inc.glsl"
 
 // Optionally unroll *all* loops, this might be faster, but might also be
