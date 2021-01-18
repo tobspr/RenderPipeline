@@ -385,8 +385,14 @@ class RenderPipeline(RPObject):
         of date. """
         self.debug("Using Python {}.{} with architecture {}".format(
             sys.version_info.major, sys.version_info.minor, PandaSystem.get_platform()))
-        self.debug("Using Panda3D {} built on {}".format(
-            PandaSystem.get_version_string(), PandaSystem.get_build_date()))
+
+        build_date = getattr(PandaSystem, 'build_date', None)
+        if build_date:
+            self.debug("Using Panda3D {} built on {}".format(
+                PandaSystem.get_version_string(), build_date))
+        else:
+            self.debug("Using Panda3D {}".format(PandaSystem.get_version_string()))
+
         if PandaSystem.get_git_commit():
             self.debug("Using git commit {}".format(PandaSystem.get_git_commit()))
         else:
