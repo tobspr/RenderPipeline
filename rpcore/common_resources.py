@@ -100,6 +100,13 @@ class CommonResources(RPObject):
         # Set the correct frame rate interval
         Globals.clock.set_average_frame_rate_interval(3.0)
 
+        # Set initial value for view_proj_mat_no_jitter
+        view_mat = Globals.render.get_transform(self._showbase.cam).get_mat()
+        proj_mat = Mat4(self._showbase.camLens.get_projection_mat())
+        proj_mat.set_cell(1, 0, 0.0)
+        proj_mat.set_cell(1, 1, 0.0)
+        self._input_ubo.update_input("view_proj_mat_no_jitter", view_mat * proj_mat)
+
     def write_config(self):
         """ Generates the shader configuration for the common inputs """
         content = self._input_ubo.generate_shader_code()
