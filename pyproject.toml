@@ -1,0 +1,112 @@
+[tool.poetry]
+name = "renderpipeline"
+version = "0.1.0"
+description = "Physically based rendering and deferred shading for the Panda3D game engine"
+authors = ["RenderPipeline Contributors"]
+readme = "README.md"
+repository = "https://github.com/tobspr/RenderPipeline"
+keywords = ["panda3d", "rendering", "game-engine", "pbr", "deferred-shading"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Games/Entertainment",
+    "Topic :: Multimedia :: Graphics :: 3D Rendering"
+]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.8"
+panda3d = "^1.10"
+pyyaml = "^6.0"
+colorama = "^0.4.6"
+progressbar2 = "^4.2.0"
+six = "^1.16.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+
+[tool.poetry.group.gui]
+optional = true
+
+[tool.poetry.group.gui.dependencies]
+PyQt5 = "^5.15.0"
+
+# Note: Run tests with "poetry run pytest" or create shell aliases
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=rpcore",
+    "--cov=rpplugins",
+    "--cov=rplibs",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=0",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: marks tests as unit tests (fast, isolated)",
+    "integration: marks tests as integration tests (may require external resources)",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["rpcore", "rpplugins", "rplibs"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "setup.py",
+    "*/samples/*",
+    "*/toolkit/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+precision = 2
+show_missing = true
+skip_covered = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
