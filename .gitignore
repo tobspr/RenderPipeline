@@ -58,3 +58,42 @@ toolkit/bake_gi/resources/*.blend
 toolkit/bake_gi/scene
 
 .vscode
+
+# --- Testing and coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.tox/
+.nox/
+
+# --- Claude settings ---
+.claude/*
+
+# --- Poetry/Package management ---
+dist/
+build/
+*.egg-info/
+.eggs/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual environments ---
+venv/
+env/
+ENV/
+.venv/
+.env
+
+# --- IDE files ---
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
